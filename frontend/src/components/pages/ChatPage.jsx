@@ -1,7 +1,7 @@
 // Beispiel für die Verwendung von WebSockets in einer React-Komponente
 import React, { useState, useEffect } from 'react';
 
-const GamePage = () => {
+const ChatPage = () => {
     const [socket, setSocket] = useState(null);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -67,4 +67,4 @@ const GamePage = () => {
     );
 };
 
-export default GamePage;
+export default ChatPage;
