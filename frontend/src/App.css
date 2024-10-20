@@ -12,18 +12,21 @@ body {
   background-size: cover;
 }
 
-.dashboard-page {
-  /*height: 100vh;*/
-  /*width: 100vw;*/
-  padding: 10px;
+#root {
   display: flex;
   flex-direction: column;
-  /*justify-content: center;*/
-  /*text-align: center;*/
-  /*width: 1024px;*/
-  /*height: 1024px;*/
-  /*background-image: url('../public/images/Background.jpg'); !* Hintergrundbild eines Dschungels *!*/
-  /*background-size: cover;*/
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  /*background: rgba(67, 160, 71, 0.5);*/
+  /*color: #fff;*/
+}
+
+.app-wrapper {
+
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
   background: rgba(67, 160, 71, 0.5);
   color: #fff;
 }
@@ -32,8 +35,6 @@ h1 {
   font-size: 3.5em;
   color: rgb(182, 251, 97);
   text-shadow: 4px 4px 4px rgb(43, 43, 44);
-  /*background-size: auto;*/
-  /*background: rgba(67, 160, 71, 0.5);*/
 }
 
 .snake-button {
@@ -47,12 +48,12 @@ h1 {
   border-radius: 30px;
   transition: all 0.3s ease;
   position: relative;
-  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .snake-button:hover {
   transform: scale(1.1);
-  box-shadow: 0px 12px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
 }
 
 .snake-button.cobra {
@@ -78,9 +79,21 @@ h1 {
   left: -5px;
   width: 100%;
   height: 100%;
-  border-radius: 30px;
+  /*border-radius: 25px 50px;*/
   border: 2px dashed #fff;
   animation: slither 1.5s infinite;
+}
+
+.snake-button.cobra::before {
+  border-radius: 50px;
+}
+
+.snake-button.python::before {
+  border-radius: 25px 50px 50px 25px;
+}
+
+.snake-button.rattlesnake::before {
+  border-radius: 25px 50px;
 }
 
 @keyframes slither {

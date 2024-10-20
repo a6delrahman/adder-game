@@ -1,0 +1,181 @@
+/* Styles für die Schlangen-Buttons */
+.snake-button {
+  display: inline-block;
+  margin: 20px;
+  padding: 15px 30px;
+  font-size: 1.5em;
+  text-decoration: none;
+  color: #fff;
+  border: 2px solid #fff;
+  /*border-radius: 30px;*/
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.snake-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+}
+
+.snake-button.cobra {
+  background-color: #8e24aa;
+  border-radius: 50%;
+}
+
+.snake-button.python {
+  background-color: #d81b60;
+  border-radius: 25px 50px 50px 25px;
+}
+
+.snake-button.rattlesnake {
+  background-color: #43a047;
+  border-radius: 25px 50px;
+}
+
+/* Animation für Schlängeln */
+.snake-button::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 100%;
+  height: 100%;
+  /*border-radius: 25px 50px;*/
+  border: 2px dashed #fff;
+  animation: slither 1.5s infinite;
+}
+
+.snake-button.cobra::before {
+  border-radius: 50%;
+}
+
+.snake-button.python::before {
+  border-radius: 25px 50px 50px 25px;
+}
+
+.snake-button.rattlesnake::before {
+  border-radius: 25px 50px;
+}
+
+@keyframes slither {
+  0% {
+    transform: translateX(-10px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  100% {
+    transform: translateX(-10px);
+  }
+}
+
+/*!* 2. Styles für die Schlangen-Buttons *!*/
+
+/*a{*/
+/*  position: absolute;*/
+/*  top: 50%;*/
+/*  left: 50%;*/
+/*  transform: translate(-50%,-50%);*/
+/*  text-transform: uppercase;*/
+/*  color: #1670f0;*/
+/*  padding: 30px 60px;*/
+/*  font-size: 30px;*/
+/*  letter-spacing: 2px;*/
+/*  text-decoration: none;*/
+/*  box-shadow: 0 20px 50px rgba(255,255,255,0.05);*/
+/*  overflow: hidden;*/
+
+/*}*/
+
+/*a:before{*/
+/*  position: absolute;*/
+/*  top: 2px;*/
+/*  left: 2px;*/
+/*  bottom: 2px;*/
+/*  content: '';*/
+/*  width: 50%;*/
+/*  background: rgba(255,255,255,0.05);*/
+/*}*/
+
+/*a span:nth-child(1){*/
+/*  position: absolute;*/
+/*  top: 0;*/
+/*  left: 0;*/
+/*  width: 100%;*/
+/*  height: 2px;*/
+/*  background: linear-gradient(to right, #0c002b, #1779ff);*/
+/*  animation: animate1 2s linear infinite;*/
+/*}*/
+
+/*@keyframes animate1{*/
+/*  0%{*/
+/*    transform: translateX(-100%);*/
+/*  }*/
+
+/*  100%{*/
+/*    transform: translateX(100%);*/
+/*  }*/
+/*}*/
+
+/*a span:nth-child(2){*/
+/*  position: absolute;*/
+/*  top: 0;*/
+/*  right: 0;*/
+/*  width: 2px;*/
+/*  height: 100%;*/
+/*  background: linear-gradient(to bottom, #0c002b, #1779ff);*/
+/*  animation: animate2 2s linear infinite;*/
+/*  animation-delay: 1s;*/
+/*}*/
+
+/*@keyframes animate2{*/
+/*  0%{*/
+/*    transform: translateY(-100%);*/
+/*  }*/
+
+/*  100%{*/
+/*    transform: translateY(100%);*/
+/*  }*/
+/*}*/
+
+/*a span:nth-child(3){*/
+/*  position: absolute;*/
+/*  bottom: 0;*/
+/*  left: 0;*/
+/*  width: 100%;*/
+/*  height: 2px;*/
+/*  background: linear-gradient(to left, #0c002b, #1779ff);*/
+/*  animation: animate3 2s linear infinite;*/
+/*}*/
+
+/*@keyframes animate3{*/
+/*  0%{*/
+/*    transform: translateX(100%);*/
+/*  }*/
+
+/*  100%{*/
+/*    transform: translateX(-100%);*/
+/*  }*/
+/*}*/
+
+/*a span:nth-child(4){*/
+/*  position: absolute;*/
+/*  top: 0;*/
+/*  left: 0;*/
+/*  width: 2px;*/
+/*  height: 100%;*/
+/*  background: linear-gradient(to top, #0c002b, #1779ff);*/
+/*  animation: animate4 2s linear infinite;*/
+/*  animation-delay: 1s;*/
+/*}*/
+
+/*@keyframes animate4{*/
+/*  0%{*/
+/*    transform: translateY(100%);*/
+/*  }*/
+
+/*  100%{*/
+/*    transform: translateY(-100%);*/
+/*  }*/
+/*}*/

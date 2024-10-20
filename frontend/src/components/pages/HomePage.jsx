@@ -1,17 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
+import Button from "../utility/buttons/Button";
 
 const HomePage = () => {
     return (
         <div className="homepage">
             <h1>Adder</h1>
             <div className="homepage-buttons">
-                <Link to="/register">
-                    <button>Register</button>
-                </Link>
-                <Link to="/login">
-                    <button>Login</button>
-                </Link>
+                <Button text="Register" style= "snake-button cobra" nav="/register"/>
+                <Button text="Login" style= "snake-button python" nav="/login"/>
+
             </div>
             <div className="pages-buttons">
                 <Link to="/dashboard">
