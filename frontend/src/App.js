@@ -12,6 +12,7 @@ import ChooseSkillPage from './components/pages/ChooseSkillPage';
 import InGameSessionPage from './components/pages/InGameSessionPage';
 import GameOverPage from './components/pages/GameOverPage';
 import LeaderboardPage from './components/pages/LeaderboardPage';
+import ChatPage from './components/pages/ChatPage';
 
 function App() {
     return (
@@ -27,6 +28,7 @@ function App() {
                     <Route path="/play" element={<InGameSessionPage/>}/>
                     <Route path="/game-over" element={<GameOverPage/>}/>
                     <Route path="/leaderboard" element={<LeaderboardPage/>}/>
+                    <Route path="/chat" element={<ChatPage/>}/>
                 </Routes>
             </Router>
         </div>
