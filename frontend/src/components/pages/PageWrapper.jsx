@@ -1,22 +1,19 @@
-import logo from './logo.svg';
-import './App.css';
 import React from 'react';
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
-import HomePage from './components/pages/HomePage';
-import RegisterPage from './components/pages/RegisterPage';
-import LoginPage from './components/pages/LoginPage';
-import DashboardPage from './components/pages/DashboardPage';
-import InstructionsPage from './components/pages/InstructionsPage';
-import ChooseSkillPage from './components/pages/ChooseSkillPage';
-import InGameSessionPage from './components/pages/InGameSessionPage';
-import GameOverPage from './components/pages/GameOverPage';
-import LeaderboardPage from './components/pages/LeaderboardPage';
-import ChatPage from './components/pages/ChatPage';
+import HomePage from './HomePage';
+import RegisterPage from './RegisterPage';
+import LoginPage from "./LoginPage";
+import DashboardPage from './DashboardPage';
+import InstructionsPage from './InstructionsPage';
+import ChooseSkillPage from './ChooseSkillPage';
+import InGameSessionPage from './InGameSessionPage';
+import GameOverPage from './GameOverPage';
+import LeaderboardPage from './LeaderboardPage';
+import ChatPage from './ChatPage';
 
-function App() {
+function PageWrapper() {
     return (
         <div className="app-wrapper">
-            <Router>
                 <Routes>
                     <Route path="/" element={<HomePage/>}/>
                     <Route path="/register" element={<RegisterPage/>}/>
@@ -29,9 +26,8 @@ function App() {
                     <Route path="/leaderboard" element={<LeaderboardPage/>}/>
                     <Route path="/chat" element={<ChatPage/>}/>
                 </Routes>
-            </Router>
         </div>
     );
 }
 
-export default App;
+export default PageWrapper;

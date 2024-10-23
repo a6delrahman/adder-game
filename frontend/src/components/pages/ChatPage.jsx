@@ -45,6 +45,13 @@ const ChatPage = () => {
         }
     };
 
+    // Funktion zum Handhaben des Tastendrucks
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    };
+
     return (
         <div>
             <h1>Game Page with WebSocket</h1>
@@ -53,6 +60,7 @@ const ChatPage = () => {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    onKeyUp={handleKeyPress}
                     placeholder="Send a message"
                 />
                 <button onClick={sendMessage}>Send</button>
