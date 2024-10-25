@@ -1,6 +1,6 @@
 # 🐍 Adder - The Jungle Math Adventure Game
 
-<img src="docs/images/logo.jpg" alt="Adder Logo" width="500"/>
+<img src="./docs/images/logo.jpg" alt="Adder Logo" width="500"/>
 
 Welcome to **Adder**, a jungle-inspired multiplayer math game! Get ready to slither through math challenges in a vibrant and adventurous setting. Here’s how you can set up and launch your own instance of Adder.
 
