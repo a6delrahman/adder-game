@@ -33,42 +33,45 @@
   border-radius: 25px 50px;
 }
 
-/* Animation für Schlängeln */
-.snake-button::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  width: 100%;
-  height: 100%;
-  /*border-radius: 25px 50px;*/
-  border: 2px dashed #fff;
-  animation: slither 1.5s infinite;
-}
+/*!* Animation für Schlängeln *!*/
+/*.snake-button::before {*/
+/*  content: '';*/
+/*  position: absolute;*/
+/*  top: -5px;*/
+/*  left: -5px;*/
+/*  width: 100%;*/
+/*  height: 100%;*/
+/*  !*border-radius: 25px 50px;*!*/
+/*  border: 2px dashed #fff;*/
+/*  animation: slither 1.5s infinite;*/
+/*}*/
 
-.snake-button.cobra::before {
-  border-radius: 50%;
-}
+/*.snake-button.cobra::before {*/
+/*  border-radius: 50%;*/
+/*}*/
 
-.snake-button.python::before {
-  border-radius: 25px 50px 50px 25px;
-}
+/*.snake-button.python::before {*/
+/*  border-radius: 25px 50px 50px 25px;*/
+/*}*/
 
-.snake-button.rattlesnake::before {
-  border-radius: 25px 50px;
-}
+/*.snake-button.rattlesnake::before {*/
+/*  border-radius: 25px 50px;*/
+/*}*/
 
-@keyframes slither {
-  0% {
-    transform: translateX(-10px);
-  }
-  50% {
-    transform: translateX(10px);
-  }
-  100% {
-    transform: translateX(-10px);
-  }
-}
+/*@keyframes slither {*/
+/*  0% {*/
+/*    transform: translateX(-10px);*/
+/*  }*/
+/*  50% {*/
+/*    transform: translateX(10px);*/
+/*  }*/
+/*  100% {*/
+/*    transform: translateX(-10px);*/
+/*  }*/
+/*}*/
+
+
+
 
 /*!* 2. Styles für die Schlangen-Buttons *!*/
 

@@ -1,65 +1,54 @@
-# Adder
+# 🐍 Adder - The Jungle Math Adventure Game
 
-# Setup 🚀
+<img src="docs/images/logo.jpg" alt="Adder Logo" width="500"/>
 
-### Prerequisites
+Welcome to **Adder**, a jungle-inspired multiplayer math game! Get ready to slither through math challenges in a vibrant and adventurous setting. Here’s how you can set up and launch your own instance of Adder.
 
-- up-to-date *Node.js* installation
-- up-to-date *npm* installation
+---
 
-### Setup App
+## Getting Started 🚀
 
-Run from project root:
+### 📋 Prerequisites
 
-### `npm install` (installs all the dependencies)
+Before you start, make sure to have the following installed and set up:
+- **Node.js** (latest version)
+- **MongoDB** (latest version)
+- A MongoDB connection string: `mongodb://127.0.0.1:27017/Adder`
 
-## Available Scripts
+### 📦 Install Dependencies
 
-In the project directory, you can run:
+Navigate to both `frontend` and `backend` directories, then run:
+```bash
+npm install
+```
 
+---
 
-### `npm start`
+## 🚀 Launching Adder
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. **Frontend**: Start the frontend server by running:
+   ```bash
+   npm start
+   ```
+   The frontend will be accessible at [http://localhost:3000](http://localhost:3000).
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+2. **Backend**: Start the backend server by running:
+   ```bash
+   npm start
+   ```
+   The backend will be accessible at [http://localhost:5000](http://localhost:5000).
 
-### `npm test`
+> Ensure both servers are running for the app to work smoothly!
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
+## 🌐 Ports Used
 
+| Service    | Port |
+|------------|------|
+| Frontend   | 3000 |
+| Backend    | 5000 |
 
-# Documentation 📚
+---
 
-## Modularization
-
-A specially created mockup was used to divide the project into modules.
-The finished modularization was chosen in the best possible way to simplify teamwork.
-It should be possible to work relatively well in parallel on different corners without causing merge
-conflicts.
-
-<img src="" width="1594" alt="">
-
-The folder structure of the project was then created accordingly in order to give the project structure.
-However, it is expected that the structure will still be modified as experience grows. As a result, the folder structure
-no longer corresponds 100% to the initial graphical modularization.
-
-<img src="" alt="">
-
-## UnitTesting
-
-In addition, some unit tests have already been created for the PVA 2 to cover some functionalities. In doing so, the
-difficulty of testing state hooks was revealed. It is our intention that detailed tests of hooks will be added later in
-the project. However, the following image already shows some tests that could be successfully implemented.
-
-<img src="" alt="">
-
-
-## Third party assets
-
-- [diamond.svg](https://tabler-icons.io/i/diamond) (MIT)
-
+## 🌱 Happy coding, and enjoy slithering through the world of Adder! 🐍🌿

@@ -23,12 +23,12 @@ body {
 }
 
 .app-wrapper {
-
   padding: 20px;
   display: flex;
   flex-direction: column;
   background: rgba(67, 160, 71, 0.5);
   color: #fff;
+  border-radius: 30px;
 }
 
 h1 {
@@ -36,75 +36,3 @@ h1 {
   color: rgb(182, 251, 97);
   text-shadow: 4px 4px 4px rgb(43, 43, 44);
 }
-
-.snake-button {
-  display: inline-block;
-  margin: 20px;
-  padding: 15px 30px;
-  font-size: 1.5em;
-  text-decoration: none;
-  color: #fff;
-  border: 2px solid #fff;
-  border-radius: 30px;
-  transition: all 0.3s ease;
-  position: relative;
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.snake-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
-}
-
-.snake-button.cobra {
-  background-color: #8e24aa;
-  border-radius: 50%;
-}
-
-.snake-button.python {
-  background-color: #d81b60;
-  border-radius: 25px 50px 50px 25px;
-}
-
-.snake-button.rattlesnake {
-  background-color: #43a047;
-  border-radius: 25px 50px;
-}
-
-/* Animation für Schlängeln */
-.snake-button::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  width: 100%;
-  height: 100%;
-  /*border-radius: 25px 50px;*/
-  border: 2px dashed #fff;
-  animation: slither 1.5s infinite;
-}
-
-.snake-button.cobra::before {
-  border-radius: 50px;
-}
-
-.snake-button.python::before {
-  border-radius: 25px 50px 50px 25px;
-}
-
-.snake-button.rattlesnake::before {
-  border-radius: 25px 50px;
-}
-
-@keyframes slither {
-  0% {
-    transform: translateX(-10px);
-  }
-  50% {
-    transform: translateX(10px);
-  }
-  100% {
-    transform: translateX(-10px);
-  }
-}
-
