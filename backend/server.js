@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(cors());  // Allow all cross-origin requests
 
 // Beispielhafte Verbindung zur MongoDB (du kannst deinen DB-String hier ersetzen)
-mongoose.connect('mongodb://localhost:27017/Adder', {
+mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
