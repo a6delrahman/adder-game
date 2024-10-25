@@ -4,20 +4,19 @@ const http = require('http');
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
 const gameRoutes = require('./routes/gameRoutes'); // Beispielroute für das Spiel
+const userRoutes = require('./routes/userRoutes');
+const cors = require('cors');
 
 // App-Instanz erstellen
 const app = express();
 const server = http.createServer(app);
 
-
-// WebSocket-Server erstellen
-const wss = new WebSocket.Server({ server }); // WebSocket-Server an HTTP-Server binden
-
 // Middleware für JSON-Daten
 app.use(express.json());
+app.use(cors());  // Allow all cross-origin requests
 
 // Beispielhafte Verbindung zur MongoDB (du kannst deinen DB-String hier ersetzen)
-mongoose.connect('mongodb://localhost:27017/Adder', {
+mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
@@ -26,6 +25,11 @@ mongoose.connect('mongodb://localhost:27017/Adder', {
 
 // Beispielroute
 app.use('/api/game', gameRoutes);
+app.use('/api/users', userRoutes);
+
+
+// WebSocket-Server erstellen
+const wss = new WebSocket.Server({ server }); // WebSocket-Server an HTTP-Server binden
 
 // Handling der WebSocket-Verbindungen
 wss.on('connection', (ws) => {
