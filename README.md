@@ -52,7 +52,7 @@ npm install
 ---
 
 ## Chat capability
-To test the chat function simply click on chat and start chatting with 
+To test the chat feature simply click on chat and start chatting with a few clients.
 
 <img src="./docs/images/chat_home.png" alt="Chat home" width="500"/>
 
