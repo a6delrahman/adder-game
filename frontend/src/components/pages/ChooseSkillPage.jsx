@@ -1,21 +1,19 @@
 import React from 'react';
 import {Link} from "react-router-dom";
+import Button from "../utility/buttons/Button";
 
 const ChooseSkillPage = () => {
     return (
         <div className="choose-skill-page">
             <h1>Choose Skill</h1>
             <div className="skill-buttons">
-                <button>Addition</button>
-                <button>Subtraction</button>
-                <button>Algebra</button>
-                <button>Fractions</button>
-                <button>Multiplication</button>
-                <button>Head</button>
+                <Button text="Addition" style="button-51"/>
+                <Button text="Subtraction" style="button-52" />
+                <Button text="Multiplication" style="button-53"/>
             </div>
-            <Link to="/play">
-                <button>Play</button>
-            </Link>
+            {/*<Link to="/play">*/}
+            {/*    <button>Play</button>*/}
+            {/*</Link>*/}
         </div>
     );
 };

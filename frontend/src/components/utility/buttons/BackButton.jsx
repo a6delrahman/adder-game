@@ -1,5 +1,5 @@
 import React from "react";
-import "./Button.css"
+import "./BackButton.css"
 import {useNavigate} from "react-router-dom";
 
 function Button(props) {
@@ -10,9 +10,11 @@ function Button(props) {
     }
 
     return (
-            <a href="#" onClick={() => window.history.back()}>
-                Back
-            </a>
+        <div>
+            <button className="back-button" role="button" onClick={() => window.history.back()}>
+                    Back
+            </button>
+        </div>
     );
 }
 

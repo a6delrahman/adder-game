@@ -28,7 +28,6 @@ const LeaderboardPage = () => {
                 ))}
                 </tbody>
             </table>
-            <button onClick={() => window.history.back()}>Back</button>
         </div>
     );
 };

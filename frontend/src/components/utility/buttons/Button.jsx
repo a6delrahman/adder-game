@@ -10,7 +10,7 @@ function Button(props) {
     }
 
     return (
-            <button className={props.style} onClick={() => handleClick(props.nav)}>
+            <button className={props.style} onClick={props.onClick}>
                 <div className={props.icon}>{" " + props.text}</div>
             </button>
     );

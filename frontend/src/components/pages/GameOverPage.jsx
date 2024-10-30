@@ -1,17 +1,19 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
+import Button from "../utility/buttons/Button";
 
 const GameOverPage = () => {
+    const navigate = useNavigate();
+
+    function handleClick(page) {
+        navigate(page);
+    }
     return (
         <div className="game-over-page">
             <h1>Game Over</h1>
             <p>Current Score: 345</p>
-            <Link to="/leaderboard">
-                <button>Leaderboard</button>
-            </Link>
-            <Link to="/play">
-                <button>New Game</button>
-            </Link>
+            <Button text="Leaderboard" style="button-49" onClick={() => handleClick("/leaderboard")} />
+            <Button text="New Game" style="button-49" onClick={() => handleClick("/play")} />
         </div>
     );
 };

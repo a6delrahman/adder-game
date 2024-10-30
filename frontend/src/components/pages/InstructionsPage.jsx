@@ -7,7 +7,6 @@ const InstructionsPage = () => {
             <p>
                 In this game, you control a snake that collects numbers to solve mathematical problems. Use arrow keys to move.
             </p>
-            <button onClick={() => window.history.back()}>Back</button>
         </div>
     );
 };

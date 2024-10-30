@@ -1,16 +1,22 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import Button from "../utility/buttons/Button";
 import BackButton from "../utility/buttons/BackButton";
 const DashboardPage = () => {
+    const navigate = useNavigate();
+
+    function handleClick(page) {
+        navigate(page);
+    }
+
+
     return (
         <div className="dashboard-page">
             <h1>Welcome to Adder Game</h1>
             <div className="dashboard-buttons">
-                <Button text="Play" style="snake-button cobra" nav="/choose-skill" />
-                <Button text="Instructions" style="snake-button python" nav="/instructions" />
-                <Button text="Leaderboard" style="snake-button rattlesnake" nav="/leaderboard" />
-                <BackButton/>
+                <Button text="Play" style="snake-button cobra" onClick={() => handleClick("/choose-skill")} />
+                <Button text="Instructions" style="snake-button python" onClick={() => handleClick("/instructions")} />
+                <Button text="Leaderboard" style="snake-button rattlesnake" onClick={() => handleClick("/leaderboard")} />
             </div>
         </div>
 
