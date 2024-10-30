@@ -52,4 +52,15 @@ npm install
 
 ---
 
+## Chat capability
+To test the chat feature simply click on chat and start chatting with a few clients.
+
+<img src="./docs/images/chat_home.png" alt="Chat home" width="500"/>
+
+<img src="./docs/images/chat_front.png" alt="client chat msg" width="500"/>
+
+<img src="./docs/images/chat_backend.png" alt="backend logs" width="500"/>
+
+
+
 ## 🌱 Happy coding, and enjoy slithering through the world of Adder! 🐍🌿
