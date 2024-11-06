@@ -1,12 +1,19 @@
 // controllers/gameController.js
+const PlayerAction = require('../models/PlayerAction');
+
 exports.startGame = (req, res) => {
-    // Beispiel: Logik zum Starten eines Spiels
     res.json({ message: 'Game started!' });
 };
 
 exports.movePlayer = (req, res) => {
-    // Beispiel: Logik für Spielerbewegungen
     const { playerId, direction } = req.body;
-    console.log(`Player ${playerId} moved in direction ${direction}`);
-    res.json({ message: `Player moved in direction ${direction}` });
+    const action = new PlayerAction({ playerId, action: direction });
+
+    action.save()
+        .then(() => {
+            res.json({ message: `Player moved in direction ${direction}` });
+        })
+        .catch((err) => {
+            res.status(500).json({ error: 'Could not save player action' });
+        });
 };
