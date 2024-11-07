@@ -6,7 +6,7 @@ const WebSocket = require('ws');
 const cors = require('cors');
 const gameRoutes = require('./routes/gameRoutes');
 const userRoutes = require('./routes/userRoutes');
-const { handleConnection } = require('./controllers/webSocketController'); // WebSocket-Controller
+const { handleConnection, movePlayers, broadcastPlayerPositions } = require('./controllers/webSocketController');
 
 // App-Instanz erstellen
 const app = express();
@@ -31,6 +31,12 @@ app.use('/api/users', userRoutes);
 // WebSocket-Server erstellen und Verbindung verwalten
 const wss = new WebSocket.Server({ server });
 wss.on('connection', (ws) => handleConnection(ws, wss));
+
+// Spielerbewegung und Positions-Broadcast in regelmäßigen Abständen ausführen
+setInterval(() => {
+    movePlayers();
+    broadcastPlayerPositions(wss);
+}, 1000);
 
 // Server starten
 const PORT = process.env.PORT || 5000;
