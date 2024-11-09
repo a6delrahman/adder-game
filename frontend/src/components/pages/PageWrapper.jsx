@@ -10,6 +10,7 @@ import InGameSessionPage from './InGameSessionPage';
 import GameOverPage from './GameOverPage';
 import LeaderboardPage from './LeaderboardPage';
 import ChatPage from './ChatPage';
+import GameCanvas from "./GameCanvas";
 
 function PageWrapper() {
     return (
@@ -22,6 +23,7 @@ function PageWrapper() {
                     <Route path="/instructions" element={<InstructionsPage/>}/>
                     <Route path="/choose-skill" element={<ChooseSkillPage/>}/>
                     <Route path="/play" element={<InGameSessionPage/>}/>
+                    <Route path="/playCanvas" element={<GameCanvas/>}/>
                     <Route path="/game-over" element={<GameOverPage/>}/>
                     <Route path="/leaderboard" element={<LeaderboardPage/>}/>
                     <Route path="/chat" element={<ChatPage/>}/>
