@@ -1,14 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Snake from '../../classes/Snake'; // Importiere die Snake-Klasse
 
-const ws = new WebSocket('ws://localhost:5000'); // WebSocket-Verbindung
+const ws = new WebSocket('ws://localhost:5000');
 
 const GameCanvas = () => {
-    const [userId, setUserId] = useState(null); // User-ID des Clients
-    const [otherSnakes, setOtherSnakes] = useState({}); // Positionen der anderen Spieler
-    const canvasRef = useRef(null);
-    const playerSnake = useRef(null); // Snake-Instanz für den eigenen Spieler
+    const [userId, setUserId] = useState(null); // Speichert die eindeutige ID des Spielers
+    const [otherSnakes, setOtherSnakes] = useState({}); // Speichert die Schlangen anderer Spieler
+    const canvasRef = useRef(null); // Referenz auf das Canvas-Element
+    const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
 
+    // Sendet eine Richtungsänderung an den Server
     const sendDirectionUpdate = (direction) => {
         if (userId) {
             const message = JSON.stringify({ type: 'change_direction', direction });
@@ -16,6 +17,7 @@ const GameCanvas = () => {
         }
     };
 
+    // Tastatur-Handler für die Bewegung der Schlange
     const handleKeyDown = (e) => {
         if (e.key === 'ArrowUp') sendDirectionUpdate('up');
         if (e.key === 'ArrowDown') sendDirectionUpdate('down');
@@ -27,52 +29,69 @@ const GameCanvas = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
 
-        // Eigene Schlange initialisieren
-        playerSnake.current = new Snake(400, 300, { color: 'green', speed: 2, scale: 0.8 });
-
         ws.onopen = () => console.log("Connected to WebSocket server");
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.log('Received message GameCanvas:', data);
+            // console.log('Othersnakes:', otherSnakes);
 
             if (data.type === 'user_id') {
+                // Speichert die zugewiesene User-ID im State
                 setUserId(data.userId);
-                console.log("Assigned User ID:", data.userId);
             }
 
             if (data.type === 'update_position' && Array.isArray(data.players)) {
+                // Neuer Zustand für otherSnakes initialisieren
+                const updatedOtherSnakes = otherSnakes;
+
                 data.players.forEach(player => {
                     if (player.id === userId) {
-                        // Position des eigenen Spielers aktualisieren
-                        playerSnake.current.position = player.position;
+                        // Spieler-Schlange erstellen oder aktualisieren
+                        if (!playerSnake.current) {
+                            playerSnake.current = new Snake(player.headPosition.x, player.headPosition.y, {
+                                color: 'green',
+                                scale: 0.8,
+                            });
+                        }
+                        // Aktualisiere die Segmente der Schlange anhand der Server-Daten
+                        playerSnake.current.sections = player.segments;
                     } else {
-                        // Andere Spieler-Schlangen aktualisieren oder hinzufügen
-                        setOtherSnakes(prevOtherSnakes => {
-                            const newOtherSnakes = { ...prevOtherSnakes };
-                            if (!newOtherSnakes[player.id]) {
-                                // Neue Schlange für diesen Spieler erstellen
-                                newOtherSnakes[player.id] = new Snake(
-                                    player.position.x,
-                                    player.position.y,
-                                    { color: 'red', speed: 2, scale: 0.8 }
-                                );
-                            }
-                            // Position der bestehenden Schlange aktualisieren
-                            newOtherSnakes[player.id].position = player.position;
-                            return newOtherSnakes;
-                        });
+                        // Erstellen einer neuen Snake-Instanz für andere Spieler, falls noch nicht vorhanden
+                        if (!otherSnakes[player.id]) {
+                            updatedOtherSnakes[player.id] = new Snake(
+                                player.headPosition.x,
+                                player.headPosition.y,
+                                { color: 'red', scale: 0.8 }
+                            );
+                        } else {
+                            // Verwende die bestehende Snake-Instanz für diesen Spieler
+                            updatedOtherSnakes[player.id] = otherSnakes[player.id];
+                        }
+
+                        // Aktualisiere die Segmente der anderen Schlange
+                        updatedOtherSnakes[player.id].sections = player.segments;
                     }
                 });
+
+                // Zustand setzen, um Rendering zu triggern
+                setOtherSnakes(updatedOtherSnakes);
+            }
+
+            // Reagiere auf die Nachricht zum Entfernen eines Spielers
+            if (data.type === 'remove_player') {
+                const newOtherSnakes = otherSnakes;
+                delete newOtherSnakes[data.userId]; // Entferne die Schlange des Spielers, der getrennt wurde
+                setOtherSnakes(newOtherSnakes);
             }
         };
 
+        // Hintergrundraster zeichnen
         const drawBackground = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Zeichne Raster
             ctx.strokeStyle = '#ccc';
             const gridSize = 30;
             for (let x = 0; x < canvas.width; x += gridSize) {
@@ -89,16 +108,17 @@ const GameCanvas = () => {
             }
         };
 
+        // Haupt-Rendering-Schleife
         const render = () => {
             drawBackground();
 
-            // Eigene Schlange aktualisieren und zeichnen
-            playerSnake.current.update();
-            playerSnake.current.draw(ctx);
+            // Zeichne die eigene Schlange (vom Server empfangene Positionen)
+            if (playerSnake.current) {
+                playerSnake.current.draw(ctx);
+            }
 
-            // Andere Schlangen aktualisieren und zeichnen
+            // Zeichne die Schlangen der anderen Spieler
             Object.values(otherSnakes).forEach(snake => {
-                snake.update();
                 snake.draw(ctx);
             });
 
@@ -107,12 +127,14 @@ const GameCanvas = () => {
 
         render();
 
+        // Tastatur-Event-Listener hinzufügen
         window.addEventListener('keydown', handleKeyDown);
 
         return () => {
+            // Entferne Tastatur-Event-Listener beim Verlassen der Komponente
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [userId, otherSnakes]); // Abhängigkeiten aktualisiert
+    }, [userId]);
 
     return <canvas ref={canvasRef} width={800} height={600} />;
 };
