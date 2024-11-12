@@ -52,6 +52,7 @@ const GameCanvas = () => {
                             playerSnake.current = new Snake(player.headPosition.x, player.headPosition.y, {
                                 color: 'green',
                                 scale: 0.8,
+                                speed: 0.1
                             });
                         }
                         // Aktualisiere die Segmente der Schlange anhand der Server-Daten
@@ -114,11 +115,13 @@ const GameCanvas = () => {
 
             // Zeichne die eigene Schlange (vom Server empfangene Positionen)
             if (playerSnake.current) {
+                playerSnake.current.update();
                 playerSnake.current.draw(ctx);
             }
 
             // Zeichne die Schlangen der anderen Spieler
             Object.values(otherSnakes).forEach(snake => {
+                // snake.update();
                 snake.draw(ctx);
             });
 

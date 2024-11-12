@@ -38,7 +38,7 @@ let i = 0;
 
 // Spielerbewegung und Positions-Broadcast in regelmäßigen Abständen ausführen
 setInterval(() => {
-    movePlayers();
+    // movePlayers();
     broadcastPlayerPositions(wss);
     console.log(i.toString());
     i++;
