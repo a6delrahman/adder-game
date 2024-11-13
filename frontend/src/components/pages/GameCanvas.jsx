@@ -5,25 +5,23 @@ const ws = new WebSocket('ws://localhost:5000');
 
 const GameCanvas = () => {
     const [userId, setUserId] = useState(null); // Speichert die eindeutige ID des Spielers
-    const [otherSnakes, setOtherSnakes] = useState({}); // Speichert die Schlangen anderer Spieler
+    const otherSnakes = useRef({}); // Speichert die Schlangen anderer Spieler
     const canvasRef = useRef(null); // Referenz auf das Canvas-Element
     const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
+    const boost = useRef(false); // Speichert den aktuellen Boost-Status
 
-    // Sendet eine Richtungsänderung an den Server
-    const sendDirectionUpdate = (direction) => {
+    // Sendet die Zielkoordinaten und Geschwindigkeit an den Server
+    const sendMovementData = (mouseX, mouseY) => {
         if (userId) {
-            const message = JSON.stringify({ type: 'change_direction', direction });
-            ws.send(message);
+            const canvas = canvasRef.current;
+            const rect = canvas.getBoundingClientRect();
+            const targetX = mouseX - rect.left;
+            const targetY = mouseY - rect.top;
+
+            ws.send(JSON.stringify({ type: 'change_direction', targetX, targetY, boost: boost.current }));
         }
     };
 
-    // Tastatur-Handler für die Bewegung der Schlange
-    const handleKeyDown = (e) => {
-        if (e.key === 'ArrowUp') sendDirectionUpdate('up');
-        if (e.key === 'ArrowDown') sendDirectionUpdate('down');
-        if (e.key === 'ArrowLeft') sendDirectionUpdate('left');
-        if (e.key === 'ArrowRight') sendDirectionUpdate('right');
-    };
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -34,7 +32,6 @@ const GameCanvas = () => {
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.log('Received message GameCanvas:', data);
-            // console.log('Othersnakes:', otherSnakes);
 
             if (data.type === 'user_id') {
                 // Speichert die zugewiesene User-ID im State
@@ -42,8 +39,6 @@ const GameCanvas = () => {
             }
 
             if (data.type === 'update_position' && Array.isArray(data.players)) {
-                // Neuer Zustand für otherSnakes initialisieren
-                const updatedOtherSnakes = otherSnakes;
 
                 data.players.forEach(player => {
                     if (player.id === userId) {
@@ -52,38 +47,24 @@ const GameCanvas = () => {
                             playerSnake.current = new Snake(player.headPosition.x, player.headPosition.y, {
                                 color: 'green',
                                 scale: 0.8,
-                                speed: 0.1
                             });
                         }
-                        // Aktualisiere die Segmente der Schlange anhand der Server-Daten
-                        playerSnake.current.sections = player.segments;
+                        playerSnake.current.updatePosition(player.segments);
                     } else {
-                        // Erstellen einer neuen Snake-Instanz für andere Spieler, falls noch nicht vorhanden
-                        if (!otherSnakes[player.id]) {
-                            updatedOtherSnakes[player.id] = new Snake(
+                        if (!otherSnakes.current[player.id]) {
+                            otherSnakes.current[player.id] = new Snake(
                                 player.headPosition.x,
                                 player.headPosition.y,
                                 { color: 'red', scale: 0.8 }
                             );
-                        } else {
-                            // Verwende die bestehende Snake-Instanz für diesen Spieler
-                            updatedOtherSnakes[player.id] = otherSnakes[player.id];
                         }
-
-                        // Aktualisiere die Segmente der anderen Schlange
-                        updatedOtherSnakes[player.id].sections = player.segments;
+                        otherSnakes.current[player.id].updatePosition(player.segments);
                     }
                 });
-
-                // Zustand setzen, um Rendering zu triggern
-                setOtherSnakes(updatedOtherSnakes);
             }
 
-            // Reagiere auf die Nachricht zum Entfernen eines Spielers
             if (data.type === 'remove_player') {
-                const newOtherSnakes = otherSnakes;
-                delete newOtherSnakes[data.userId]; // Entferne die Schlange des Spielers, der getrennt wurde
-                setOtherSnakes(newOtherSnakes);
+                delete otherSnakes.current[data.userId];
             }
         };
 
@@ -115,13 +96,10 @@ const GameCanvas = () => {
 
             // Zeichne die eigene Schlange (vom Server empfangene Positionen)
             if (playerSnake.current) {
-                playerSnake.current.update();
                 playerSnake.current.draw(ctx);
             }
 
-            // Zeichne die Schlangen der anderen Spieler
-            Object.values(otherSnakes).forEach(snake => {
-                // snake.update();
+            Object.values(otherSnakes.current).forEach(snake => {
                 snake.draw(ctx);
             });
 
@@ -130,13 +108,34 @@ const GameCanvas = () => {
 
         render();
 
-        // Tastatur-Event-Listener hinzufügen
-        window.addEventListener('keydown', handleKeyDown);
+        // Mausbewegung und Klicks erfassen
+        const handleMouseMove = (e) => {
+            sendMovementData(e.clientX, e.clientY);
+        };
+
+        const handleMouseDown = (e) => {
+            if (e.button === 0) { // Linke Maustaste
+                boost.current = true;
+            }
+        };
+
+        const handleMouseUp = (e) => {
+            if (e.button === 0) { // Linke Maustaste
+                boost.current = false;
+            }
+        };
+
+        // Event-Listener für Mausbewegung und Mausklicks hinzufügen
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mouseup', handleMouseUp);
 
         return () => {
-            // Entferne Tastatur-Event-Listener beim Verlassen der Komponente
-            window.removeEventListener('keydown', handleKeyDown);
+            canvas.removeEventListener('mousemove', handleMouseMove);
+            canvas.removeEventListener('mousedown', handleMouseDown);
+            canvas.removeEventListener('mouseup', handleMouseUp);
         };
+
     }, [userId]);
 
     return <canvas ref={canvasRef} width={800} height={600} />;

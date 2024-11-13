@@ -30,19 +30,12 @@ app.use('/api/users', userRoutes);
 
 // WebSocket-Server erstellen und Verbindung verwalten
 const wss = new WebSocket.Server({ server });
-
-
 wss.on('connection', (ws) => handleConnection(ws, wss));
 
-let i = 0;
-
-// Spielerbewegung und Positions-Broadcast in regelmäßigen Abständen ausführen
 setInterval(() => {
-    // movePlayers();
+    movePlayers();
     broadcastPlayerPositions(wss);
-    console.log(i.toString());
-    i++;
-}, 500);
+}, 100);
 
 // Server starten
 const PORT = process.env.PORT || 5000;
