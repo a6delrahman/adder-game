@@ -18,7 +18,7 @@ Before you start, make sure to have the following installed and set up:
 
 ### 📦 Install Dependencies
 
-Navigate to both `frontend` and `backend` directories, then run:
+Navigate to both `frontend-vite\Adder` and `backend` directories, then run:
 ```bash
 npm install
 ```
@@ -29,9 +29,9 @@ npm install
 
 1. **Frontend**: Start the frontend server by running:
    ```bash
-   npm start
+   npm run dev
    ```
-   The frontend will be accessible at [http://localhost:3000](http://localhost:3000).
+   The frontend will be accessible at [http://localhost:5173](http://localhost:3000).
 
 2. **Backend**: Start the backend server by running:
    ```bash
@@ -47,7 +47,7 @@ npm install
 
 | Service    | Port |
 |------------|------|
-| Frontend   | 3000 |
+| Frontend   | 5173 |
 | Backend    | 5000 |
 
 ---
