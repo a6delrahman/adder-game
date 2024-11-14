@@ -6,6 +6,7 @@ const WebSocket = require('ws');
 const cors = require('cors');
 const gameRoutes = require('./routes/gameRoutes');
 const userRoutes = require('./routes/userRoutes');
+const authRoutes = require('./routes/authRoutes');
 const { handleConnection} = require('./controllers/webSocketController');
 const playerService = require('./services/playerService');
 const websocketService = require('./services/websocketService');
@@ -28,6 +29,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
 
 // API-Routen
 // app.use('/api/game', gameRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 // WebSocket-Server erstellen und Verbindung verwalten

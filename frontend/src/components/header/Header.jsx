@@ -1,5 +1,6 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
+import LoginLogoutButton from "../utility/buttons/LoginLogoutButton.jsx";
 
 const Header = () => {
     const navigate = useNavigate();
@@ -13,6 +14,9 @@ const Header = () => {
             <div className="pages-buttons">
                 <Link to="/dashboard">
                     <button>dashboard</button>
+                </Link>
+                <Link to="/profile">
+                    <button>profile</button>
                 </Link>
                 <Link to="/instructions">
                     <button>Instructions</button>
@@ -32,9 +36,7 @@ const Header = () => {
                 <Link to="/register">
                     <button>Register</button>
                 </Link>
-                <Link to="/login">
-                    <button>Login</button>
-                </Link>
+                <LoginLogoutButton/>
                 <Link to="/chat">
                     <button>Chat</button>
                 </Link>

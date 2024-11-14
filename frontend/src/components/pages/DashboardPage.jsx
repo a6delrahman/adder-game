@@ -1,9 +1,12 @@
-import React from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import React, {useContext} from 'react';
+import {useNavigate} from 'react-router-dom';
 import Button from "../utility/buttons/Button";
-import BackButton from "../utility/buttons/BackButton";
+import { AuthContext } from '../../context/AuthContext.jsx';
 const DashboardPage = () => {
+    const { isAuthenticated } = useContext(AuthContext); // Zugriff auf den Authentifizierungsstatus
+
     const navigate = useNavigate();
+
 
     function handleClick(page) {
         navigate(page);
@@ -17,6 +20,10 @@ const DashboardPage = () => {
                 <Button text="Play" style="snake-button cobra" onClick={() => handleClick("/choose-skill")} />
                 <Button text="Instructions" style="snake-button python" onClick={() => handleClick("/instructions")} />
                 <Button text="Leaderboard" style="snake-button rattlesnake" onClick={() => handleClick("/leaderboard")} />
+                {/* Nur anzeigen, wenn der Benutzer angemeldet ist */}
+                {isAuthenticated && (
+                    <Button text="Profile" style="snake-button rattlesnake" onClick={() => handleClick("/profile")} />
+                )}
             </div>
         </div>
 

@@ -1,18 +1,14 @@
-import React, { useState } from 'react';
-import axios from 'axios'; // Ensure axios is installed
-
-axios.defaults.baseURL = 'http://localhost:5000';  // Set the base URL for Axios requests
+import React, { useState, useContext } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { setAuthToken } from '../utility/auth/auth.js';
+import { AuthContext} from "../../context/AuthContext.jsx";
 
 const RegisterPage = () => {
-    // State for form data
-    const [formData, setFormData] = useState({
-        username: '',
-        email: '',
-        password: ''
-    });
-
-    // State for success/error message
-    const [message, setMessage] = useState('');  // <-- This is the missing state
+    const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+    const [message, setMessage] = useState('');
+    const { setIsAuthenticated } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,22 +18,23 @@ const RegisterPage = () => {
         e.preventDefault();
         try {
             // Send POST request to backend API
-            const response = await axios.post('/api/users/register', formData);
-    
+            const response = await axios.post('/api/auth/register', formData);
+            const token = response.data.token;
+
+            // Token speichern und Auth-Status aktualisieren
+            setAuthToken(token);
+            setIsAuthenticated(true);
+
             console.log(response); // Log the response for debugging
             setMessage(response.data.msg); // Success message
+
+            // Weiterleiten zum Dashboard
+            navigate('/dashboard');
         } catch (err) {
-            console.log(err); 
-    
-            if (err.response) {
-                // Check if it's a backend error response
-                setMessage(err.response.data.msg);  // Error message from the backend
-            } else {
-                // Handle any other errors (e.g., network issues)
-                setMessage('Error registering user');
-            }
+            setMessage(err.response?.data.msg || 'Fehler bei der Registrierung');
         }
     };
+
     return (
         <div className="register-page">
             <h1>Register</h1>
@@ -68,8 +65,6 @@ const RegisterPage = () => {
                 />
                 <button type="submit">Register</button>
             </form>
-
-            {/* Display success or error message */}
             {message && <p>{message}</p>}
         </div>
     );

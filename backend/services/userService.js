@@ -1,43 +1,63 @@
 // services/userService.js
-const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
-async function registerUser(username, email, password) {
-    // Überprüfen, ob der Benutzer bereits existiert
-    let user = await User.findOne({ email });
-    if (user) {
-        throw new Error('User already exists');
-    }
+// E-Mail aktualisieren
+async function updateEmail(userId, newEmail) {
+    const emailExists = await User.findOne({ email: newEmail });
+    if (emailExists) throw new Error('Email is already in use');
 
-    // Passwort hashen
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.findById(userId);
+    if (!user) throw new Error('User not found');
 
-    // Benutzer erstellen und in der Datenbank speichern
-    user = new User({
-        username,
-        email,
-        password: hashedPassword
-    });
+    user.email = newEmail;
     await user.save();
-
-    return { msg: 'User registered successfully' };
+    return 'Email updated successfully';
 }
 
-async function authenticateUser(email, password) {
-    // Überprüfen, ob der Benutzer existiert
-    const user = await User.findOne({ email });
-    if (!user) {
-        throw new Error('User not found');
-    }
+// Passwort aktualisieren
+async function updatePassword(userId, newPassword) {
+    if (newPassword.length < 8) throw new Error('Password must be at least 8 characters');
 
-    // Passwort überprüfen
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        throw new Error('Invalid credentials');
-    }
+    const user = await User.findById(userId);
+    if (!user) throw new Error('User not found');
 
-    // Rückgabe, wenn die Anmeldung erfolgreich war
-    return { msg: 'User authenticated successfully', user };
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    return 'Password updated successfully';
 }
 
-module.exports = { registerUser, authenticateUser };
+// Benutzername aktualisieren
+async function updateUsername(userId, newUsername) {
+    const usernameExists = await User.findOne({ username: newUsername });
+    if (usernameExists) throw new Error('Username is already in use');
+
+    const user = await User.findById(userId);
+    if (!user) throw new Error('User not found');
+
+    user.username = newUsername;
+    await user.save();
+    return 'Username updated successfully';
+}
+
+// Benutzer löschen
+async function deleteUser(userId) {
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) throw new Error('User not found');
+    return 'User deleted successfully';
+}
+
+async function getUserProfile(userId) {
+    // Findet den Benutzer anhand der ID und gibt nur die Felder `username` und `email` zurück
+    const user = await User.findById(userId).select('username email');
+    if (!user) throw new Error('User not found');
+    return user;
+}
+
+module.exports = {
+    updateEmail,
+    updatePassword,
+    updateUsername,
+    deleteUser,
+    getUserProfile
+};
