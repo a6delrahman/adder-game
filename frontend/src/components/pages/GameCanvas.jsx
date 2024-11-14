@@ -116,12 +116,14 @@ const GameCanvas = () => {
         const handleMouseDown = (e) => {
             if (e.button === 0) { // Linke Maustaste
                 boost.current = true;
+                sendMovementData(e.clientX, e.clientY);
             }
         };
 
         const handleMouseUp = (e) => {
             if (e.button === 0) { // Linke Maustaste
                 boost.current = false;
+                sendMovementData(e.clientX, e.clientY);
             }
         };
 

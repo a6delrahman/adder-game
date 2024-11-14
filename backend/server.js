@@ -6,7 +6,9 @@ const WebSocket = require('ws');
 const cors = require('cors');
 const gameRoutes = require('./routes/gameRoutes');
 const userRoutes = require('./routes/userRoutes');
-const { handleConnection, movePlayers, broadcastPlayerPositions } = require('./controllers/webSocketController');
+const { handleConnection} = require('./controllers/webSocketController');
+const playerService = require('./services/playerService');
+const websocketService = require('./services/websocketService');
 
 // App-Instanz erstellen
 const app = express();
@@ -25,7 +27,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
     .catch(err => console.log(err));
 
 // API-Routen
-app.use('/api/game', gameRoutes);
+// app.use('/api/game', gameRoutes);
 app.use('/api/users', userRoutes);
 
 // WebSocket-Server erstellen und Verbindung verwalten
@@ -33,8 +35,8 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', (ws) => handleConnection(ws, wss));
 
 setInterval(() => {
-    movePlayers();
-    broadcastPlayerPositions(wss);
+    playerService.movePlayers();
+    websocketService.broadcastPlayerPositions(wss, playerService.getPlayers());
 }, 100);
 
 // Server starten

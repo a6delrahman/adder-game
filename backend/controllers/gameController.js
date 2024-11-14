@@ -1,19 +1,7 @@
-// controllers/gameController.js
-const PlayerAction = require('../models/PlayerAction');
+const playerService = require('../services/playerService');
 
-exports.startGame = (req, res) => {
-    res.json({ message: 'Game started!' });
-};
+function handleMovement(data, ws) {
+    playerService.updatePlayerDirection(data, ws);
+}
 
-exports.movePlayer = (req, res) => {
-    const { playerId, direction } = req.body;
-    const action = new PlayerAction({ playerId, action: direction });
-
-    action.save()
-        .then(() => {
-            res.json({ message: `Player moved in direction ${direction}` });
-        })
-        .catch((err) => {
-            res.status(500).json({ error: 'Could not save player action' });
-        });
-};
+module.exports = { handleMovement };

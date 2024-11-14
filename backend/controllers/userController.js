@@ -1,43 +1,31 @@
 // controllers/userController.js
 const express = require('express');
-const bcrypt = require('bcryptjs');
+const userService = require('../services/userService');
 
 const router = express.Router();
-const User = require('../models/User');
-
 
 exports.register = async (req, res) => {
-    // Beispielhafte Registrierungslogik
     const { username, email, password } = req.body;
-    // Registrierungsvorgang (z.B. Hashing, Speichern in DB) implementieren
+
     try {
-        // Check if user already exists
-        let user = await User.findOne({ email });
-        if (user) {
-            return res.status(400).json({ msg: 'User already exists' });
-        }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create and save new user
-        user = new User({
-            username,
-            email,
-            password: hashedPassword
-        });
-        await user.save();
-
-        res.status(201).json({ msg: 'User registered successfully' });
+        // Registrierung über den Service
+        const response = await userService.registerUser(username, email, password);
+        res.status(201).json(response);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ msg: 'Server error' });
+        res.status(400).json({ msg: err.message });
     }
-    // res.json({ message: 'User registered successfully', username });
 };
 
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
     const { email, password } = req.body;
-    // Login-Überprüfung und Authentifizierung implementieren
-    res.json({ message: 'User logged in successfully', email });
+
+    try {
+        // Authentifizierung über den Service
+        const response = await userService.authenticateUser(email, password);
+        res.status(200).json(response);
+    } catch (err) {
+        console.error(err.message);
+        res.status(400).json({ msg: err.message });
+    }
 };
