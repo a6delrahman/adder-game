@@ -18,7 +18,7 @@ Before you start, make sure to have the following installed and set up:
 
 ### 📦 Install Dependencies
 
-Navigate to both `frontend-vite\Adder` and `backend` directories, then run:
+Navigate to both `frontend` and `backend` directories, then run:
 ```bash
 npm install
 ```

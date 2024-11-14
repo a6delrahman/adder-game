@@ -2,7 +2,7 @@ const players = new Map(); // Map zur Speicherung von Spielern
 const SNAKE_SPEED = 2;
 const FIELD_WIDTH = 800;
 const FIELD_HEIGHT = 600;
-const SNAKE_INITIAL_LENGTH = 5;
+const SNAKE_INITIAL_LENGTH = 50;
 
 function addPlayer(userId, ws) {
     // Initialisiere die Spieler-Schlange
