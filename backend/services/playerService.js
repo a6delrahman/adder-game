@@ -49,23 +49,31 @@ function movePlayers() {
     });
 }
 
+function getPlayer(userId) {
+    return Array.from(players.values()).find((player) => player.userId === userId);
+}
+
 // Neue Funktion, um die aktuelle Spieler-Map zurückzugeben
 function getPlayers() {
     return players;
 }
 
-// function removePlayer(userId) {
-//     for (const [ws, player] of players) {
-//         if (player.id === userId) {
-//             players.delete(ws);
-//             break;
-//         }
-//     }
-// }
+function getSocketByUserId(userId) {
+    for (const [socket, player] of players.entries()) {
+        if (player.userId === userId) {
+            return socket;
+        }
+    }
+    return null;
+}
+
 
 // Entfernt einen Spieler aus der players-Map
 function removePlayer(ws) {
-    players.delete(ws);
+    const player = players.get(ws);
+    if (player) {
+        players.delete(ws);
+    }
 }
 
-module.exports = { addPlayer, updatePlayerDirection, movePlayers, getPlayers, removePlayer };
+module.exports = { addPlayer, updatePlayerDirection, movePlayers, getPlayer, getPlayers, getSocketByUserId, removePlayer };

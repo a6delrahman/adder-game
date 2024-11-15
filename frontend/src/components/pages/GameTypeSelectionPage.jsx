@@ -1,13 +1,13 @@
 // components/GameTypeSelectionPage.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from "../../axiosInstance.js";
 
 const GameTypeSelectionPage = ({ onSessionJoin }) => {
     const [gameType, setGameType] = useState('');
 
     const handleJoinSession = async () => {
         try {
-            const response = await axios.post('/api/session/join', { gameType });
+            const response = await axiosInstance.post('/api/session/join', { gameType });
             onSessionJoin(response.data.sessionId);
         } catch (err) {
             console.error('Failed to join session:', err);

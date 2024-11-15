@@ -14,6 +14,8 @@ import GameCanvas from "./GameCanvas";
 import ProtectedRoute from '../ProtectedRoute.jsx';
 import {AuthContext} from "../../context/AuthContext.jsx";
 import ProfilePage from "./ProfilePage.jsx";
+import GameTypeSelectionPage from "./GameTypeSelectionPage.jsx";
+import GameSessionPage from "./GameSessionPage.jsx";
 
 function PageWrapper() {
     const { isAuthenticated } = useContext(AuthContext);
@@ -26,7 +28,11 @@ function PageWrapper() {
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/instructions" element={<InstructionsPage/>}/>
                     <Route path="/choose-skill" element={<ChooseSkillPage/>}/>
+                    <Route path="/gameTypeSelection" element={<GameTypeSelectionPage/>}/>
                     <Route path="/play" element={<InGameSessionPage/>}/>
+                    {/* Route für die Spielsession-Seite */}
+                    <Route path="/session/:id" element={<GameSessionPage />} />
+                    <Route path="/gameSessionPage" element={<GameSessionPage />} />
                     <Route path="/playCanvas" element={<GameCanvas/>}/>
                     <Route path="/game-over" element={<GameOverPage/>}/>
                     <Route path="/leaderboard" element={<LeaderboardPage/>}/>

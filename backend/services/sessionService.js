@@ -1,36 +1,41 @@
-// function createSession(data, ws) {
-//     // Logik zur Erstellung einer neuen Sitzung
-//     // Hier könnte z.B. eine Lobby oder Spielinstanz erstellt werden
-// }
+// services/sessionService.js
+const sessions = new Map();
+const { v4: uuidv4 } = require('uuid');
 
-const Session = require('../models/Session');
+function createOrFindSession(gameType, userId) {
+    let session = Array.from(sessions.values()).find(
+        (sess) => sess.gameType === gameType && sess.players.length < sess.maxPlayers
+    );
 
-async function createSession (req, res) {
-    const { gameType, userId } = req.body;
-    const session = new Session({ gameType, players: [userId] });
-    await session.save();
-    res.json({ sessionId: session._id });
+    if (!session) {
+        session = {
+            id: uuidv4(),
+            gameType,
+            players: [],
+            maxPlayers: 4
+        };
+        sessions.set(session.id, session);
+    }
+
+    if (!session.players.includes(userId)) {
+        session.players.push(userId);
+    }
+
+    return session;
 }
 
-// function joinSession(data, ws) {
-//     // Logik, um einem Spieler eine bestimmte Sitzung zuzuordnen
-// }
+function getSession(sessionId) {
+    return sessions.get(sessionId);
+}
 
-async function joinSession(req, res) {
-    const { sessionId, userId } = req.body;
-    const session = await Session.findById(sessionId);
-    if (session && session.players.length < session.maxPlayers) {
-        session.players.push(userId);
-        await session.save();
-        res.json({ msg: 'Joined session' });
-    } else {
-        res.status(400).json({ msg: 'Session full or not found' });
+function removePlayerFromSession(sessionId, userId) {
+    const session = sessions.get(sessionId);
+    if (session) {
+        session.players = session.players.filter((id) => id !== userId);
+        if (session.players.length === 0) {
+            sessions.delete(sessionId); // Löscht leere Sessions
+        }
     }
 }
 
-function removePlayerFromSession(ws) {
-    // Optionale Logik, um einen Spieler beim Verlassen einer Sitzung zu entfernen
-    // Dies könnte z.B. die Bereinigung der Sitzung beinhalten
-}
-
-module.exports = { createSession, joinSession, removePlayerFromSession };
+module.exports = { createOrFindSession, getSession, removePlayerFromSession };

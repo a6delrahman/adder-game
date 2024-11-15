@@ -1,6 +1,6 @@
 // src/components/pages/ProfilePage.jsx
 import React, {useState, useEffect, useContext} from 'react';
-import axiosInstance from '../../axiosInstance'; // Importiere die angepasste Axios-Instanz
+import axiosInstance from '../../axiosInstance';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 

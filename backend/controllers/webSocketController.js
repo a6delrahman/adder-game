@@ -14,6 +14,8 @@ function handleConnection(ws, wss) {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
         console.log('Received message:', data);
+        data.userId = userId;
+
         switch (data.type) {
             case 'change_direction':
                 gameController.handleMovement(data, ws);
@@ -22,7 +24,9 @@ function handleConnection(ws, wss) {
                 sessionController.createSession(data, ws);
                 break;
             case 'join_session':
-                sessionController.joinSession(data, ws);
+                const session = sessionController.joinSession(data, ws);
+                playerService.addPlayer(userId, ws, session.id); // Spieler zur Session hinzufügen
+                ws.send(JSON.stringify({ type: 'user_id', userId }));
                 break;
             default:
                 console.log(`Unknown message type: ${data.type}`);

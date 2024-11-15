@@ -2,6 +2,7 @@ import React, {useContext} from 'react';
 import {useNavigate} from 'react-router-dom';
 import Button from "../utility/buttons/Button";
 import { AuthContext } from '../../context/AuthContext.jsx';
+
 const DashboardPage = () => {
     const { isAuthenticated } = useContext(AuthContext); // Zugriff auf den Authentifizierungsstatus
 

@@ -1,19 +1,24 @@
+// controllers/sessionController.js
 const sessionService = require('../services/sessionService');
 
-function addPlayerToSession(userId, ws) {
-    sessionService.addPlayer(userId, ws);
-}
+exports.createSession = async (data, ws) => {
+    const { gameType, userId } = data;
+    try {
+        const session = await sessionService.createOrFindSession(gameType, userId);
+        ws.send(JSON.stringify({ type: 'session_created', sessionId: session.id }));
+    } catch (err) {
+        console.error('Error creating session:', err);
+        ws.send(JSON.stringify({ type: 'error', message: 'Failed to create session' }));
+    }
+};
 
-function removePlayerFromSession(userId) {
-    sessionService.removePlayer(userId);
-}
-
-function createSession(data, ws) {
-    sessionService.createSession(data, ws);
-}
-
-function joinSession(data, ws) {
-    sessionService.joinSession(data, ws);
-}
-
-module.exports = { addPlayerToSession, removePlayerFromSession, createSession, joinSession };
+exports.joinSession = async (data, ws) => {
+    const { gameType, userId } = data;
+    try {
+        const session = await sessionService.createOrFindSession(gameType, userId);
+        ws.send(JSON.stringify({ type: 'session_joined', sessionId: session.id }));
+    } catch (err) {
+        console.error('Error joining session:', err);
+        ws.send(JSON.stringify({ type: 'error', message: 'Failed to join session' }));
+    }
+};
