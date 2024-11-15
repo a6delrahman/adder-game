@@ -1,20 +1,18 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
+import { handleLogout } from "../auth/auth.js";
 // import './LoginLogoutButton.css';
 
 const LoginLogoutButton = () => {
     const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const handleClick = () => {
+    const handleClick = async () => {
         if (isAuthenticated) {
-            // Benutzer abmelden: Token aus localStorage entfernen und Authentifizierungsstatus zurücksetzen
-            localStorage.removeItem('token');
-            setIsAuthenticated(false);
-            navigate('/'); // Optional: zurück zur Startseite oder Dashboard
+            await handleLogout(); // Warte, bis die Abmeldung abgeschlossen ist
+            setIsAuthenticated(false); // Aktualisiere den Auth-Zustand
         } else {
-            // Benutzer zur Login-Seite weiterleiten
             navigate('/login');
         }
     };

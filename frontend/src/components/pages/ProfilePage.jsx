@@ -23,7 +23,8 @@ const ProfilePage = () => {
                 setNewEmail(response.data.email);
                 setNewUsername(response.data.username);
             } catch (err) {
-                setMessage('Error loading user data');
+                setMessage(err.response?.data.msg);
+                setIsAuthenticated(false);
             }
         };
         fetchUser();

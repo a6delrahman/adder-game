@@ -1,13 +1,17 @@
+const { v4: uuidv4 } = require('uuid');
 const players = new Map(); // Map zur Speicherung von Spielern
 const SNAKE_SPEED = 2;
 const FIELD_WIDTH = 800;
 const FIELD_HEIGHT = 600;
 const SNAKE_INITIAL_LENGTH = 50;
 
-function addPlayer(userId, ws, sessionId) {
+function addPlayer(ws, sessionId, userId = null) {
+    const snakeId = uuidv4(); // Eindeutige ID für die Schlange
     // Initialisiere die Spieler-Schlange
     const playerState = {
-        userId: userId,
+        snakeId,
+        sessionId,
+        userId,
         headPosition: { x: 100, y: 100 },
         targetPosition: { x: 100, y: 100 },
         boost: false,
@@ -16,10 +20,10 @@ function addPlayer(userId, ws, sessionId) {
             y: 100 + i * 10,
         })),
         queuedSegments: 0,
-        sessionId: sessionId,
     };
 
     players.set(ws, playerState);
+    return snakeId; // Rückgabe der SnakeId
 }
 
 // function addPlayer(userId, ws, sessionId) {
@@ -63,6 +67,20 @@ function getPlayers() {
     return players;
 }
 
+function getPlayerBySocket(ws) {
+    return players.get(ws);
+}
+
+// Filtert Spieler nach Session
+function getPlayersInSession(sessionId) {
+    return Array.from(players.values()).filter(player => player.sessionId === sessionId);
+}
+
+function getPlayerBySnakeId(snakeId) {
+    return Array.from(players.values()).find((player) => player.snakeId === snakeId);
+}
+
+
 function getSocketByUserId(userId) {
     for (const [socket, player] of players.entries()) {
         if (player.userId === userId) {
@@ -81,4 +99,34 @@ function removePlayer(ws) {
     }
 }
 
-module.exports = { addPlayer, updatePlayerDirection, movePlayers, getPlayer, getPlayers, getSocketByUserId, removePlayer };
+function broadcastPlayerPositions(sessionId, wss) {
+    const playersInSession = getPlayersInSession(sessionId);
+
+    const allPlayerData = playersInSession.map(({ headPosition, segments, id }) => ({
+        id,
+        headPosition,
+        segments,
+    }));
+
+    const message = JSON.stringify({ type: 'update_position', players: allPlayerData });
+
+    // Nur Clients in derselben Session benachrichtigen
+    for (const [ws, player] of players.entries()) {
+        if (player.sessionId === sessionId && ws.readyState === WebSocket.OPEN) {
+            ws.send(message);
+        }
+    }
+}
+
+function broadcastToSession(sessionId, wss, message) {
+    const sessionPlayers = getPlayersInSession(sessionId);
+    sessionPlayers.forEach((player) => {
+        const socket = getSocketBySnakeId(player.snakeId);
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify(message));
+        }
+    });
+}
+
+
+module.exports = { getPlayerBySocket, getPlayerBySnakeId, broadcastPlayerPositions, addPlayer, updatePlayerDirection, movePlayers, getPlayer, getPlayers, getPlayersInSession, getSocketByUserId, removePlayer };

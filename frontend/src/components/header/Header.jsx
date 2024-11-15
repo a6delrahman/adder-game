@@ -21,11 +21,8 @@ const Header = () => {
                 <Link to="/instructions">
                     <button>Instructions</button>
                 </Link>
-                <Link to="/choose-skill">
-                    <button>Choose Skill</button>
-                </Link>
-                <Link to="/gameTypeSelection">
-                    <button>gameTypeSelection</button>
+                <Link to="/GameSessionPage">
+                    <button>GameSessionPage</button>
                 </Link>
                 <Link to="/play">
                     <button>Play</button>

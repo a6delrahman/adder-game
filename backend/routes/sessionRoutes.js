@@ -5,6 +5,6 @@ const authService = require('../services/authService');
 const router = express.Router();
 
 // Route zum Erstellen oder Beitreten einer Session
-router.post('/join', authService.authMiddleware, sessionController.joinSession);
+router.post('/join', sessionController.joinSession);
 
 module.exports = router;

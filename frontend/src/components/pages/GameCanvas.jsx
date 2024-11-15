@@ -1,13 +1,15 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, {useRef, useEffect, useState} from 'react';
+import PropTypes from 'prop-types'; // Importiere PropTypes
 import Snake from '../../classes/Snake'; // Importiere die Snake-Klasse
 
 const GameCanvas = ({ sessionId }) => {
     const userId = useRef(null); // Speichert die eindeutige ID des Spielers
-    const otherSnakes = useRef({}); // Speichert die Schlangen anderer Spieler
+    const otherSnakes = useRef([]); // Speichert die Schlangen anderer Spieler
     const canvasRef = useRef(null); // Referenz auf das Canvas-Element
     const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
     const boost = useRef(false); // Speichert den aktuellen Boost-Status
     const wsRef = useRef(null); // Referenz für WebSocket, damit es session-spezifisch ist
+
 
     // Sendet die Zielkoordinaten und Geschwindigkeit an den Server
     const sendMovementData = (mouseX, mouseY) => {
@@ -55,14 +57,14 @@ const GameCanvas = ({ sessionId }) => {
                         }
                         playerSnake.current.updatePosition(player.segments);
                     } else {
-                        if (!otherSnakes.current[player.id]) {
-                            otherSnakes.current[player.id] = new Snake(
+                        if (!otherSnakes.current[player.userId]) {
+                            otherSnakes.current[player.userId] = new Snake(
                                 player.headPosition.x,
                                 player.headPosition.y,
                                 { color: 'red', scale: 0.8 }
                             );
                         }
-                        otherSnakes.current[player.id].updatePosition(player.segments);
+                        otherSnakes.current[player.userId].updatePosition(player.segments);
                     }
                 });
             }
@@ -154,6 +156,11 @@ const GameCanvas = ({ sessionId }) => {
     }, [userId.current, sessionId]);
 
     return <canvas ref={canvasRef} width={800} height={600} />;
+};
+
+// Füge Prop-Validierung hinzu
+GameCanvas.propTypes = {
+    sessionId: PropTypes.string.isRequired, // Erwarte eine Funktion als Prop
 };
 
 export default GameCanvas;

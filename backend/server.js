@@ -40,7 +40,7 @@ wss.on('connection', (ws) => handleConnection(ws, wss));
 
 setInterval(() => {
     playerService.movePlayers();
-    websocketService.broadcastPlayerPositions(wss, playerService.getPlayers());
+    playerService.broadcastPlayerPositions(wss, playerService.getPlayers());
 }, 100);
 
 // Server starten

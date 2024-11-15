@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { setAuthToken } from '../utility/auth/auth.js';
-import { AuthContext} from "../../context/AuthContext.jsx";
+import axiosInstance from '../../axiosInstance.js'; // Verwende die angepasste Axios-Instanz
+import { setAuthToken, setRefreshToken } from '../utility/auth/auth.js'; // Importiere die Funktionen
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({ username: '', email: '', password: '' });
@@ -10,27 +10,31 @@ const RegisterPage = () => {
     const { setIsAuthenticated } = useContext(AuthContext);
     const navigate = useNavigate();
 
+    // Funktion zur Eingabeverwaltung
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Funktion zur Registrierung
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             // Send POST request to backend API
-            const response = await axios.post('/api/auth/register', formData);
+            const response = await axiosInstance.post('/api/auth/register', formData);
             const token = response.data.token;
 
-            // Token speichern und Auth-Status aktualisieren
-            setAuthToken(token);
+            // Speichere Access-Token und Refresh-Token
+            setAuthToken(response.data.accessToken);
+            setRefreshToken(response.data.refreshToken);
+
+            // Setze Authentifizierungsstatus auf true
             setIsAuthenticated(true);
 
             console.log(response); // Log the response for debugging
-            setMessage(response.data.msg); // Success message
-
             // Weiterleiten zum Dashboard
             navigate('/dashboard');
         } catch (err) {
+            console.error('Registration failed', err);
             setMessage(err.response?.data.msg || 'Fehler bei der Registrierung');
         }
     };
@@ -38,6 +42,7 @@ const RegisterPage = () => {
     return (
         <div className="register-page">
             <h1>Register</h1>
+            {message && <p>{message}</p>}
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
@@ -58,9 +63,10 @@ const RegisterPage = () => {
                 <input
                     type="password"
                     name="password"
-                    placeholder="Password"
+                    placeholder="Password (min 8 characters)"
                     value={formData.password}
                     onChange={handleChange}
+                    minLength="8"
                     required
                 />
                 <button type="submit">Register</button>

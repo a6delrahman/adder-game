@@ -12,13 +12,14 @@ exports.createSession = async (data, ws) => {
     }
 };
 
-exports.joinSession = async (data, ws) => {
-    const { gameType, userId } = data;
+exports.joinSession = async (req, res) => {
+    const { gameType, userId } = req.body;
+    console.log('Received data in joinSession:', req.body);
     try {
         const session = await sessionService.createOrFindSession(gameType, userId);
-        ws.send(JSON.stringify({ type: 'session_joined', sessionId: session.id }));
+        res.status(200).json({ sessionId: session.id });
     } catch (err) {
         console.error('Error joining session:', err);
-        ws.send(JSON.stringify({ type: 'error', message: 'Failed to join session' }));
+        res.status(500).json({ message: 'Failed to join session' });
     }
 };
