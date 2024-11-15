@@ -1,6 +1,6 @@
 function broadcastPlayerPositions(wss, players) {
-    const allPlayerData = Array.from(players.values()).map(({ headPosition, segments, id }) => ({
-        id,
+    const allPlayerData = Array.from(players.values()).map(({ headPosition, segments, userId }) => ({
+        userId,
         headPosition,
         segments,
     }));

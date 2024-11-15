@@ -4,10 +4,10 @@ const FIELD_WIDTH = 800;
 const FIELD_HEIGHT = 600;
 const SNAKE_INITIAL_LENGTH = 50;
 
-function addPlayer(userId, ws) {
+function addPlayer(userId, ws, sessionId) {
     // Initialisiere die Spieler-Schlange
     const playerState = {
-        id: userId,
+        userId: userId,
         headPosition: { x: 100, y: 100 },
         targetPosition: { x: 100, y: 100 },
         boost: false,
@@ -16,10 +16,15 @@ function addPlayer(userId, ws) {
             y: 100 + i * 10,
         })),
         queuedSegments: 0,
+        sessionId: sessionId,
     };
 
     players.set(ws, playerState);
 }
+
+// function addPlayer(userId, ws, sessionId) {
+//     players.set(ws, { userId, sessionId, targetPosition: null, boost: false });
+// }
 
 function updatePlayerDirection(data, ws) {
     const playerState = players.get(ws);

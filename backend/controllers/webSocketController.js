@@ -6,8 +6,8 @@ const { v4: uuidv4 } = require('uuid');
 
 function handleConnection(ws, wss) {
     const userId = uuidv4();
-    playerService.addPlayer(userId, ws); // Spieler zur zentralen players-Map hinzufügen
 
+    playerService.addPlayer(userId, ws, null); // Spieler zur zentralen players-Map hinzufügen
     // Sende die zugewiesene Benutzer-ID an den Client
     ws.send(JSON.stringify({ type: 'user_id', userId }));
 

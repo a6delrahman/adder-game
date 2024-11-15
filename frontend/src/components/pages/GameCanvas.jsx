@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import Snake from '../../classes/Snake'; // Importiere die Snake-Klasse
 
 const GameCanvas = ({ sessionId }) => {
-    const [userId, setUserId] = useState(null); // Speichert die eindeutige ID des Spielers
+    const userId = useRef(null); // Speichert die eindeutige ID des Spielers
     const otherSnakes = useRef({}); // Speichert die Schlangen anderer Spieler
     const canvasRef = useRef(null); // Referenz auf das Canvas-Element
     const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
@@ -38,13 +38,14 @@ const GameCanvas = ({ sessionId }) => {
             //todo: Implementierung der Logik für die empfangenen Nachrichten
             if (data.type === 'user_id') {
                 // Speichert die zugewiesene User-ID im State
-                setUserId(data.userId);
+                console.log('Received user_id:', data.userId);
+                userId.current = data.userId;
             }
 
             if (data.type === 'update_position' && Array.isArray(data.players)) {
 
                 data.players.forEach(player => {
-                    if (player.id === userId) {
+                    if (player.userId === userId.current) {
                         // Spieler-Schlange erstellen oder aktualisieren
                         if (!playerSnake.current) {
                             playerSnake.current = new Snake(player.headPosition.x, player.headPosition.y, {
@@ -150,7 +151,7 @@ const GameCanvas = ({ sessionId }) => {
             canvas.removeEventListener('mouseup', handleMouseUp);
         };
 
-    }, [userId, sessionId]);
+    }, [userId.current, sessionId]);
 
     return <canvas ref={canvasRef} width={800} height={600} />;
 };
