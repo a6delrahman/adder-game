@@ -2,8 +2,8 @@ import React, {useRef, useEffect, useState} from 'react';
 import PropTypes from 'prop-types'; // Importiere PropTypes
 import Snake from '../../classes/Snake'; // Importiere die Snake-Klasse
 
-const GameCanvas = ({ sessionId }) => {
-    const userId = useRef(null); // Speichert die eindeutige ID des Spielers
+const GameCanvas = ({ snakeId, ws, sessionId }) => {
+    const snakeIdRef = useRef(null); // Speichert die eindeutige ID des Spielers
     const otherSnakes = useRef([]); // Speichert die Schlangen anderer Spieler
     const canvasRef = useRef(null); // Referenz auf das Canvas-Element
     const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
@@ -13,13 +13,13 @@ const GameCanvas = ({ sessionId }) => {
 
     // Sendet die Zielkoordinaten und Geschwindigkeit an den Server
     const sendMovementData = (mouseX, mouseY) => {
-        if (userId && wsRef.current) {
+        if (snakeIdRef && wsRef.current) {
             const canvas = canvasRef.current;
             const rect = canvas.getBoundingClientRect();
             const targetX = mouseX - rect.left;
             const targetY = mouseY - rect.top;
 
-            wsRef.current.send(JSON.stringify({ type: 'change_direction', targetX, targetY, boost: boost.current }));
+            wsRef.current.send(JSON.stringify({ type: 'change_direction', snakeId: snakeIdRef.current, targetX, targetY, boost: boost.current }));
         }
     };
 
@@ -28,26 +28,27 @@ const GameCanvas = ({ sessionId }) => {
         if (!sessionId) return; // Nur fortfahren, wenn sessionId verfügbar ist
 
         // Initialisiere WebSocket nur, wenn sessionId vorhanden ist
-        const ws = new WebSocket(`ws://localhost:5000/session/${sessionId}`);
+        // const ws = new WebSocket(`ws://localhost:5000/session/${sessionId}`);
         wsRef.current = ws;
+        snakeIdRef.current = snakeId;
 
-        ws.onopen = () => console.log("Connected to WebSocket server for session:", sessionId);
+        // ws.onopen = () => console.log("Connected to WebSocket server for session:", sessionId);
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.log('Received message GameCanvas:', data);
 
             //todo: Implementierung der Logik für die empfangenen Nachrichten
-            if (data.type === 'user_id') {
-                // Speichert die zugewiesene User-ID im State
-                console.log('Received user_id:', data.userId);
-                userId.current = data.userId;
+            if (data.type === 'snake_id') {
+                // Speichert die zugewiesene Snake-ID im State
+                console.log('Received snakeId:', data.snakeId);
+                snakeIdRef.current = data.snakeId;
             }
 
-            if (data.type === 'update_position' && Array.isArray(data.players)) {
+            if (data.type === 'session_broadcast' && Array.isArray(data.players)) {
 
                 data.players.forEach(player => {
-                    if (player.userId === userId.current) {
+                    if (player.snakeId === snakeIdRef.current) {
                         // Spieler-Schlange erstellen oder aktualisieren
                         if (!playerSnake.current) {
                             playerSnake.current = new Snake(player.headPosition.x, player.headPosition.y, {
@@ -57,28 +58,29 @@ const GameCanvas = ({ sessionId }) => {
                         }
                         playerSnake.current.updatePosition(player.segments);
                     } else {
-                        if (!otherSnakes.current[player.userId]) {
-                            otherSnakes.current[player.userId] = new Snake(
+                        if (!otherSnakes.current[player.snakeId]) {
+                            otherSnakes.current[player.snakeId] = new Snake(
                                 player.headPosition.x,
                                 player.headPosition.y,
                                 { color: 'red', scale: 0.8 }
                             );
                         }
-                        otherSnakes.current[player.userId].updatePosition(player.segments);
+                        otherSnakes.current[player.snakeId].updatePosition(player.segments);
                     }
                 });
             }
 
             if (data.type === 'remove_player') {
-                delete otherSnakes.current[data.userId];
+                delete otherSnakes.current[data.snakeId];
             }
         };
 
-        // Trenne WebSocket-Verbindung beim Verlassen der Komponente oder Wechsel der Session
-        return () => {
-            ws.close();
-            wsRef.current = null;
-        };
+        // // Trenne WebSocket-Verbindung beim Verlassen der Komponente oder Wechsel der Session
+        // return () => {
+        //     ws.send(JSON.stringify({ type: 'leave_session' }));
+        //     // ws.close();
+        //     // wsRef.current = null;
+        // };
     }, [sessionId]);
 
     // Hintergrund und Rendering
@@ -148,12 +150,13 @@ const GameCanvas = ({ sessionId }) => {
 
         return () => {
             const canvas = canvasRef.current;
+            if (!canvas) return;
             canvas.removeEventListener('mousemove', handleMouseMove);
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
         };
 
-    }, [userId.current, sessionId]);
+    }, [snakeIdRef.current, sessionId, ws]);
 
     return <canvas ref={canvasRef} width={800} height={600} />;
 };

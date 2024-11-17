@@ -1,23 +1,29 @@
 // components/GameTypeSelectionPage.jsx
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types'; // Importiere PropTypes
 import axios from "axios";
+import Snake from "../../classes/Snake.js";
 
-const GameTypeSelectionPage = ({ onSessionJoin }) => {
-    const [gameType, setGameType] = useState('');
+const GameTypeSelectionPage = ({ ws, onSessionJoin }) => {
+    const [gameType, setGameType] = useState('addition');
+    const wsRef = useRef(ws); // Referenz für WebSocket, damit es session-spezifisch ist
 
+    useEffect(() => {
+        wsRef.current = ws;
+    }, [ws]);
 
-    const handleJoinSession = async (data) => {
-        setGameType(data);
-        // const userId = localStorage.getItem('userId'); // Angenommen, userId wird lokal gespeichert
+    const handleJoinSession = async (selectedGameType) => {
+        const userId = localStorage.getItem('userId');
         // if (!userId) {
         //     console.error('User ID is missing');
         //     return;
         // }
+
         try {
-            const response = await axios.post('/api/session/join', { gameType, userId: '123' }); // userId als Beispielwert
-            onSessionJoin(response.data.sessionId);
-            console.log('Sending data to backend:', { gameType, userId });
+            setGameType(selectedGameType);
+            wsRef.current.send(JSON.stringify({ type: 'join_session', gameType: selectedGameType, userId }));
+            // onSessionJoin(response.data.sessionId);
+            console.log('Sending data to backend:', { gameType: selectedGameType, userId });
         } catch (err) {
             console.error('Failed to join session:', err);
         }

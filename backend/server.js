@@ -11,6 +11,8 @@ const sessionRoutes = require('./routes/sessionRoutes');
 const { handleConnection} = require('./controllers/webSocketController');
 const playerService = require('./services/playerService');
 const websocketService = require('./services/websocketService');
+const sessionController = require('./controllers/sessionController');
+const sessionService = require('./services/sessionService');
 
 // App-Instanz erstellen
 const app = express();
@@ -39,8 +41,12 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', (ws) => handleConnection(ws, wss));
 
 setInterval(() => {
-    playerService.movePlayers();
-    playerService.broadcastPlayerPositions(wss, playerService.getPlayers());
+    // playerService.movePlayers();
+    // websocketService.broadcastPlayerPositions(wss, playerService.getPlayers());
+    // playerService.broadcastPlayerPositions();
+
+    sessionService.movePlayers();
+    sessionService.broadcastGameState();
 }, 100);
 
 // Server starten

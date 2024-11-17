@@ -3,8 +3,8 @@ const playerService = require('../services/playerService');
 const sessionService = require('../services/sessionService');
 
 exports.handleMovement = (data, ws) => {
-    const { userId, targetX, targetY, boost } = data;
-    const player = playerService.getPlayer(userId);
+    const { snakeId, targetX, targetY, boost } = data;
+    const player = playerService.getPlayerBySnakeId(snakeId);
 
     if (!player) return;
 
@@ -18,9 +18,24 @@ exports.handleMovement = (data, ws) => {
             if (userSocket && userSocket !== ws) {
                 userSocket.send(JSON.stringify({
                     type: 'update_position',
-                    player: { id: userId, headPosition: player.headPosition, segments: player.segments }
+                    player: { id: snakeId, headPosition: player.headPosition, segments: player.segments }
                 }));
             }
         });
     }
 };
+
+// function handleMovement(data, ws) {
+//     const session = sessionService.getSessionByPlayerSocket(ws);
+//     if (session) {
+//         const player = session.players.find(player => player.ws === ws);
+//         if (player) {
+//             player.targetPosition = { x: data.targetX, y: data.targetY };
+//             player.boost = data.boost || false;
+//         } else {
+//             console.error('Player not found in the session');
+//         }
+//     } else {
+//         console.error('Session not found for the given WebSocket');
+//     }
+// }

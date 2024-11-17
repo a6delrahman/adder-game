@@ -5,8 +5,7 @@ const FIELD_WIDTH = 800;
 const FIELD_HEIGHT = 600;
 const SNAKE_INITIAL_LENGTH = 50;
 
-function addPlayer(ws, sessionId, userId = null) {
-    const snakeId = uuidv4(); // Eindeutige ID für die Schlange
+function addPlayer(ws, sessionId, snakeId, userId = null) {
     // Initialisiere die Spieler-Schlange
     const playerState = {
         snakeId,
@@ -23,7 +22,6 @@ function addPlayer(ws, sessionId, userId = null) {
     };
 
     players.set(ws, playerState);
-    return snakeId; // Rückgabe der SnakeId
 }
 
 // function addPlayer(userId, ws, sessionId) {
@@ -99,11 +97,12 @@ function removePlayer(ws) {
     }
 }
 
-function broadcastPlayerPositions(sessionId, wss) {
+function broadcastPlayerPositions(sessionId) {
     const playersInSession = getPlayersInSession(sessionId);
 
-    const allPlayerData = playersInSession.map(({ headPosition, segments, id }) => ({
-        id,
+    const allPlayerData = playersInSession.map(({ snakeId, headPosition, segments, userId }) => ({
+        snakeId,
+        userId,
         headPosition,
         segments,
     }));

@@ -12,14 +12,33 @@ exports.createSession = async (data, ws) => {
     }
 };
 
-exports.joinSession = async (req, res) => {
-    const { gameType, userId } = req.body;
-    console.log('Received data in joinSession:', req.body);
+exports.joinSession = async (data, ws) => {
+    const gameType = data.gameType;
+    const userId = data.userId;
+    console.log('Received data in joinSession:', data);
     try {
-        const session = await sessionService.createOrFindSession(gameType, userId);
-        res.status(200).json({ sessionId: session.id });
+        const session = await sessionService.createOrFindSession(gameType, ws, userId);
+        ws.send(JSON.stringify({ type: 'session_joined', sessionId: session.id }));
+        return session.id;
     } catch (err) {
         console.error('Error joining session:', err);
-        res.status(500).json({ message: 'Failed to join session' });
+        ws.send(JSON.stringify({ type: 'error', message: 'Failed to join session' }));
     }
 };
+
+exports.getSessions = async (ws) => {
+    try {
+        return await sessionService.getAllSessions();
+    } catch (err) {
+        console.error('Error getting sessions:', err);
+        ws.send(JSON.stringify({ type: 'error', message: 'Failed to get sessions' }));
+    }
+}
+
+exports.handleGameSessionBroadcast = async () => {
+    try {
+        sessionService.handleGameSessionBroadcast();
+    } catch (err) {
+        console.error('Error broadcasting game sessions:', err);
+    }
+}

@@ -15,6 +15,9 @@ import GameSessionPage from "./GameSessionPage.jsx";
 
 function PageWrapper() {
     const { isAuthenticated } = useContext(AuthContext);
+
+
+
     return (
         <div className="app-wrapper">
                 <Routes>
@@ -24,6 +27,7 @@ function PageWrapper() {
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/instructions" element={<InstructionsPage/>}/>
                     {/* Route für die Spielsession-Seite */}
+                    <Route path={"/GameCanvas"} element={<GameSessionPage/>}/>
                     <Route path="/session/:id" element={<GameSessionPage />} />
                     <Route path="/gameSessionPage" element={<GameSessionPage />} />
                     <Route path="/game-over" element={<GameOverPage/>}/>
