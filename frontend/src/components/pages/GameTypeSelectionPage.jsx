@@ -1,32 +1,13 @@
-// components/GameTypeSelectionPage.jsx
-import React, {useEffect, useRef, useState} from 'react';
-import PropTypes from 'prop-types'; // Importiere PropTypes
-import axios from "axios";
-import Snake from "../../classes/Snake.js";
+// GameTypeSelectionPage.jsx
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
-const GameTypeSelectionPage = ({ ws, onSessionJoin }) => {
+const GameTypeSelectionPage = ({ onJoinSession }) => {
     const [gameType, setGameType] = useState('addition');
-    const wsRef = useRef(ws); // Referenz für WebSocket, damit es session-spezifisch ist
 
-    useEffect(() => {
-        wsRef.current = ws;
-    }, [ws]);
-
-    const handleJoinSession = async (selectedGameType) => {
-        const userId = localStorage.getItem('userId');
-        // if (!userId) {
-        //     console.error('User ID is missing');
-        //     return;
-        // }
-
-        try {
-            setGameType(selectedGameType);
-            wsRef.current.send(JSON.stringify({ type: 'join_session', gameType: selectedGameType, userId }));
-            // onSessionJoin(response.data.sessionId);
-            console.log('Sending data to backend:', { gameType: selectedGameType, userId });
-        } catch (err) {
-            console.error('Failed to join session:', err);
-        }
+    const handleJoinSession = (selectedGameType) => {
+        setGameType(selectedGameType);
+        onJoinSession(selectedGameType); // Sende Anfrage über die zentrale Funktion
     };
 
     return (
@@ -47,9 +28,8 @@ const GameTypeSelectionPage = ({ ws, onSessionJoin }) => {
     );
 };
 
-// Füge Prop-Validierung hinzu
 GameTypeSelectionPage.propTypes = {
-    onSessionJoin: PropTypes.func.isRequired, // Erwarte eine Funktion als Prop
+    onJoinSession: PropTypes.func.isRequired,
 };
 
 export default GameTypeSelectionPage;

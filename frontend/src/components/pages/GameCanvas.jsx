@@ -1,134 +1,100 @@
-import React, {useRef, useEffect, useState} from 'react';
-import PropTypes from 'prop-types'; // Importiere PropTypes
-import Snake from '../../classes/Snake'; // Importiere die Snake-Klasse
+import React, { useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
+import { useWebSocket } from '../../context/WebSocketContext';
+import Snake from '../../classes/Snake';
 
-const GameCanvas = ({ snakeId, ws, sessionId }) => {
-    const snakeIdRef = useRef(null); // Speichert die eindeutige ID des Spielers
-    const otherSnakes = useRef([]); // Speichert die Schlangen anderer Spieler
-    const canvasRef = useRef(null); // Referenz auf das Canvas-Element
-    const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
-    const boost = useRef(false); // Speichert den aktuellen Boost-Status
-    const wsRef = useRef(null); // Referenz für WebSocket, damit es session-spezifisch ist
+const GameCanvas = ({ sessionId }) => {
+    const canvasRef = useRef(null); // Canvas-Referenz
+    const playerSnakeRef = useRef(null); // Referenz für die eigene Schlange
+    const otherSnakesRef = useRef({}); // Referenz für andere Schlangen
+    const boost = useRef(false); // Boost-Status
+    const { playerSnake, otherSnakes, sendMessage } = useWebSocket(); // Zugriff auf den zentralisierten Zustand
 
-
-    // Sendet die Zielkoordinaten und Geschwindigkeit an den Server
+    // Sendet die Bewegung an den Server
     const sendMovementData = (mouseX, mouseY) => {
-        if (snakeIdRef && wsRef.current) {
-            const canvas = canvasRef.current;
-            const rect = canvas.getBoundingClientRect();
-            const targetX = mouseX - rect.left;
-            const targetY = mouseY - rect.top;
+        if (!playerSnake || !playerSnake.snakeId) return;
 
-            wsRef.current.send(JSON.stringify({ type: 'change_direction', snakeId: snakeIdRef.current, targetX, targetY, boost: boost.current }));
-        }
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        const targetX = mouseX - rect.left;
+        const targetY = mouseY - rect.top;
+
+        sendMessage({
+            type: 'change_direction',
+            snakeId: playerSnake.snakeId,
+            targetX,
+            targetY,
+            boost: boost.current,
+        });
     };
 
-
-    useEffect(() => {
-        if (!sessionId) return; // Nur fortfahren, wenn sessionId verfügbar ist
-
-        // Initialisiere WebSocket nur, wenn sessionId vorhanden ist
-        // const ws = new WebSocket(`ws://localhost:5000/session/${sessionId}`);
-        wsRef.current = ws;
-        snakeIdRef.current = snakeId;
-
-        // ws.onopen = () => console.log("Connected to WebSocket server for session:", sessionId);
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            console.log('Received message GameCanvas:', data);
-
-            //todo: Implementierung der Logik für die empfangenen Nachrichten
-            if (data.type === 'snake_id') {
-                // Speichert die zugewiesene Snake-ID im State
-                console.log('Received snakeId:', data.snakeId);
-                snakeIdRef.current = data.snakeId;
-            }
-
-            if (data.type === 'session_broadcast' && Array.isArray(data.players)) {
-
-                data.players.forEach(player => {
-                    if (player.snakeId === snakeIdRef.current) {
-                        // Spieler-Schlange erstellen oder aktualisieren
-                        if (!playerSnake.current) {
-                            playerSnake.current = new Snake(player.headPosition.x, player.headPosition.y, {
-                                color: 'green',
-                                scale: 0.8,
-                            });
-                        }
-                        playerSnake.current.updatePosition(player.segments);
-                    } else {
-                        if (!otherSnakes.current[player.snakeId]) {
-                            otherSnakes.current[player.snakeId] = new Snake(
-                                player.headPosition.x,
-                                player.headPosition.y,
-                                { color: 'red', scale: 0.8 }
-                            );
-                        }
-                        otherSnakes.current[player.snakeId].updatePosition(player.segments);
-                    }
-                });
-            }
-
-            if (data.type === 'remove_player') {
-                delete otherSnakes.current[data.snakeId];
-            }
-        };
-
-        // // Trenne WebSocket-Verbindung beim Verlassen der Komponente oder Wechsel der Session
-        // return () => {
-        //     ws.send(JSON.stringify({ type: 'leave_session' }));
-        //     // ws.close();
-        //     // wsRef.current = null;
-        // };
-    }, [sessionId]);
-
-    // Hintergrund und Rendering
-    const drawBackground = () => {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Zeichnet den Hintergrund des Canvas
+    const drawBackground = (ctx) => {
         ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         ctx.strokeStyle = '#ccc';
         const gridSize = 30;
-        for (let x = 0; x < canvas.width; x += gridSize) {
+        for (let x = 0; x < ctx.canvas.width; x += gridSize) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvas.height);
+            ctx.lineTo(x, ctx.canvas.height);
             ctx.stroke();
         }
-        for (let y = 0; y < canvas.height; y += gridSize) {
+        for (let y = 0; y < ctx.canvas.height; y += gridSize) {
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
+            ctx.lineTo(ctx.canvas.width, y);
             ctx.stroke();
         }
+    };
+
+    // Zeichnet alle Schlangen auf das Canvas
+    const renderSnakes = (ctx) => {
+        // Eigene Schlange
+        if (playerSnake) {
+            if (!playerSnakeRef.current) {
+                // Initialisiere eigene Schlange
+                playerSnakeRef.current = new Snake(
+                    playerSnake.headPosition.x,
+                    playerSnake.headPosition.y,
+                    { color: 'green', scale: 0.8 }
+                );
+            }
+            playerSnakeRef.current.updatePosition(playerSnake.segments);
+            playerSnakeRef.current.draw(ctx);
+        }
+
+        // Andere Schlangen
+        Object.entries(otherSnakes).forEach(([snakeId, snakeData]) => {
+            if (!otherSnakesRef.current[snakeId]) {
+                // Initialisiere gegnerische Schlange
+                otherSnakesRef.current[snakeId] = new Snake(
+                    snakeData.headPosition.x,
+                    snakeData.headPosition.y,
+                    { color: 'red', scale: 0.8 }
+                );
+            }
+            otherSnakesRef.current[snakeId].updatePosition(snakeData.segments);
+            otherSnakesRef.current[snakeId].draw(ctx);
+        });
     };
 
     // Haupt-Rendering-Schleife
     const render = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        drawBackground();
 
-        // Zeichne die eigene Schlange (vom Server empfangene Positionen)
-        if (playerSnake.current) {
-            playerSnake.current.draw(ctx);
-        }
+        drawBackground(ctx); // Hintergrund zeichnen
+        renderSnakes(ctx); // Schlangen zeichnen
 
-        Object.values(otherSnakes.current).forEach(snake => {
-            snake.draw(ctx);
-        });
-
-        requestAnimationFrame(render);
+        requestAnimationFrame(render); // Nächsten Frame planen
     };
 
+    // Starte das Rendering und füge Event-Listener hinzu
     useEffect(() => {
-        render();
+        render(); // Rendering starten
 
-        // Event-Listener für Mausbewegung und Mausklicks hinzufügen
         const handleMouseMove = (e) => sendMovementData(e.clientX, e.clientY);
         const handleMouseDown = (e) => {
             if (e.button === 0) {
@@ -143,27 +109,23 @@ const GameCanvas = ({ snakeId, ws, sessionId }) => {
             }
         };
 
-        // Event-Listener für Mausbewegung und Mausklicks hinzufügen
-        canvasRef.current.addEventListener('mousemove', handleMouseMove);
-        canvasRef.current.addEventListener('mousedown', handleMouseDown);
-        canvasRef.current.addEventListener('mouseup', handleMouseUp);
+        const canvas = canvasRef.current;
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mouseup', handleMouseUp);
 
         return () => {
-            const canvas = canvasRef.current;
-            if (!canvas) return;
             canvas.removeEventListener('mousemove', handleMouseMove);
             canvas.removeEventListener('mousedown', handleMouseDown);
             canvas.removeEventListener('mouseup', handleMouseUp);
         };
-
-    }, [snakeIdRef.current, sessionId, ws]);
+    }, [playerSnake]); // Aktualisiere Event-Listener, wenn sich `playerSnake` ändert
 
     return <canvas ref={canvasRef} width={800} height={600} />;
 };
 
-// Füge Prop-Validierung hinzu
 GameCanvas.propTypes = {
-    sessionId: PropTypes.string.isRequired, // Erwarte eine Funktion als Prop
+    sessionId: PropTypes.string.isRequired,
 };
 
 export default GameCanvas;

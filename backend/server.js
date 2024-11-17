@@ -47,7 +47,7 @@ setInterval(() => {
 
     sessionService.movePlayers();
     sessionService.broadcastGameState();
-}, 100);
+}, 50);
 
 // Server starten
 const PORT = process.env.PORT || 5000;
