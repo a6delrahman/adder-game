@@ -5,10 +5,10 @@ export const WebSocketContext = createContext();
 
 export const WebSocketProvider = ({ children }) => {
     const [isReady, setIsReady] = useState(false);
-    const [playerSnake, setPlayerSnake] = useState(null);
-    const [otherSnakes, setOtherSnakes] = useState({});
+    const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
+    const otherSnakes = useRef([]); // Speichert die Schlangen anderer Spieler
     const [isSessionActive, setIsSessionActive] = useState(false);
-    const [sessionId, setSessionId] = useState(null); // Neu: Speichert die aktuelle Session-ID
+    const sessionId = useRef(null); // Neu: Speichert die aktuelle Session-ID
     const ws = useRef(null);
 
     const messageHandlers = useRef({
@@ -19,25 +19,27 @@ export const WebSocketProvider = ({ children }) => {
         },
 
         session_joined: (data) => {
-            console.log('Session joined:', data.sessionId);
-            setSessionId(data.sessionId); // Speichert die Session-ID
+            playerSnake.current = data.playerState; // Speichert die eigene Schlange
+            sessionId.current = data.playerState.sessionId; // Speichert die Session-ID
+            console.log('Session joined:', playerSnake);
         },
 
         snake_id: (data) => {
             console.log('Snake ID received:', data.snakeId);
-            setPlayerSnake({ snakeId: data.snakeId, sessionId }); // Neu: Bezieht sessionId
+            // setPlayerSnake({ snakeId: data.snakeId, sessionId }); // Neu: Bezieht sessionId
         },
 
         session_broadcast: (data) => {
-            const updatedSnakes = {};
-            data.players.forEach((player) => {
-                if (player.snakeId === playerSnake?.snakeId) {
-                    setPlayerSnake(player); // Aktualisiert die eigene Schlange
-                } else {
-                    updatedSnakes[player.snakeId] = player; // Aktualisiert andere Schlangen
-                }
-            });
-            setOtherSnakes(updatedSnakes);
+            // const updatedSnakes = {};
+            // data.players.forEach((player) => {
+            //     if (player.snakeId === playerSnake.current.snakeId) {
+            //         playerSnake.current.headPosition = player.headPosition; // Aktualisiert die eigene Schlange
+            //         playerSnake.current.segments = player.segments;
+            //     } else {
+            //         updatedSnakes[player.snakeId] = player; // Aktualisiert andere Schlangen
+            //     }
+            // });
+            otherSnakes.current = data.players; // Speichert alle Schlangen
         },
 
         remove_player: (data) => {

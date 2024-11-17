@@ -37,10 +37,9 @@ function createOrFindSession(gameType, ws, userId = null) {
             queuedSegments: 0,
         };
         session.players.push(playerState);
-        ws.send(JSON.stringify({ type: 'snake_id', snakeId }));
+        ws.send(JSON.stringify({type: 'session_joined', playerState}));
+        // ws.send(JSON.stringify({ type: 'snake_id', snakeId }));
     }
-
-    return session;
 }
 
 function getPlayersInSession(sessionId) {

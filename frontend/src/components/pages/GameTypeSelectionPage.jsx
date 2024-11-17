@@ -1,13 +1,16 @@
 // GameTypeSelectionPage.jsx
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useWebSocket} from "../../context/WebSocketContext.jsx";
+import {useNavigate} from "react-router-dom";
 
-const GameTypeSelectionPage = ({ onJoinSession }) => {
-    const [gameType, setGameType] = useState('addition');
+const GameTypeSelectionPage = () => {
+    const { sendMessage } = useWebSocket();
+    const navigate = useNavigate();
+
 
     const handleJoinSession = (selectedGameType) => {
-        setGameType(selectedGameType);
-        onJoinSession(selectedGameType); // Sende Anfrage über die zentrale Funktion
+        sendMessage({ type: 'join_session', gameType: selectedGameType });
+        navigate('/gameCanvas');
     };
 
     return (
@@ -26,10 +29,6 @@ const GameTypeSelectionPage = ({ onJoinSession }) => {
             </div>
         </div>
     );
-};
-
-GameTypeSelectionPage.propTypes = {
-    onJoinSession: PropTypes.func.isRequired,
 };
 
 export default GameTypeSelectionPage;

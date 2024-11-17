@@ -22,9 +22,9 @@ const GameSessionPage = () => {
     return (
         <div>
             {sessionId ? (
-                <GameCanvas sessionId={sessionId} snakeId={playerSnake?.snakeId} />
+                <GameCanvas />
             ) : (
-                <GameTypeSelectionPage onJoinSession={joinSession} />
+                <GameTypeSelectionPage />
             )}
         </div>
     );

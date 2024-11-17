@@ -18,7 +18,7 @@ const DashboardPage = () => {
         <div className="dashboard-page">
             <h1>Welcome to Adder Game</h1>
             <div className="dashboard-buttons">
-                <Button text="Play" style="snake-button cobra" onClick={() => handleClick("/gameSessionPage")} />
+                <Button text="Play" style="snake-button cobra" onClick={() => handleClick("/gameTypeSelectionPage")} />
                 <Button text="Instructions" style="snake-button python" onClick={() => handleClick("/instructions")} />
                 <Button text="Leaderboard" style="snake-button rattlesnake" onClick={() => handleClick("/leaderboard")} />
                 {/* Nur anzeigen, wenn der Benutzer angemeldet ist */}

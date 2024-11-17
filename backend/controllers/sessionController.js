@@ -17,9 +17,9 @@ exports.joinSession = async (data, ws) => {
     const userId = data.userId;
     console.log('Received data in joinSession:', data);
     try {
-        const session = await sessionService.createOrFindSession(gameType, ws, userId);
-        ws.send(JSON.stringify({ type: 'session_joined', sessionId: session.id }));
-        return session.id;
+        await sessionService.createOrFindSession(gameType, ws, userId);
+        // ws.send(JSON.stringify({ type: 'session_joined', sessionId: session.id }));
+        // return session.id;
     } catch (err) {
         console.error('Error joining session:', err);
         ws.send(JSON.stringify({ type: 'error', message: 'Failed to join session' }));

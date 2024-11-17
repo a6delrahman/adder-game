@@ -26,10 +26,10 @@ function handleConnection(ws, wss) {
                 sessionController.createSession(data, ws);
                 break;
             case 'join_session': {
-                const session = sessionController.joinSession(data, ws);
+                sessionController.joinSession(data, ws);
                 // playerService.addPlayer(ws, session.id, snakeId, data.userId); // Spieler zur Session hinzufügen
                 // ws.send(JSON.stringify({type: 'snake_id', snakeId: snakeId}));
-                // ws.send(JSON.stringify({type: 'session_joined', sessionId: session.id}));
+                // ws.send(JSON.stringify({type: 'session_joined', payload}));
                 break;
             }
             case 'leave_session':
