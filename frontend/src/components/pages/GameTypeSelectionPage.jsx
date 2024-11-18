@@ -10,7 +10,10 @@ const GameTypeSelectionPage = () => {
 
     const handleJoinSession = (selectedGameType) => {
         sendMessage({ type: 'join_session', gameType: selectedGameType });
-        navigate('/gameCanvas');
+        // navigate('/gameCanvas');
+
+        // Öffne neuen Tab mit der GameCanvas-Seite
+        window.open('/gameCanvas', '_blank'); // `_blank` öffnet einen neuen Tab
     };
 
     return (

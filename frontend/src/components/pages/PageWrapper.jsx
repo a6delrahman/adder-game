@@ -16,6 +16,7 @@ import ProfilePage from "./ProfilePage.jsx";
 import GameSessionPage from "./GameSessionPage.jsx";
 import GameTypeSelectionPage from "./GameTypeSelectionPage.jsx";
 import GameCanvas from "./GameCanvas.jsx";
+// import {WebSocketProvider} from "../../context/WebSocketContext.jsx";
 
 function PageWrapper() {
     const { isAuthenticated } = useContext(AuthContext);

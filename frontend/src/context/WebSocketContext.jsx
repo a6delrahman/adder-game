@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 export const WebSocketContext = createContext();
 
 export const WebSocketProvider = ({ children }) => {
+    console.log('WebSocketProvider rendered'); // Add this line for debugging
+
     const [isReady, setIsReady] = useState(false);
     const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
     const otherSnakes = useRef([]); // Speichert die Schlangen anderer Spieler

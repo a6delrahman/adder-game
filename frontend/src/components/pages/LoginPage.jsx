@@ -45,6 +45,7 @@ const LoginPage = () => {
                 <input
                     type="email"
                     name="email"
+                    autoComplete={'on'}
                     placeholder="E-Mail"
                     value={credentials.email}
                     onChange={handleChange}
@@ -53,6 +54,7 @@ const LoginPage = () => {
                 <input
                     type="password"
                     name="password"
+                    autoComplete={'on'}
                     placeholder="Password"
                     value={credentials.password}
                     onChange={handleChange}
