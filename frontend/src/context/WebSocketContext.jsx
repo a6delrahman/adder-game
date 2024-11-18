@@ -1,10 +1,13 @@
 // WebSocketContext.jsx
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 
-export const WebSocketContext = createContext();
+
+export const WebSocketContext = createContext(null);
 
 export const WebSocketProvider = ({ children }) => {
     console.log('WebSocketProvider rendered'); // Add this line for debugging
+    // console.trace('Render Stack');  // Add this line for debugging
 
     const [isReady, setIsReady] = useState(false);
     const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
@@ -23,6 +26,7 @@ export const WebSocketProvider = ({ children }) => {
         session_joined: (data) => {
             playerSnake.current = data.playerState; // Speichert die eigene Schlange
             sessionId.current = data.playerState.sessionId; // Speichert die Session-ID
+            setIsSessionActive(true);
             console.log('Session joined:', playerSnake);
         },
 
@@ -65,8 +69,11 @@ export const WebSocketProvider = ({ children }) => {
     });
 
     useEffect(() => {
+        // if (ws.current) {
+        //     return;
+        // }
+
         const socket = new WebSocket('ws://localhost:5000/');
-        ws.current = socket;
 
         socket.onopen = () => {
             console.log('WebSocket connected');
@@ -90,11 +97,17 @@ export const WebSocketProvider = ({ children }) => {
             }
         };
 
+        ws.current = socket;
+
+        // return () => {
+        //     if (socket && socket.readyState === WebSocket.OPEN) {
+        //         socket.close();
+        //     }
+        // };
+
         return () => {
-            if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-                ws.current.close();
-            }
-        };
+            socket.close()
+        }
     }, []); // Nur einmal bei der Initialisierung ausführen
 
     const sendMessage = (msg) => {
@@ -119,6 +132,10 @@ export const WebSocketProvider = ({ children }) => {
             {children}
         </WebSocketContext.Provider>
     );
+};
+
+WebSocketProvider.propTypes = {
+    children: PropTypes.node.isRequired,
 };
 
 export const useWebSocket = () => {

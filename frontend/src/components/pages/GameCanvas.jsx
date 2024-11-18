@@ -11,7 +11,7 @@ const GameCanvas = () => {
     const { playerSnake, otherSnakes, sendMessage } = useWebSocket(); // Zugriff auf den zentralisierten Zustand
     // const navigate = useNavigate();
     // const location = useLocation();
-    // const prevLocation = useRef(location.pathname);
+    const prevLocation = useRef(location.pathname);
 
 
     // Sendet die Bewegung an den Server
@@ -126,15 +126,15 @@ const GameCanvas = () => {
     }, [playerSnake]); // Aktualisiere Event-Listener, wenn sich `playerSnake` ändert
 
 
-    // // Detect route changes and send leave_session message
-    // useEffect(() => {
-    //     return () => {
-    //         if (prevLocation.current === '/gameCanvas') {
-    //             sendMessage({ type: 'leave_session' });
-    //         }
-    //         prevLocation.current = location.pathname;
-    //     };
-    // }, []);
+    // Detect route changes and send leave_session message
+    useEffect(() => {
+        return () => {
+            if (prevLocation.current === '/gameCanvas') {
+                sendMessage({ type: 'leave_session' });
+            }
+            prevLocation.current = location.pathname;
+        };
+    }, []);
 
     return <canvas ref={canvasRef} width={800} height={600} />;
 };

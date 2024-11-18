@@ -1,19 +1,13 @@
 // GameTypeSelectionPage.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import { useWebSocket} from "../../context/WebSocketContext.jsx";
-import {useNavigate} from "react-router-dom";
 
 const GameTypeSelectionPage = () => {
     const { sendMessage } = useWebSocket();
-    const navigate = useNavigate();
 
 
     const handleJoinSession = (selectedGameType) => {
         sendMessage({ type: 'join_session', gameType: selectedGameType });
-        // navigate('/gameCanvas');
-
-        // Öffne neuen Tab mit der GameCanvas-Seite
-        window.open('/gameCanvas', '_blank'); // `_blank` öffnet einen neuen Tab
     };
 
     return (

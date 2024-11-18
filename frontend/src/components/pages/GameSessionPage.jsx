@@ -6,22 +6,22 @@ import GameTypeSelectionPage from './GameTypeSelectionPage';
 import GameCanvas from './GameCanvas';
 
 const GameSessionPage = () => {
-    const { sessionId, playerSnake, sendMessage } = useWebSocket();
+    const { isSessionActive, playerSnake, sendMessage } = useWebSocket();
     const navigate = useNavigate();
 
-    const joinSession = (gameType) => {
-        sendMessage({ type: 'join_session', gameType });
-    };
+    // const joinSession = (gameType) => {
+    //     sendMessage({ type: 'join_session', gameType });
+    // };
 
-    React.useEffect(() => {
-        if (sessionId) {
-            navigate(`/session/${sessionId}`);
-        }
-    }, [sessionId, navigate]);
+    // React.useEffect(() => {
+    //     if (isSessionActive) {
+    //         navigate(`/session/${sessionId}`);
+    //     }
+    // }, [sessionId, navigate]);
 
     return (
         <div>
-            {sessionId ? (
+            {isSessionActive ? (
                 <GameCanvas />
             ) : (
                 <GameTypeSelectionPage />
