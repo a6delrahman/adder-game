@@ -368,13 +368,15 @@ function handleFoodCollision(playerState, gameState) {
         const distanceSquared = dx * dx + dy * dy;
 
         if (distanceSquared < 100) { // Abstand < 10px
-            playerState.queuedSegments += 3; // Schlange verlängern
-            playerState.score = (playerState.score || 0) + 10; // Punkte hinzufügen
+            const points = foodPosition.special ? foodPosition.points : 10; // Unterscheide normale vs. Spezialnahrung
+            playerState.queuedSegments += foodPosition.special ? 5 : 3; // Mehr Segmente für Spezialnahrung
+            playerState.score = (playerState.score || 0) + points; // Punkte hinzufügen
             return false; // Nahrung wird entfernt
         }
         return true; // Nahrung bleibt
     });
 }
+
 
 // Kollisionsprüfung
 function checkPlayerCollisions(currentPlayer, players) {
@@ -404,6 +406,14 @@ function checkCollision(pos1, pos2) {
 
 // Kollisionsverarbeitung
 function handlePlayerCollision(playerState) {
+    const sessionId = playerState.sessionId;
+    const gameState = gameStates.get(sessionId);
+
+    if (gameState) {
+        // Spezialnahrung fallen lassen
+        dropSpecialFood(playerState, gameState);
+    }
+
     const ws = getWebSocketBySnakeId(playerState.snakeId);
     if (ws) {
         ws.send(JSON.stringify({ type: 'game_over', score: playerState.score }));
@@ -411,6 +421,7 @@ function handlePlayerCollision(playerState) {
     console.log(`Collision: Player ${playerState.snakeId} eliminated`);
     removePlayerFromSession(ws);
 }
+
 
 
 
@@ -422,11 +433,18 @@ function removePlayerFromSession(ws) {
     const playerInfo = playerIndex.get(ws);
     if (!playerInfo) return;
 
-    const {sessionId, snakeId} = playerInfo;
+    const { sessionId, snakeId } = playerInfo;
     const gameState = gameStates.get(sessionId);
 
     if (gameState) {
-        delete gameState.players[snakeId];
+        const playerState = gameState.players[snakeId];
+        if (playerState) {
+            // Spezialnahrung fallen lassen
+            dropSpecialFood(playerState, gameState);
+
+            // Spieler entfernen
+            delete gameState.players[snakeId];
+        }
 
         // Entferne Session, wenn sie leer ist
         if (Object.keys(gameState.players).length === 0) {
@@ -437,6 +455,7 @@ function removePlayerFromSession(ws) {
 
     playerIndex.delete(ws);
 }
+
 
 
 // Funktion: Zufällige Position im Spielfeld generieren

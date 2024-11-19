@@ -88,15 +88,27 @@ const GameCanvas = () => {
             yPosition += 20;
         });
     };
+
+    // const renderFood = (ctx, food) => {
+    //     ctx.fillStyle = 'orange';
+    //     if (!food.current) return;
+    //     food.current.forEach((foodItem) => {
+    //         ctx.beginPath();
+    //         ctx.arc(foodItem.x, foodItem.y, 5, 0, Math.PI * 2);
+    //         ctx.fill();
+    //     });
+    // };
+
     const renderFood = (ctx, food) => {
-        ctx.fillStyle = 'orange';
         if (!food.current) return;
         food.current.forEach((foodItem) => {
+            ctx.fillStyle = foodItem.special ? 'gold' : 'orange'; // Gold für Spezialnahrung
             ctx.beginPath();
             ctx.arc(foodItem.x, foodItem.y, 5, 0, Math.PI * 2);
             ctx.fill();
         });
     };
+
 
 
 
