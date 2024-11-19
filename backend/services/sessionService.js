@@ -10,12 +10,13 @@ const SNAKE_SPEED = 2;
 const FIELD_WIDTH = 800;
 const FIELD_HEIGHT = 600;
 const SNAKE_INITIAL_LENGTH = 50;
+const BOUNDARY = {width: 800, height: 600};
 
 // Beispiel eines GameStates:
 const initialGameState = {
     players: {}, // { snakeId: { headPosition, targetPosition, segments, queuedSegments, boost } }
     food: [], // Für Nahrung oder andere Objekte
-    boundaries: {width: FIELD_WIDTH, height: FIELD_HEIGHT},
+    boundaries: BOUNDARY,
 };
 
 
@@ -42,17 +43,17 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     }
 
     const snakeId = uuidv4();
-
+    const startPosition = getRandomPosition(BOUNDARY);
     // Spielerstatus erstellen
     const playerState = {
         snakeId,
         sessionId: session.id,
         userId,
-        headPosition: {x: 100, y: 100},
-        targetPosition: {x: 100, y: 100},
+        headPosition: startPosition,
+        targetPosition: getRandomPosition(BOUNDARY),
         boost: false,
         speed: SNAKE_SPEED,
-        segments: Array.from({length: SNAKE_INITIAL_LENGTH}, (_, i) => ({x: 100, y: 100 + i * SNAKE_SPEED})),
+        segments: Array.from({length: SNAKE_INITIAL_LENGTH}, (_, i) => ({x: startPosition.x, y: startPosition.y + i * SNAKE_SPEED})),
         queuedSegments: 0,
         fieldOfView: fieldOfView,
         score: 0,
@@ -88,7 +89,7 @@ function broadcastGameState() {
 
         // Iteriere durch alle Spieler in der Sitzung
         Object.values(players).forEach((player) => {
-            const nearbyPlayers = getNearbyPlayers(player, players, boundaries, player.fieldOfView); // Spieler im Umkreis von 200px
+            const nearbyPlayers = getNearbyPlayers(player, players, player.fieldOfView); // Spieler im Umkreis von 200px
 
             // Erstelle die Nachricht mit relevanten Daten
             const message = JSON.stringify({
@@ -99,9 +100,7 @@ function broadcastGameState() {
                     segments, // Reduziert die Datenmenge
                     score, // Sende den Punktestand mit
                 })),
-                boundaries, // Sende die Spielfeldgrenzen mit
                 food, // Sende die Positionen der Nahrung mit
-
             });
 
             // Abrufen des WebSocket für den aktuellen Spieler
@@ -135,7 +134,7 @@ function getNearbyPlayers(currentPlayer, allPlayers, boundaries, range) {
             const dy = player.headPosition.y - currentPlayer.headPosition.y;
 
             // Prüfe, ob der Spieler innerhalb des Bereichs liegt
-            if (Math.sqrt(dx * dx + dy * dy) <= range) {
+            if (Math.sqrt(dx * dx + dy * dy) <= currentPlayer.fieldOfView) {
                 nearbyPlayers.push(player);
             }
         }
@@ -145,12 +144,14 @@ function getNearbyPlayers(currentPlayer, allPlayers, boundaries, range) {
 }
 
 
+
+
 function broadcastGameStateWithDeltas() {
     gameStates.forEach((gameState, sessionId) => {
         const {players, boundaries} = gameState;
 
         Object.values(players).forEach((player) => {
-            const nearbyPlayers = getNearbyPlayers(player, players, boundaries, 200);
+            const nearbyPlayers = getNearbyPlayers(player, players, boundaries, player.fieldOfView);
 
             // Erstelle das aktuelle Delta
             const currentState = nearbyPlayers.map(({snakeId, headPosition, segments}) => ({
@@ -231,64 +232,186 @@ function handleMovement(data, ws) {
 }
 
 
+// function movePlayers() {
+//     // Iteriere durch alle aktiven Sitzungen
+//     gameStates.forEach((gameState, sessionId) => {
+//         const {players, boundaries, food} = gameState;
+//
+//         // Iteriere durch alle Spieler in der aktuellen Sitzung
+//         Object.values(players).forEach((playerState) => {
+//             // Berechne die Distanz zwischen der aktuellen Kopfposition und der Zielposition
+//             const dx = playerState.targetPosition.x - playerState.headPosition.x;
+//             const dy = playerState.targetPosition.y - playerState.headPosition.y;
+//             const distance = Math.sqrt(dx * dx + dy * dy);
+//
+//             // Bestimme die Bewegungsgeschwindigkeit des Spielers (schneller bei Boost)
+//             const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
+//
+//             // Wenn die Distanz größer als 0 ist (der Spieler bewegt sich):
+//             if (distance > 0) {
+//                 // Aktualisiere die Kopfposition des Spielers
+//                 playerState.headPosition.x += (dx / distance) * speed;
+//                 playerState.headPosition.y += (dy / distance) * speed;
+//
+//                 // Begrenze die Position, damit sie innerhalb des Spielfelds bleibt
+//                 playerState.headPosition.x = Math.max(0, Math.min(playerState.headPosition.x, boundaries.width));
+//                 playerState.headPosition.y = Math.max(0, Math.min(playerState.headPosition.y, boundaries.height));
+//
+//                 // Aktualisiere die Segmente der Schlange: neue Kopfposition hinzufügen
+//                 playerState.segments.unshift({...playerState.headPosition});
+//
+//
+//                 // Prüfen, ob der Spieler Nahrung einsammelt
+//                 gameState.food = gameState.food.filter((foodPosition) => {
+//                     const dx = foodPosition.x - playerState.headPosition.x;
+//                     const dy = foodPosition.y - playerState.headPosition.y;
+//
+//                     if (Math.sqrt(dx * dx + dy * dy) < 10) { // Wenn die Distanz < 10px ist
+//                         playerState.queuedSegments += 3; // Füge Segmente zur Schlange hinzu
+//                         playerState.score = (playerState.score || 0) + 10; // Erhöhe den Punktestand
+//                         return false; // Entferne das Essen
+//                     }
+//
+//                     return true; // Behalte das Essen
+//                 });
+//
+//                 Object.values(players).forEach((otherPlayer) => {
+//                     if (playerState.snakeId !== otherPlayer.snakeId) {
+//                         // Prüfe Kollision mit dem Kopf anderer Spieler
+//                         const dx = playerState.headPosition.x - otherPlayer.headPosition.x;
+//                         const dy = playerState.headPosition.y - otherPlayer.headPosition.y;
+//
+//                         if (Math.sqrt(dx * dx + dy * dy) < 10) {
+//                             // Spieler-Kopf trifft Kopf des anderen Spielers
+//                             const ws = getWebSocketBySnakeId(playerState.snakeId);
+//                             ws.send(JSON.stringify({ type: 'game_over', score: playerState.score }));
+//                             console.log(`Collision: ${playerState.snakeId} hit head of ${otherPlayer.snakeId}`);
+//                             removePlayerFromSession(ws);
+//                         }
+//
+//                         // Prüfe Kollision mit Segmenten der anderen Spieler
+//                         otherPlayer.segments.forEach((segment) => {
+//                             const dx = playerState.headPosition.x - segment.x;
+//                             const dy = playerState.headPosition.y - segment.y;
+//
+//                             if (Math.sqrt(dx * dx + dy * dy) < 10) {
+//                                 // Spieler-Kopf trifft ein Segment des anderen Spielers
+//                                 const ws = getWebSocketBySnakeId(playerState.snakeId);
+//                                 ws.send(JSON.stringify({ type: 'game_over', score: playerState.score }));
+//                                 console.log(`Collision: ${playerState.snakeId} hit ${otherPlayer.snakeId}`);
+//                                 removePlayerFromSession(ws);
+//                             }
+//                         });
+//                     }
+//                 });
+//
+//                 // Entferne überschüssige Segmente, um die maximale Länge einzuhalten
+//                 if (playerState.segments.length > SNAKE_INITIAL_LENGTH + playerState.queuedSegments) {
+//                     playerState.segments.pop();
+//                 }
+//             }
+//         });
+//     });
+// }
+
 function movePlayers() {
-    // Iteriere durch alle aktiven Sitzungen
     gameStates.forEach((gameState, sessionId) => {
-        const {players, boundaries, food} = gameState;
+        const { players, boundaries, food } = gameState;
 
-        // Iteriere durch alle Spieler in der aktuellen Sitzung
+        // Position aller Spieler aktualisieren
         Object.values(players).forEach((playerState) => {
-            // Berechne die Distanz zwischen der aktuellen Kopfposition und der Zielposition
-            const dx = playerState.targetPosition.x - playerState.headPosition.x;
-            const dy = playerState.targetPosition.y - playerState.headPosition.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            // Bestimme die Bewegungsgeschwindigkeit des Spielers (schneller bei Boost)
-            const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
-
-            // Wenn die Distanz größer als 0 ist (der Spieler bewegt sich):
-            if (distance > 0) {
-                // Aktualisiere die Kopfposition des Spielers
-                playerState.headPosition.x += (dx / distance) * speed;
-                playerState.headPosition.y += (dy / distance) * speed;
-
-                // Begrenze die Position, damit sie innerhalb des Spielfelds bleibt
-                playerState.headPosition.x = Math.max(0, Math.min(playerState.headPosition.x, boundaries.width));
-                playerState.headPosition.y = Math.max(0, Math.min(playerState.headPosition.y, boundaries.height));
-
-                // Aktualisiere die Segmente der Schlange: neue Kopfposition hinzufügen
-                playerState.segments.unshift({...playerState.headPosition});
-
-
-                // Prüfen, ob der Spieler Nahrung einsammelt
-                gameState.food = gameState.food.filter((foodPosition) => {
-                    const dx = foodPosition.x - playerState.headPosition.x;
-                    const dy = foodPosition.y - playerState.headPosition.y;
-
-                    if (Math.sqrt(dx * dx + dy * dy) < 10) { // Wenn die Distanz < 10px ist
-                        playerState.queuedSegments += 3; // Füge Segmente zur Schlange hinzu
-                        playerState.score = (playerState.score || 0) + 10; // Erhöhe den Punktestand
-                        return false; // Entferne das Essen
-                    }
-
-                    return true; // Behalte das Essen
-                });
-
-
-
-
-
-                // Entferne überschüssige Segmente, um die maximale Länge einzuhalten
-                if (playerState.segments.length > SNAKE_INITIAL_LENGTH + playerState.queuedSegments) {
-                    playerState.segments.pop();
-                }
-            }
+            movePlayer(playerState, boundaries);
+            handleFoodCollision(playerState, gameState);
         });
 
-
-
+        // Kollisionserkennung
+        Object.values(players).forEach((playerState) => {
+            checkPlayerCollisions(playerState, players);
+        });
     });
 }
+
+// Bewegungslogik auslagern
+function movePlayer(playerState, boundaries) {
+    const dx = playerState.targetPosition.x - playerState.headPosition.x;
+    const dy = playerState.targetPosition.y - playerState.headPosition.y;
+    const distanceSquared = dx * dx + dy * dy;
+
+    // Bewegung durchführen, wenn Distanz > 0
+    if (distanceSquared > 0) {
+        const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
+        const distance = Math.sqrt(distanceSquared);
+
+        playerState.headPosition.x += (dx / distance) * speed;
+        playerState.headPosition.y += (dy / distance) * speed;
+
+        // Begrenze Position auf Spielfeld
+        playerState.headPosition.x = Math.max(0, Math.min(playerState.headPosition.x, boundaries.width));
+        playerState.headPosition.y = Math.max(0, Math.min(playerState.headPosition.y, boundaries.height));
+
+        // Neues Segment anfügen
+        playerState.segments.unshift({ ...playerState.headPosition });
+
+        // Überschüssige Segmente entfernen
+        const maxSegments = SNAKE_INITIAL_LENGTH + playerState.queuedSegments;
+        if (playerState.segments.length > maxSegments) {
+            playerState.segments.pop();
+        }
+    }
+}
+
+// Nahrungskollisionen prüfen
+function handleFoodCollision(playerState, gameState) {
+    gameState.food = gameState.food.filter((foodPosition) => {
+        const dx = foodPosition.x - playerState.headPosition.x;
+        const dy = foodPosition.y - playerState.headPosition.y;
+        const distanceSquared = dx * dx + dy * dy;
+
+        if (distanceSquared < 100) { // Abstand < 10px
+            playerState.queuedSegments += 3; // Schlange verlängern
+            playerState.score = (playerState.score || 0) + 10; // Punkte hinzufügen
+            return false; // Nahrung wird entfernt
+        }
+        return true; // Nahrung bleibt
+    });
+}
+
+// Kollisionsprüfung
+function checkPlayerCollisions(currentPlayer, players) {
+    Object.values(players).forEach((otherPlayer) => {
+        if (currentPlayer.snakeId === otherPlayer.snakeId) return;
+
+        // Prüfe Kopf-zu-Kopf-Kollision
+        if (checkCollision(currentPlayer.headPosition, otherPlayer.headPosition)) {
+            handlePlayerCollision(currentPlayer);
+        }
+
+        // Prüfe Kopf-zu-Segment-Kollision
+        otherPlayer.segments.forEach((segment) => {
+            if (checkCollision(currentPlayer.headPosition, segment)) {
+                handlePlayerCollision(currentPlayer);
+            }
+        });
+    });
+}
+
+// Hilfsfunktion: Kollision erkennen
+function checkCollision(pos1, pos2) {
+    const dx = pos1.x - pos2.x;
+    const dy = pos1.y - pos2.y;
+    return dx * dx + dy * dy < 100; // Abstand < 10px
+}
+
+// Kollisionsverarbeitung
+function handlePlayerCollision(playerState) {
+    const ws = getWebSocketBySnakeId(playerState.snakeId);
+    if (ws) {
+        ws.send(JSON.stringify({ type: 'game_over', score: playerState.score }));
+    }
+    console.log(`Collision: Player ${playerState.snakeId} eliminated`);
+    removePlayerFromSession(ws);
+}
+
 
 
 function leaveSession(ws) {
@@ -330,6 +453,25 @@ function generateFood(gameState, count = 5) {
         gameState.food.push(getRandomPosition(gameState.boundaries));
     }
 }
+
+function dropSpecialFood(playerState, gameState) {
+    const SPECIAL_FOOD_SPREAD = 20; // Maximaler Versatz um die Segmente
+    const SPECIAL_FOOD_POINTS = 50; // Mehr Punkte als normale Nahrung
+
+    playerState.segments.forEach(segment => {
+        const randomOffsetX = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
+        const randomOffsetY = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
+
+        // Spezialnahrung hinzufügen
+        gameState.food.push({
+            x: segment.x + randomOffsetX,
+            y: segment.y + randomOffsetY,
+            special: true, // Markierung als Spezialnahrung
+            points: SPECIAL_FOOD_POINTS, // Punktewert
+        });
+    });
+}
+
 
 
 module.exports = {

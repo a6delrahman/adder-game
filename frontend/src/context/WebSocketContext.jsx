@@ -51,9 +51,14 @@ export const WebSocketProvider = ({ children }) => {
             //     }
             // });
             otherSnakes.current = data.players; // Speichert alle Schlangen
-            boundaries.current = data.boundaries; // Speichert die Spielfeldgrenzen
+            // boundaries.current = data.boundaries; // Speichert die Spielfeldgrenzen
             food.current = data.food; // Speichert die Nahrung
+        },
 
+        game_over: (data) => {
+            setIsSessionActive(false);
+            alert(`Game Over! Your score: ${data.score}`);
+            console.log('Game over:', data);
         },
 
         remove_player: (data) => {
@@ -129,7 +134,7 @@ export const WebSocketProvider = ({ children }) => {
         boundaries,
         food,
         sendMessage,
-    }), [isReady, playerSnake, otherSnakes, isSessionActive, sessionId, boundaries, food, sendMessage]);
+    }), [isReady, playerSnake, otherSnakes, isSessionActive, sessionId, boundaries, food]);
 
     return (
         <WebSocketContext.Provider value={value}>
