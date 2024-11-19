@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { useWebSocket } from '../../context/WebSocketContext';
-import { useNavigate, useLocation } from 'react-router-dom';
 import Snake from '../../classes/Snake';
 
 const GameCanvas = () => {
@@ -16,7 +15,7 @@ const GameCanvas = () => {
 
     // Sendet die Bewegung an den Server
     const sendMovementData = (mouseX, mouseY) => {
-        if (!playerSnake || !playerSnake.current.snakeId) return;
+        if (!playerSnake?.current.snakeId) return;
 
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
@@ -72,7 +71,7 @@ const GameCanvas = () => {
                     otherSnakes.current[player.snakeId] = new Snake(
                         player.headPosition.x,
                         player.headPosition.y,
-                        { color: 'red', scale: 0.8 }
+                        { color: 'red', scale: 0.6, }
                     );
                 }
                 otherSnakes.current[player.snakeId].updatePosition(player.segments);

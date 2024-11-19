@@ -59,7 +59,7 @@ function handleConnection(ws, wss) {
     }
     //send back the client connect
     ws.send(JSON.stringify(payLoad))
-    // console.log(`Client ${clientId} connected`)
+    console.log(`Client ${clientId} connected`)
 
 }
 

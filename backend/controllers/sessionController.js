@@ -4,7 +4,7 @@ const sessionService = require('../services/sessionService');
 exports.createSession = async (data, ws) => {
     const { gameType, userId } = data;
     try {
-        const session = await sessionService.createOrFindSession(gameType, userId);
+        sessionService.createOrFindSession(gameType, userId);
         ws.send(JSON.stringify({ type: 'session_created', sessionId: session.id }));
     } catch (err) {
         console.error('Error creating session:', err);
@@ -17,7 +17,9 @@ exports.joinSession = async (data, ws) => {
     const userId = data.userId;
     console.log('Received data in joinSession:', data);
     try {
-        await sessionService.createOrFindSession(gameType, ws, userId);
+        // sessionService.createOrFindSession(gameType, ws, userId);
+        const session = sessionService.createOrFindSession(gameType, ws, userId);
+        sessionService.addPlayerToSession(session, ws, userId)
         // ws.send(JSON.stringify({ type: 'session_joined', sessionId: session.id }));
         // return session.id;
     } catch (err) {
@@ -37,7 +39,7 @@ exports.getSessions = async (ws) => {
 
 exports.handleGameSessionBroadcast = async () => {
     try {
-        sessionService.handleGameSessionBroadcast();
+        sessionService.broadcastGameState();
     } catch (err) {
         console.error('Error broadcasting game sessions:', err);
     }
