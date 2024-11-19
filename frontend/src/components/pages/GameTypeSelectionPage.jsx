@@ -7,7 +7,7 @@ const GameTypeSelectionPage = () => {
 
 
     const handleJoinSession = (selectedGameType) => {
-        sendMessage({ type: 'join_session', gameType: selectedGameType });
+        sendMessage({ type: 'join_session', gameType: selectedGameType, fieldOfView: 800 });
     };
 
     return (

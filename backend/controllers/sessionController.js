@@ -14,12 +14,13 @@ exports.createSession = async (data, ws) => {
 
 exports.joinSession = async (data, ws) => {
     const gameType = data.gameType;
+    const fieldOfView = data.fieldOfView;
     const userId = data.userId;
     console.log('Received data in joinSession:', data);
     try {
         // sessionService.createOrFindSession(gameType, ws, userId);
         const session = sessionService.createOrFindSession(gameType, ws, userId);
-        sessionService.addPlayerToSession(session, ws, userId)
+        sessionService.addPlayerToSession(session, ws, fieldOfView, userId)
         // ws.send(JSON.stringify({ type: 'session_joined', sessionId: session.id }));
         // return session.id;
     } catch (err) {

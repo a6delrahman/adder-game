@@ -15,6 +15,8 @@ export const WebSocketProvider = ({ children }) => {
     const [isSessionActive, setIsSessionActive] = useState(false);
     const sessionId = useRef(null); // Neu: Speichert die aktuelle Session-ID
     const ws = useRef(null);
+    const boundaries = useRef({ width: 0, height: 0 });
+    const food = useRef([]);
 
     const messageHandlers = useRef({
         default: (data) => console.warn(`Unhandled message type: ${data.type}`, data),
@@ -26,6 +28,9 @@ export const WebSocketProvider = ({ children }) => {
         session_joined: (data) => {
             playerSnake.current = data.playerState; // Speichert die eigene Schlange
             sessionId.current = data.playerState.sessionId; // Speichert die Session-ID
+            food.current = data.initialGameState.food; // Speichert die Nahrung
+            boundaries.current = data.initialGameState.boundaries; // Speichert die Spielfeldgrenzen
+
             setIsSessionActive(true);
             console.log('Session joined:', playerSnake);
         },
@@ -46,6 +51,9 @@ export const WebSocketProvider = ({ children }) => {
             //     }
             // });
             otherSnakes.current = data.players; // Speichert alle Schlangen
+            boundaries.current = data.boundaries; // Speichert die Spielfeldgrenzen
+            food.current = data.food; // Speichert die Nahrung
+
         },
 
         remove_player: (data) => {
@@ -99,12 +107,6 @@ export const WebSocketProvider = ({ children }) => {
 
         ws.current = socket;
 
-        // return () => {
-        //     if (socket && socket.readyState === WebSocket.OPEN) {
-        //         socket.close();
-        //     }
-        // };
-
         return () => {
             socket.close()
         }
@@ -124,8 +126,10 @@ export const WebSocketProvider = ({ children }) => {
         otherSnakes,
         isSessionActive,
         sessionId, // Neu: Session-ID verfügbar machen
+        boundaries,
+        food,
         sendMessage,
-    }), [isReady, playerSnake, otherSnakes, isSessionActive, sessionId]);
+    }), [isReady, playerSnake, otherSnakes, isSessionActive, sessionId, boundaries, food, sendMessage]);
 
     return (
         <WebSocketContext.Provider value={value}>

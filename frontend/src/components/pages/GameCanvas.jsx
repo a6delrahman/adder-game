@@ -5,11 +5,9 @@ import Snake from '../../classes/Snake';
 const GameCanvas = () => {
     const canvasRef = useRef(null); // Canvas-Referenz
     const playerSnakeRef = useRef(null); // Referenz für die eigene Schlange
-    const otherSnakesRef = useRef(null); // Referenz für andere Schlangen
+    const otherSnakesRef = useRef([]); // Referenz für andere Schlangen
     const boost = useRef(false); // Boost-Status
-    const { playerSnake, otherSnakes, sendMessage } = useWebSocket(); // Zugriff auf den zentralisierten Zustand
-    // const navigate = useNavigate();
-    // const location = useLocation();
+    const { playerSnake, otherSnakes, sendMessage, boundaries, food } = useWebSocket(); // Zugriff auf den zentralisierten Zustand
     const prevLocation = useRef(location.pathname);
 
 
@@ -67,18 +65,40 @@ const GameCanvas = () => {
                 playerSnakeRef.current.updatePosition(player.segments);
                 playerSnakeRef.current.draw(ctx);
             } else {
-                if (!otherSnakes.current[player.snakeId]) {
-                    otherSnakes.current[player.snakeId] = new Snake(
+                if (!otherSnakesRef.current[player.snakeId]) {
+                    otherSnakesRef.current[player.snakeId] = new Snake(
                         player.headPosition.x,
                         player.headPosition.y,
                         { color: 'red', scale: 0.6, }
                     );
                 }
-                otherSnakes.current[player.snakeId].updatePosition(player.segments);
-                otherSnakes.current[player.snakeId].draw(ctx);
+                otherSnakesRef.current[player.snakeId].updatePosition(player.segments);
+                otherSnakesRef.current[player.snakeId].draw(ctx);
             }
         });
     };
+
+    const renderScores = (ctx) => {
+        ctx.fillStyle = '#000';
+        ctx.font = '16px Arial';
+        let yPosition = 20;
+
+        otherSnakes.current.forEach((snake) => {
+            ctx.fillText(`Player ${snake.snakeId}: ${snake.score || 0} points`, 10, yPosition);
+            yPosition += 20;
+        });
+    };
+    const renderFood = (ctx, food) => {
+        ctx.fillStyle = 'orange';
+        if (!food.current) return;
+        food.current.forEach((foodItem) => {
+            ctx.beginPath();
+            ctx.arc(foodItem.x, foodItem.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    };
+
+
 
     // Haupt-Rendering-Schleife
     const render = () => {
@@ -87,6 +107,8 @@ const GameCanvas = () => {
 
         drawBackground(ctx); // Hintergrund zeichnen
         renderSnakes(ctx); // Schlangen zeichnen
+        renderScores(ctx); // Punktzahlen zeichnen
+        renderFood(ctx, food); // Essen zeichnen
 
         requestAnimationFrame(render); // Nächsten Frame planen
     };
