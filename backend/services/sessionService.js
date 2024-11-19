@@ -368,14 +368,49 @@ function handleFoodCollision(playerState, gameState) {
         const distanceSquared = dx * dx + dy * dy;
 
         if (distanceSquared < 100) { // Abstand < 10px
-            const points = foodPosition.special ? foodPosition.points : 10; // Unterscheide normale vs. Spezialnahrung
             playerState.queuedSegments += foodPosition.special ? 5 : 3; // Mehr Segmente für Spezialnahrung
-            playerState.score = (playerState.score || 0) + points; // Punkte hinzufügen
+            playerState.score = (playerState.score || 0) + foodPosition.points; // Punkte hinzufügen
             return false; // Nahrung wird entfernt
         }
         return true; // Nahrung bleibt
     });
 }
+
+
+function generateFood(gameState, count = 5, special = false) {
+    const DEFAULT_POINTS = 10;
+    const SPECIAL_POINTS = 50;
+
+    for (let i = 0; i < count; i++) {
+        gameState.food.push({
+            x: Math.random() * gameState.boundaries.width,
+            y: Math.random() * gameState.boundaries.height,
+            special: special, // Kennzeichnung, ob die Nahrung speziell ist
+            points: special ? 9 : Math.random() * 5, // Punktwert basierend auf Typ
+        });
+    }
+}
+
+function dropSpecialFood(playerState, gameState) {
+    const SPECIAL_FOOD_SPREAD = 10;
+
+    playerState.segments.forEach((segment, index) => {
+        // Nur für jedes 5. Segment Nahrung erzeugen
+        if (index % 5 === 0) {
+            const randomOffsetX = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
+            const randomOffsetY = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
+
+            gameState.food.push({
+                x: segment.x + randomOffsetX,
+                y: segment.y + randomOffsetY,
+                special: true, // Markierung als Spezialnahrung
+                points: 9, // Fester Punktwert für Spezialnahrung
+            });
+        }
+    });
+}
+
+
 
 
 // Kollisionsprüfung
@@ -466,30 +501,7 @@ function getRandomPosition(boundaries) {
     };
 }
 
-// Funktion: Nahrung hinzufügen
-function generateFood(gameState, count = 5) {
-    for (let i = 0; i < count; i++) {
-        gameState.food.push(getRandomPosition(gameState.boundaries));
-    }
-}
 
-function dropSpecialFood(playerState, gameState) {
-    const SPECIAL_FOOD_SPREAD = 20; // Maximaler Versatz um die Segmente
-    const SPECIAL_FOOD_POINTS = 50; // Mehr Punkte als normale Nahrung
-
-    playerState.segments.forEach(segment => {
-        const randomOffsetX = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
-        const randomOffsetY = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
-
-        // Spezialnahrung hinzufügen
-        gameState.food.push({
-            x: segment.x + randomOffsetX,
-            y: segment.y + randomOffsetY,
-            special: true, // Markierung als Spezialnahrung
-            points: SPECIAL_FOOD_POINTS, // Punktewert
-        });
-    });
-}
 
 
 
