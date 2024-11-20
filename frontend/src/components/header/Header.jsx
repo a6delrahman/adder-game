@@ -24,9 +24,6 @@ const Header = () => {
                 <Link to="/GameSessionPage">
                     <button>GameSessionPage</button>
                 </Link>
-                <Link to="/play">
-                    <button>Play</button>
-                </Link>
                 <Link to="/game-over">
                     <button>Game Over</button>
                 </Link>

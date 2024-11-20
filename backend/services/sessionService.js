@@ -9,15 +9,23 @@ const lastSentStates = new Map(); // { playerId: { lastState } }
 const SNAKE_SPEED = 2;
 const FIELD_WIDTH = 800;
 const FIELD_HEIGHT = 600;
-const SNAKE_INITIAL_LENGTH = 50;
+const SNAKE_INITIAL_LENGTH = 20;
 const BOUNDARY = {width: 800, height: 600};
 
-// Beispiel eines GameStates:
-const initialGameState = {
-    players: {}, // { snakeId: { headPosition, targetPosition, segments, queuedSegments, boost } }
-    food: [], // Für Nahrung oder andere Objekte
-    boundaries: BOUNDARY,
-};
+// // Beispiel eines GameStates:
+// const initialGameState = {
+//     players: {}, // { snakeId: { headPosition, targetPosition, segments, queuedSegments, boost } }
+//     food: [], // Für Nahrung oder andere Objekte
+//     boundaries: BOUNDARY,
+// };
+
+function createInitialGameState() {
+    return {
+        players: {}, // { snakeId: { headPosition, targetPosition, segments, queuedSegments, boost } }
+        food: [], // Für Nahrung oder andere Objekte
+        boundaries: { width: FIELD_WIDTH, height: FIELD_HEIGHT },
+    };
+}
 
 
 function createOrFindSession(gameType) {
@@ -61,8 +69,8 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
 
     // Spieler zum GameState hinzufügen
     if (!gameStates.has(session.id)) {
-        const initialGameStateWithFood = {...initialGameState};
-        generateFood(initialGameStateWithFood, 10); // Generiere 10 Nahrungspunkte
+        const initialGameStateWithFood = createInitialGameState();
+        generateRandomFood(initialGameStateWithFood, 10); // Generiere 10 Nahrungspunkte
         gameStates.set(session.id, initialGameStateWithFood);
 
         // gameStates.set(session.id, {...initialGameState});
@@ -74,7 +82,7 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     playerIndex.set(ws, {sessionId: session.id, snakeId});
 
     // Nachricht an den Spieler senden
-    ws.send(JSON.stringify({type: 'session_joined', playerState, initialGameState: initialGameState}));
+    ws.send(JSON.stringify({type: 'session_joined', playerState, initialGameState: gameState}));
 }
 
 
@@ -223,7 +231,8 @@ function handleMovement(data, ws) {
         player.targetPosition = {x: data.targetX, y: data.targetY};
     }
 
-    player.boost = !!data.boost; // Stelle sicher, dass boost ein boolescher Wert ist
+    // Boost nur aktivieren, wenn Punkte > 0 sind
+    player.boost = !!(data.boost && player.score > 0);
 
     console.log(`Updated movement for snakeId ${snakeId}:`, {
         targetPosition: player.targetPosition,
@@ -322,6 +331,9 @@ function movePlayers() {
         Object.values(players).forEach((playerState) => {
             movePlayer(playerState, boundaries);
             handleFoodCollision(playerState, gameState);
+
+            // Boost-Punkteabzug verarbeiten
+            handleBoostPenalty(playerState, gameState);
         });
 
         // Kollisionserkennung
@@ -330,6 +342,7 @@ function movePlayers() {
         });
     });
 }
+
 
 // Bewegungslogik auslagern
 function movePlayer(playerState, boundaries) {
@@ -360,55 +373,120 @@ function movePlayer(playerState, boundaries) {
     }
 }
 
+function handleBoostPenalty(playerState, gameState) {
+    if (playerState.boost) {
+        // Score sicherstellen, dass er nicht negativ wird
+        if (playerState.score <= 0) {
+            playerState.score = 0; // Sicherstellen, dass der Score nicht negativ ist
+            playerState.boost = false; // Boost deaktivieren
+            return; // Keine weiteren Aktionen durchführen
+        }
+
+        const POINT_LOSS = 1; // Punkteverlust pro Boost-Zyklus
+        const TAIL_DROP_SPREAD = 20; // Versatz um das Schwanzsegment
+
+        // Punkteabzug
+        playerState.score -= POINT_LOSS;
+
+        // Schwanzsegment ermitteln
+        const tailSegment = playerState.segments[playerState.segments.length - 1];
+
+        // Nahrung fallen lassen
+        if (tailSegment) {
+            const randomOffsetX = Math.random() * TAIL_DROP_SPREAD * 2 - TAIL_DROP_SPREAD;
+            const randomOffsetY = Math.random() * TAIL_DROP_SPREAD * 2 - TAIL_DROP_SPREAD;
+
+            const food = generateFood(
+                { x: tailSegment.x + randomOffsetX, y: tailSegment.y + randomOffsetY },
+                POINT_LOSS
+            );
+            if (food) gameState.food.push(food);
+        }
+    }
+}
+
+
+
 // Nahrungskollisionen prüfen
 function handleFoodCollision(playerState, gameState) {
-    gameState.food = gameState.food.filter((foodPosition) => {
-        const dx = foodPosition.x - playerState.headPosition.x;
-        const dy = foodPosition.y - playerState.headPosition.y;
+    gameState.food = gameState.food.filter((food) => {
+        const dx = food.x - playerState.headPosition.x;
+        const dy = food.y - playerState.headPosition.y;
         const distanceSquared = dx * dx + dy * dy;
 
         if (distanceSquared < 100) { // Abstand < 10px
-            playerState.queuedSegments += foodPosition.special ? 5 : 3; // Mehr Segmente für Spezialnahrung
-            playerState.score = (playerState.score || 0) + foodPosition.points; // Punkte hinzufügen
-            return false; // Nahrung wird entfernt
+            if (food.meta?.result !== undefined) {
+                // // Mathematikaufgabe prüfen
+                // const correctResult = playerState.currentEquation?.result;
+                // if (food.meta.result === correctResult) {
+                //     playerState.score += 50; // Richtig
+                // } else {
+                //     playerState.score = Math.max(0, playerState.score - 50); // Falsch
+                // }
+            } else {
+                // Normale Nahrung
+                playerState.score += food.points;
+                playerState.queuedSegments += food.points;
+            }
+            return false; // Nahrung entfernen
         }
         return true; // Nahrung bleibt
     });
 }
 
 
-function generateFood(gameState, count = 5, special = false) {
-    const DEFAULT_POINTS = 10;
-    const SPECIAL_POINTS = 50;
 
+function generateFood(position, points, meta = null) {
+    if (!position || points < 1 || isNaN(position.x) || isNaN(position.y) || isNaN(points)) return null;
+
+    return {
+        x: position.x,
+        y: position.y,
+        points,
+        meta, // Optional: Zusätzliche Informationen (z. B. Mathematikaufgabe)
+    };
+}
+
+function generateRandomFood(gameState, count = 5) {
     for (let i = 0; i < count; i++) {
-        gameState.food.push({
-            x: Math.random() * gameState.boundaries.width,
-            y: Math.random() * gameState.boundaries.height,
-            special: special, // Kennzeichnung, ob die Nahrung speziell ist
-            points: special ? 9 : Math.random() * 5, // Punktwert basierend auf Typ
-        });
+        const position = getRandomPosition(gameState.boundaries);
+        const points = randomizedNumber(1, 5);
+        const food = generateFood(position, points);
+        if (food) gameState.food.push(food);
     }
+}
+
+function generateMathFood(gameState, equation, result, spread = 50) {
+    const position = {
+        x: Math.random() * gameState.boundaries.width,
+        y: Math.random() * gameState.boundaries.height,
+    };
+    const food = generateFood(position, 50, { equation, result }); // Speichert Aufgabe und Lösung im meta-Feld
+    if (food) gameState.food.push(food);
+}
+
+
+function randomizedNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function dropSpecialFood(playerState, gameState) {
     const SPECIAL_FOOD_SPREAD = 10;
 
     playerState.segments.forEach((segment, index) => {
-        // Nur für jedes 5. Segment Nahrung erzeugen
-        if (index % 5 === 0) {
+        if (index % 9 === 0) {
             const randomOffsetX = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
             const randomOffsetY = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
 
-            gameState.food.push({
-                x: segment.x + randomOffsetX,
-                y: segment.y + randomOffsetY,
-                special: true, // Markierung als Spezialnahrung
-                points: 9, // Fester Punktwert für Spezialnahrung
-            });
+            const food = generateFood(
+                { x: segment.x + randomOffsetX, y: segment.y + randomOffsetY },
+                9 // Fester Punktwert
+            );
+            if (food) gameState.food.push(food);
         }
     });
 }
+
 
 
 
@@ -474,8 +552,8 @@ function removePlayerFromSession(ws) {
     if (gameState) {
         const playerState = gameState.players[snakeId];
         if (playerState) {
-            // Spezialnahrung fallen lassen
-            dropSpecialFood(playerState, gameState);
+            // // Spezialnahrung fallen lassen
+            // dropSpecialFood(playerState, gameState);
 
             // Spieler entfernen
             delete gameState.players[snakeId];
