@@ -86,9 +86,9 @@ const ProfilePage = () => {
             <h1>User Profile</h1>
             {message && <p>{message}</p>}
             {user ? (
-                <div>
+                <div className='profileFields'>
                     {/* Benutzername */}
-                    <div className="profile-field">
+                    <div className="profile-field-username">
                         <label>Username:</label>
                         {editField === 'username' ? (
                             <div>
@@ -97,18 +97,18 @@ const ProfilePage = () => {
                                     value={newUsername}
                                     onChange={(e) => setNewUsername(e.target.value)}
                                 />
-                                <button onClick={handleUsernameUpdate}>Save</button>
+                                <button onClick={handleUsernameUpdate}>Update Username</button>
                             </div>
                         ) : (
                             <div>
                                 <span>{user.username}</span>
-                                <button onClick={() => setEditField('username')}>Update</button>
+                                <button onClick={() => setEditField('username')}>Change</button>
                             </div>
                         )}
                     </div>
 
                     {/* E-Mail */}
-                    <div className="profile-field">
+                    <div className="profile-field-email">
                         <label>Email:</label>
                         {editField === 'email' ? (
                             <div>
@@ -117,23 +117,29 @@ const ProfilePage = () => {
                                     value={newEmail}
                                     onChange={(e) => setNewEmail(e.target.value)}
                                 />
-                                <button onClick={handleEmailUpdate}>Save</button>
+                                <button onClick={handleEmailUpdate}>Change</button>
                             </div>
                         ) : (
                             <div>
                                 <span>{user.email}</span>
-                                <button onClick={() => setEditField('email')}>Update</button>
+                                <button onClick={() => setEditField('email')}>Update Email</button>
                             </div>
                         )}
                     </div>
                     <form onSubmit={handlePasswordChange}>
+                    <label>Change Password:</label>
+                    {editField === 'username' ? (
+
                         <input
                             type="password"
                             placeholder="New password (min 8 characters)"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                        />
+                        />):(<div>
+                            <span>{user.password}</span>
+                            <button onClick={() => setEditField('passworf')}>Update Password</button>
+                        </div>)}
                         <button type="submit">Update Password</button>
                     </form>
 

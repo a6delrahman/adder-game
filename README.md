@@ -1,4 +1,4 @@
-# 🐍 Adder - The Jungle Math Adventure Game
+# 🐍 Adder - The Math Adventure Game
 
 <p>
    <img src="./docs/images/logo.jpg" alt="Adder Logo" width="500"/>
@@ -12,9 +12,33 @@ Welcome to **Adder**, a jungle-inspired multiplayer math game! Get ready to slit
 ### 📋 Prerequisites
 
 Before you start, make sure to have the following installed and set up:
-- **Node.js** (latest version)
-- **MongoDB** (latest version)
+- **Node.js** v.22.9.0
+- **MongoDB** v.8.0.1
+- **Mongo Shell** (https://www.mongodb.com/try/download/shell) `mongosh` 
 - A MongoDB connection string: `mongodb://127.0.0.1:27017/Adder`
+
+### Test DB Connection:
+ - Make sure MongoDB service is running (depending on your OS: check https://www.mongodb.com/docs/manual/administration/install-community/)
+
+ - Start Mongo Shell and test connection
+ 
+ `mongosh "mongodb://127.0.0.1:27017/Adder"`
+ 
+ Output:
+
+ `Current Mongosh Log ID: 673f509282f61dcf8819f72e`
+
+`Connecting to:          mongodb://127.0.0.1:27017/Adder?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.3.2`
+
+`Using MongoDB:          8.0.1`
+
+`Using Mongosh:          2.3.2`
+
+`mongosh 2.3.3 is available for download: https://www.mongodb.com/try/download/shell`
+
+After this you should be able to start querying the MongoDB
+
+<img src='./docs/images/db_conn.png' alt='db_conn_image'>
 
 ### 📦 Install Dependencies
 
@@ -51,16 +75,5 @@ npm install
 | Backend    | 5000 |
 
 ---
-
-## Chat capability
-To test the chat feature simply click on chat and start chatting with a few clients.
-
-<img src="./docs/images/chat_home.png" alt="Chat home" width="500"/>
-
-<img src="./docs/images/chat_front.png" alt="client chat msg" width="500"/>
-
-<img src="./docs/images/chat_backend.png" alt="backend logs" width="500"/>
-
-
 
 ## 🌱 Happy coding, and enjoy slithering through the world of Adder! 🐍🌿

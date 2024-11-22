@@ -2,12 +2,8 @@ import React from 'react';
 import {useNavigate} from 'react-router-dom';
 import Button from "../utility/buttons/Button";
 
-
-
 const HomePage = () => {
     const navigate = useNavigate();
-
-
     function handleClick(page) {
         navigate(page);
     }

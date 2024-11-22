@@ -20,7 +20,7 @@ const GameSessionPage = () => {
     // }, [sessionId, navigate]);
 
     return (
-        <div>
+        <div className='game-session-page'>
             {isSessionActive ? (
                 <GameCanvas />
             ) : (
