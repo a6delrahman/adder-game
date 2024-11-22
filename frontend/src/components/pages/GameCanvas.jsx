@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { useWebSocket } from '../../context/WebSocketContext';
+import React, {useEffect, useRef} from 'react';
+import {useWebSocket} from '../../context/WebSocketContext';
 import Snake from '../../classes/Snake';
 
 const GameCanvas = () => {
@@ -7,8 +7,9 @@ const GameCanvas = () => {
     const playerSnakeRef = useRef(null); // Referenz für die eigene Schlange
     const otherSnakesRef = useRef([]); // Referenz für andere Schlangen
     const boost = useRef(false); // Boost-Status
-    const { playerSnake, otherSnakes, sendMessage, boundaries, food } = useWebSocket(); // Zugriff auf den zentralisierten Zustand
+    const {playerSnake, otherSnakes, sendMessage, boundaries, food} = useWebSocket(); // Zugriff auf den zentralisierten Zustand
     const prevLocation = useRef(location.pathname);
+    const backgroundImageRef = useRef(null); // Referenz für das Hintergrundbild
 
 
     // Sendet die Bewegung an den Server
@@ -29,24 +30,57 @@ const GameCanvas = () => {
         });
     };
 
-    // Zeichnet den Hintergrund des Canvas
-    const drawBackground = (ctx) => {
-        ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    // // Zeichnet den Hintergrund des Canvas
+    // const drawBackground = (ctx) => {
+    //     ctx.fillStyle = '#f0f0f0';
+    //     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    //
+    //     ctx.strokeStyle = '#ccc';
+    //     const gridSize = 30;
+    //     for (let x = 0; x < ctx.canvas.width; x += gridSize) {
+    //         ctx.beginPath();
+    //         ctx.moveTo(x, 0);
+    //         ctx.lineTo(x, ctx.canvas.height);
+    //         ctx.stroke();
+    //     }
+    //     for (let y = 0; y < ctx.canvas.height; y += gridSize) {
+    //         ctx.beginPath();
+    //         ctx.moveTo(0, y);
+    //         ctx.lineTo(ctx.canvas.width, y);
+    //         ctx.stroke();
+    //     }
+    // };
 
-        ctx.strokeStyle = '#ccc';
-        const gridSize = 30;
-        for (let x = 0; x < ctx.canvas.width; x += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, ctx.canvas.height);
-            ctx.stroke();
-        }
-        for (let y = 0; y < ctx.canvas.height; y += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(ctx.canvas.width, y);
-            ctx.stroke();
+    // Bild vorab laden
+    useEffect(() => {
+        const image = new Image();
+        image.src = '/src/assets/cosmos.jpg' // Bild-URL
+        backgroundImageRef.current = image;
+    }, []);
+
+    // Zeichnet das Hintergrundbild
+    const drawBackground = (ctx) => {
+        const image = backgroundImageRef.current;
+        if (image?.complete) { // Prüfen, ob das Bild geladen ist
+            ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        } else {
+            ctx.fillStyle = '#f0f0f0'; // Fallback-Hintergrundfarbe
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            ctx.strokeStyle = '#ccc';
+            const gridSize = 30;
+            for (let x = 0; x < ctx.canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, ctx.canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < ctx.canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(ctx.canvas.width, y);
+                ctx.stroke();
+            }
         }
     };
 
@@ -69,7 +103,7 @@ const GameCanvas = () => {
                     otherSnakesRef.current[player.snakeId] = new Snake(
                         player.headPosition.x,
                         player.headPosition.y,
-                        { color: 'red', scale: 0.6, }
+                        {color: 'red', scale: 0.6,}
                     );
                 }
                 otherSnakesRef.current[player.snakeId].updatePosition(player.segments);
@@ -110,8 +144,6 @@ const GameCanvas = () => {
     };
 
 
-
-
     // Haupt-Rendering-Schleife
     const render = () => {
         const canvas = canvasRef.current;
@@ -124,7 +156,6 @@ const GameCanvas = () => {
 
         requestAnimationFrame(render); // Nächsten Frame planen
     };
-
 
 
     // Starte das Rendering und füge Event-Listener hinzu
@@ -163,13 +194,13 @@ const GameCanvas = () => {
     useEffect(() => {
         return () => {
             if (prevLocation.current === '/gameCanvas') {
-                sendMessage({ type: 'leave_session' });
+                sendMessage({type: 'leave_session'});
             }
             prevLocation.current = location.pathname;
         };
     }, []);
 
-    return <canvas ref={canvasRef} width={800} height={600} />;
+    return <canvas ref={canvasRef} width={800} height={600}/>;
 };
 
 export default GameCanvas;

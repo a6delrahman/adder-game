@@ -29,6 +29,7 @@ function createOrFindSession(gameType) {
         session = {
             id: uuidv4(),
             gameType,
+            maxsize: 100,
         };
         sessions.set(session.id, session);
     }
