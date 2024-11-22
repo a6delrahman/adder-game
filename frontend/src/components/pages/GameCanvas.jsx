@@ -1,3 +1,5 @@
+// GameCanvas.jsx
+
 import React, {useEffect, useRef} from 'react';
 import {useWebSocket} from '../../context/WebSocketContext';
 import Snake from '../../classes/Snake';
@@ -8,7 +10,7 @@ const GameCanvas = () => {
     const otherSnakesRef = useRef([]); // Referenz für andere Schlangen
     const boost = useRef(false); // Boost-Status
     const {playerSnake, otherSnakes, sendMessage, boundaries, food} = useWebSocket(); // Zugriff auf den zentralisierten Zustand
-    const prevLocation = useRef(location.pathname);
+    // const prevLocation = useRef(location.pathname);
     const backgroundImageRef = useRef(null); // Referenz für das Hintergrundbild
 
 
@@ -29,27 +31,6 @@ const GameCanvas = () => {
             boost: boost.current,
         });
     };
-
-    // // Zeichnet den Hintergrund des Canvas
-    // const drawBackground = (ctx) => {
-    //     ctx.fillStyle = '#f0f0f0';
-    //     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    //
-    //     ctx.strokeStyle = '#ccc';
-    //     const gridSize = 30;
-    //     for (let x = 0; x < ctx.canvas.width; x += gridSize) {
-    //         ctx.beginPath();
-    //         ctx.moveTo(x, 0);
-    //         ctx.lineTo(x, ctx.canvas.height);
-    //         ctx.stroke();
-    //     }
-    //     for (let y = 0; y < ctx.canvas.height; y += gridSize) {
-    //         ctx.beginPath();
-    //         ctx.moveTo(0, y);
-    //         ctx.lineTo(ctx.canvas.width, y);
-    //         ctx.stroke();
-    //     }
-    // };
 
     // Bild vorab laden
     useEffect(() => {
@@ -86,7 +67,6 @@ const GameCanvas = () => {
 
     // Zeichnet alle Schlangen auf das Canvas
     const renderSnakes = (ctx) => {
-
         otherSnakes.current.forEach(player => {
             if (player.snakeId === playerSnake.current.snakeId) {
                 // Spieler-Schlange erstellen oder aktualisieren
@@ -123,20 +103,10 @@ const GameCanvas = () => {
         });
     };
 
-    // const renderFood = (ctx, food) => {
-    //     ctx.fillStyle = 'orange';
-    //     if (!food.current) return;
-    //     food.current.forEach((foodItem) => {
-    //         ctx.beginPath();
-    //         ctx.arc(foodItem.x, foodItem.y, 5, 0, Math.PI * 2);
-    //         ctx.fill();
-    //     });
-    // };
-
     const renderFood = (ctx, food) => {
         if (!food.current) return;
         food.current.forEach((foodItem) => {
-            ctx.fillStyle = foodItem.special ? 'gold' : 'orange'; // Gold für Spezialnahrung
+            ctx.fillStyle = 'orange';
             ctx.beginPath();
             ctx.arc(foodItem.x, foodItem.y, 5, 0, Math.PI * 2);
             ctx.fill();
@@ -190,15 +160,15 @@ const GameCanvas = () => {
     }, [playerSnake]); // Aktualisiere Event-Listener, wenn sich `playerSnake` ändert
 
 
-    // Detect route changes and send leave_session message
-    useEffect(() => {
-        return () => {
-            if (prevLocation.current === '/gameCanvas') {
-                sendMessage({type: 'leave_session'});
-            }
-            prevLocation.current = location.pathname;
-        };
-    }, []);
+    // // Detect route changes and send leave_session message
+    // useEffect(() => {
+    //     return () => {
+    //         if (prevLocation.current === '/gameCanvas') {
+    //             sendMessage({type: 'leave_session'});
+    //         }
+    //         prevLocation.current = location.pathname;
+    //     };
+    // }, []);
 
     return <canvas ref={canvasRef} width={800} height={600}/>;
 };

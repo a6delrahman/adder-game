@@ -12,6 +12,10 @@ const FIELD_HEIGHT = 600;
 const SNAKE_INITIAL_LENGTH = 20;
 const BOUNDARY = {width: 800, height: 600};
 
+const ZONE_COUNT = 4; // Gittergröße 4x4
+const MIN_FOOD_PER_ZONE = 2; // Mindestens 2 Nahrungspunkte pro Zone
+const MAX_FOOD_PER_ZONE = 5; // Maximal 5 Nahrungspunkte pro Zone
+
 function createInitialGameState() {
     return {
         players: {}, // { snakeId: { headPosition, targetPosition, segments, queuedSegments, boost } }
@@ -77,6 +81,83 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     // Nachricht an den Spieler senden
     ws.send(JSON.stringify({type: 'session_joined', playerState, initialGameState: gameState}));
 }
+
+
+function calculateZones(boundaries, zoneCount) {
+    const zoneWidth = boundaries.width / zoneCount;
+    const zoneHeight = boundaries.height / zoneCount;
+    const zones = [];
+
+    for (let x = 0; x < zoneCount; x++) {
+        for (let y = 0; y < zoneCount; y++) {
+            zones.push({
+                x: x * zoneWidth,
+                y: y * zoneHeight,
+                width: zoneWidth,
+                height: zoneHeight,
+                foodCount: 0, // Anzahl der Nahrungspunkte in der Zone
+            });
+        }
+    }
+
+    return zones;
+}
+
+
+function updateZoneFoodCounts(gameState, zones) {
+    // Zähler für jede Zone zurücksetzen
+    zones.forEach((zone) => zone.foodCount = 0);
+
+    // Nahrungspunkte jeder Zone zuordnen
+    gameState.food.forEach((food) => {
+        const zone = zones.find(
+            (z) =>
+                food.x >= z.x &&
+                food.x < z.x + z.width &&
+                food.y >= z.y &&
+                food.y < z.y + z.height
+        );
+
+        if (zone) {
+            zone.foodCount++;
+        }
+    });
+}
+
+function replenishFoodInZones(gameState, zones, minFoodPerZone, maxFoodPerZone) {
+    zones.forEach((zone) => {
+        if (zone.foodCount < minFoodPerZone) {
+            const missingFood = maxFoodPerZone - zone.foodCount;
+
+            for (let i = 0; i < missingFood; i++) {
+                const foodPosition = {
+                    x: Math.random() * zone.width + zone.x,
+                    y: Math.random() * zone.height + zone.y,
+                };
+
+                const food = generateFood(foodPosition, randomizedNumber(1, 5));
+                if (food) {
+                    gameState.food.push(food);
+                }
+            }
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function getAllSessions() {
@@ -171,6 +252,13 @@ function broadcastGameStateWithDeltas() {
             if (delta.length > 0 && player.ws.readyState === WebSocket.OPEN) {
                 player.ws.send(JSON.stringify({type: 'game_state_update', updates: delta}));
             }
+
+            // Abrufen des WebSocket für den aktuellen Spieler
+            const ws = getWebSocketBySnakeId(player.snakeId);
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(message); // Nachricht an den Spieler senden
+            }
         });
     });
 }
@@ -238,6 +326,14 @@ function movePlayers() {
     gameStates.forEach((gameState, sessionId) => {
         const { players, boundaries, food } = gameState;
 
+        // Zonen berechnen und Nahrung zählen
+        const zones = calculateZones(boundaries, ZONE_COUNT);
+        updateZoneFoodCounts(gameState, zones);
+
+        // Nahrung in unterversorgten Zonen ergänzen
+        replenishFoodInZones(gameState, zones, MIN_FOOD_PER_ZONE, MAX_FOOD_PER_ZONE);
+
+
         // Position aller Spieler aktualisieren
         Object.values(players).forEach((playerState) => {
             movePlayer(playerState, boundaries);
@@ -253,6 +349,8 @@ function movePlayers() {
         });
     });
 }
+
+
 
 
 // Bewegungslogik auslagern

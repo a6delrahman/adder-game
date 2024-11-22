@@ -1,3 +1,4 @@
+// Snake.js
 class Snake {
     constructor(initialX, initialY, options = {}) {
         this.position = { x: initialX, y: initialY };
