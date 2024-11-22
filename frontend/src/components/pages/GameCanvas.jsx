@@ -67,16 +67,19 @@ const GameCanvas = () => {
 
     // Zeichnet alle Schlangen auf das Canvas
     const renderSnakes = (ctx) => {
+        if (!playerSnake.current) return;
         otherSnakes.current.forEach(player => {
             if (player.snakeId === playerSnake.current.snakeId) {
                 // Spieler-Schlange erstellen oder aktualisieren
                 if (!playerSnakeRef.current) {
                     playerSnakeRef.current = new Snake(player.headPosition.x, player.headPosition.y, {
+                        segments: playerSnake.current.segments,
                         color: 'green',
                         scale: 0.8,
+
                     });
                 }
-                playerSnakeRef.current.updatePosition(player.segments);
+                playerSnakeRef.current.updatePosition(player.headPosition, player.segmentCount);
                 playerSnakeRef.current.draw(ctx);
             } else {
                 if (!otherSnakesRef.current[player.snakeId]) {
@@ -86,11 +89,12 @@ const GameCanvas = () => {
                         {color: 'red', scale: 0.6,}
                     );
                 }
-                otherSnakesRef.current[player.snakeId].updatePosition(player.segments);
+                otherSnakesRef.current[player.snakeId].updatePosition(player.headPosition, player.segmentCount);
                 otherSnakesRef.current[player.snakeId].draw(ctx);
             }
         });
     };
+
 
     const renderScores = (ctx) => {
         ctx.fillStyle = '#000';

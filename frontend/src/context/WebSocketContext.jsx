@@ -1,6 +1,7 @@
 // WebSocketContext.jsx
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import Snake from "../classes/Snake.js";
 
 
 export const WebSocketContext = createContext(null);
@@ -11,7 +12,7 @@ export const WebSocketProvider = ({ children }) => {
 
     const [isReady, setIsReady] = useState(false);
     const playerSnake = useRef(null); // Referenz auf die eigene Snake-Instanz
-    const otherSnakes = useRef([]); // Speichert die Schlangen anderer Spieler
+    const otherSnakes = useRef({}); // Speichert die Schlangen anderer Spieler
     const [isSessionActive, setIsSessionActive] = useState(false);
     const sessionId = useRef(null); // Neu: Speichert die aktuelle Session-ID
     const ws = useRef(null);
@@ -28,6 +29,7 @@ export const WebSocketProvider = ({ children }) => {
         session_joined: (data) => {
             playerSnake.current = data.playerState; // Speichert die eigene Schlange
             sessionId.current = data.playerState.sessionId; // Speichert die Session-ID
+            otherSnakes.current = data.initialGameState.players; // Speichert die Schlangen anderer Spieler
             food.current = data.initialGameState.food; // Speichert die Nahrung
             boundaries.current = data.initialGameState.boundaries; // Speichert die Spielfeldgrenzen
 
@@ -40,16 +42,33 @@ export const WebSocketProvider = ({ children }) => {
             // setPlayerSnake({ snakeId: data.snakeId, sessionId }); // Neu: Bezieht sessionId
         },
 
+        // game_state_update: (data) => {
+        //     const { updates, food: updatedFood } = data;
+        //
+        //     // Spieler aktualisieren basierend auf den Deltas
+        //     updates.forEach((update) => {
+        //         const existingSnake = otherSnakes.current.find((snake) => snake.snakeId === update.snakeId);
+        //
+        //         if (existingSnake) {
+        //             existingSnake.headPosition = update.headPosition;
+        //             existingSnake.segmentCount = update.segmentCount;
+        //             existingSnake.score = update.score;
+        //         } else {
+        //             // Füge eine neue Schlange hinzu, falls sie noch nicht existiert
+        //             otherSnakes.current.push({
+        //                 snakeId: update.snakeId,
+        //                 headPosition: update.headPosition,
+        //                 segmentCount: update.segmentCount,
+        //                 score: update.score,
+        //             });
+        //         }
+        //     });
+        //
+        //     // Nahrung aktualisieren
+        //     food.current = updatedFood;
+        // },
+
         session_broadcast: (data) => {
-            // const updatedSnakes = {};
-            // data.players.forEach((player) => {
-            //     if (player.snakeId === playerSnake.current.snakeId) {
-            //         playerSnake.current.headPosition = player.headPosition; // Aktualisiert die eigene Schlange
-            //         playerSnake.current.segments = player.segments;
-            //     } else {
-            //         updatedSnakes[player.snakeId] = player; // Aktualisiert andere Schlangen
-            //     }
-            // });
             otherSnakes.current = data.players; // Speichert alle Schlangen
             // boundaries.current = data.boundaries; // Speichert die Spielfeldgrenzen
             food.current = data.food; // Speichert die Nahrung

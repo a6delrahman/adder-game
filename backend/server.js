@@ -44,9 +44,11 @@ setInterval(() => {
     // playerService.movePlayers();
     // websocketService.broadcastPlayerPositions(wss, playerService.getPlayers());
     // playerService.broadcastPlayerPositions();
-
-    sessionService.movePlayers();
-    sessionService.broadcastGameState();
+    if (sessionService.isSessionActive()) {
+        sessionService.movePlayers();
+        sessionService.broadcastGameState();
+        // sessionService.broadcastGameStateWithDeltas();
+    }
 }, 50);
 
 // Server starten
