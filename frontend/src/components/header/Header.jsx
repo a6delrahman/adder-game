@@ -34,9 +34,9 @@ const Header = () => {
                     <button>Register</button>
                 </Link>
                 <LoginLogoutButton/>
-                <Link to="/chat">
+                {/* <Link to="/chat">
                     <button>Chat</button>
-                </Link>
+                </Link> */}
             </div>
         </div>
     );

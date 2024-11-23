@@ -12,8 +12,11 @@ const GameOverPage = () => {
         <div className="game-over-page">
             <h1>Game Over</h1>
             <p>Current Score: 345</p>
-            <Button text="Leaderboard" style="button-49" onClick={() => handleClick("/leaderboard")} />
-            <Button text="New Game" style="button-49" onClick={() => handleClick("/play")} />
+            <div className='game-over-buttons'>
+                <Button text="Leaderboard" style="button-49" onClick={() => handleClick("/leaderboard")} />
+                <Button text="New Game" style="button-49" onClick={() => handleClick("/play")} />
+            </div>
+
         </div>
     );
 };
