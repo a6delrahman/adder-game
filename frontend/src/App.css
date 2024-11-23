@@ -5,6 +5,7 @@ body {
   flex-direction: row;
   justify-content: center;
   width: 100%;
+  margin: auto;
   height: auto;
   background-color: #43a047;
   font-family: 'Arial', sans-serif;
@@ -34,6 +35,10 @@ body {
   height: 80vh;
   width: 100%;
   border: #f0f8ff;
+}
+
+.app-wrapper img{
+  padding-top: 40px;
 }
 
 h1 {
@@ -104,7 +109,7 @@ h1 {
   flex-direction: column;
   justify-content: center;
   width: 100%;
-  margin: auto;
+  margin: 0 auto 0 auto;
   padding-left: 10%;
 
 }
@@ -160,17 +165,20 @@ h1 {
   padding-right: 20px;
 }
 
+.profile-field-email {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
 
 .profile-field-email span{
-  padding-right: 30px;
   font-size: 1.2rem;
   font-weight: bold;
-  padding-left: 70px;
+  margin-right: 20px;
 }
 
 .profile-field-username span{
-  padding-right: 50px;
-  padding-left: 30px;
+  width: 100%;
   font-weight: bold;
   font-size: 18px;
   align-items: center;
@@ -206,6 +214,7 @@ h1 {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+  margin-left: 20px;
 
 }
 
@@ -237,6 +246,7 @@ h1 {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+  
 
 }
 
@@ -387,14 +397,58 @@ h1 {
   margin-right: 30px;
 }
 
-.instructions-page{
-  width: 60%;
-  margin: 0 auto 0 auto;
+.instructions-page {
+  font-family: 'Arial', sans-serif;
+  text-align: left;
+  background: linear-gradient(135deg, #1e1e2f, #16f0f7);
+  color: #f5f5f5;
+  padding: 20px;
+  margin: 20px auto 30px auto;
+  max-width: 800px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.instructions-page h1{
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 20px;
+  color: rgb(48, 239, 147);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.instructions-page h2 {
+  display: flex;
+  align-items: center;
+  color: rgb(48, 239, 147);
+  margin-right: 40px;
+  justify-content: center;
+}
+
+.instructions-page p {
+  font-size: 1.25rem;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.instructions-page ol {
+  list-style: decimal inside;
+  margin-left: 20px;
+  line-height: 1.8;
+}
+
+.instructions-page li {
+  margin-bottom: 10px;
+}
+
+.instructions-page b {
+  color: rgb(48, 239, 147);
 }
 
 .header {
   display: none;
 }
+
 .homepage-buttons button{
   padding: 30px;
   margin: 20px;

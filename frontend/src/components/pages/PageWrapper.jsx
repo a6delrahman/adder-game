@@ -29,7 +29,7 @@ function PageWrapper() {
         <img 
             src={logo} 
             alt="App Logo" 
-            style={{ width: "400px", margin: "10px auto", display: "block" }}/>
+            style={{ width: "300px", margin: "10px auto", display: "block" }}/>
 
             <Routes>
                 <Route path="/" element={<HomePage/>}/>
