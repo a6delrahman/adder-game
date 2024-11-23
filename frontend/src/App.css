@@ -395,3 +395,8 @@ h1 {
 .header {
   display: none;
 }
+.homepage-buttons button{
+  padding: 30px;
+  margin: 20px;
+  font-size: 26px;
+}
