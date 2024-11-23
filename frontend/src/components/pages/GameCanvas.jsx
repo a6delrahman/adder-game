@@ -79,7 +79,8 @@ const GameCanvas = () => {
 
                     });
                 }
-                playerSnakeRef.current.updatePosition(player.headPosition, player.segmentCount);
+                // playerSnakeRef.current.updatePosition(player.headPosition, player.segmentCount);
+                playerSnakeRef.current.updatePosition(player.segments);
                 playerSnakeRef.current.draw(ctx);
             } else {
                 if (!otherSnakesRef.current[player.snakeId]) {
@@ -89,7 +90,8 @@ const GameCanvas = () => {
                         {color: 'red', scale: 0.6,}
                     );
                 }
-                otherSnakesRef.current[player.snakeId].updatePosition(player.headPosition, player.segmentCount);
+                // otherSnakesRef.current[player.snakeId].updatePosition(player.headPosition, player.segmentCount);
+                otherSnakesRef.current[player.snakeId].updatePosition(player.segments);
                 otherSnakesRef.current[player.snakeId].draw(ctx);
             }
         });

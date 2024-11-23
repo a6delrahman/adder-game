@@ -85,7 +85,7 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
         // gameStates.set(session.id, {...initialGameState});
     }
     const gameState = gameStates.get(session.id);
-    gameState.players[snakeId] = playerState;
+    gameState.players.push(playerState);
 
     // Spieler-Index aktualisieren
     playerIndex.set(ws, {sessionId: session.id, snakeId});
@@ -183,14 +183,15 @@ function broadcastGameState() {
 
         // Iteriere durch alle Spieler in der Sitzung
         Object.values(players).forEach((player) => {
-            const nearbyPlayers = getNearbyPlayers(player, players, player.fieldOfView); // Spieler im Umkreis von 200px
+            const nearbyPlayers = getNearbyPlayers(player, players); // Spieler im Umkreis von 200px
 
             // Erstelle die Nachricht mit relevanten Daten
             const message = JSON.stringify({
                 type: 'session_broadcast',
-                players: nearbyPlayers.map(({snakeId, headPosition, segments, score}) => ({
+                players: nearbyPlayers.map(({snakeId, headPosition, targetPosition, segments, score}) => ({
                     snakeId,
                     headPosition,
+                    targetPosition,
                     segments, // Reduziert die Datenmenge
                     score, // Sende den Punktestand mit
                 })),
@@ -213,7 +214,7 @@ function broadcastGameStateWithDeltas() {
         const { players, food } = gameState;
 
         Object.values(players).forEach((player) => {
-            const nearbyPlayers = getNearbyPlayers(player, players, player.fieldOfView);
+            const nearbyPlayers = getNearbyPlayers(player, players);
 
             // Erstelle das aktuelle Delta für Spieler in der Nähe
             const currentState = nearbyPlayers.map(({ snakeId, headPosition, segments, score }) => ({
@@ -256,7 +257,7 @@ function getWebSocketBySnakeId(snakeId) {
 }
 
 // Hilfsfunktion: Spieler im Umkreis finden
-function getNearbyPlayers(currentPlayer, allPlayers, boundaries, range) {
+function getNearbyPlayers(currentPlayer, allPlayers) {
     const nearbyPlayers = [];
 
     Object.values(allPlayers).forEach((player) => {
