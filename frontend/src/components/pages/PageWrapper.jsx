@@ -23,14 +23,11 @@ function PageWrapper() {
 
 
     return (
-
         <div className="app-wrapper">
             <img
                 src={logo}
                 alt="App Logo"
                 style={{width: "300px", margin: "10px auto", display: "block"}}/>
-
-
             <Routes>
                 <Route path="/" element={
                     isAuthenticated ? (
