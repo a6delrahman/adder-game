@@ -16,7 +16,6 @@ import GameSessionPage from "./GameSessionPage.jsx";
 import GameTypeSelectionPage from "./GameTypeSelectionPage.jsx";
 import GameCanvas from "./GameCanvas.jsx";
 import logo from "../../assets/logo.png";
-<img src={logo} alt="App Logo" />
 import {WebSocketProvider} from "../../context/WebSocketContext.jsx";
 
 function PageWrapper() {
@@ -24,15 +23,22 @@ function PageWrapper() {
 
 
     return (
-       
+
         <div className="app-wrapper">
-        <img 
-            src={logo} 
-            alt="App Logo" 
-            style={{ width: "300px", margin: "10px auto", display: "block" }}/>
+            <img
+                src={logo}
+                alt="App Logo"
+                style={{width: "300px", margin: "10px auto", display: "block"}}/>
+
 
             <Routes>
-                <Route path="/" element={<HomePage/>}/>
+                <Route path="/" element={
+                    isAuthenticated ? (
+                        <DashboardPage/>
+                    ) : (
+                        <HomePage/>
+                    )
+                }/>
                 <Route path="/register" element={<RegisterPage/>}/>
                 <Route path="/login" element={<LoginPage/>}/>
                 <Route path="/dashboard" element={<DashboardPage/>}/>

@@ -30,8 +30,8 @@ const LoginPage = () => {
             setIsAuthenticated(true);
             setMessage('Login erfolgreich');
 
-            // Weiterleiten zum Dashboard
-            navigate('/dashboard');
+            // // Weiterleiten zum Dashboard
+            navigate('/');
         } catch (err) {
             console.error('Login failed', err);
             setMessage(err.response?.data.msg || 'Fehler bei der Anmeldung');

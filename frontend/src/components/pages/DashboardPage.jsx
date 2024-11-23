@@ -1,7 +1,9 @@
 import React, {useContext} from 'react';
 import {useNavigate} from 'react-router-dom';
 import Button from "../utility/buttons/Button";
+import LoginLogoutButton from "../utility/buttons/LoginLogoutButton.jsx";
 import { AuthContext } from '../../context/AuthContext.jsx';
+
 
 const DashboardPage = () => {
     const { isAuthenticated } = useContext(AuthContext); // Zugriff auf den Authentifizierungsstatus
@@ -25,6 +27,10 @@ const DashboardPage = () => {
                 {isAuthenticated && (
                     <Button text="Profile" style="snake-button rattlesnake" onClick={() => handleClick("/profile")} />
                 )}
+                {isAuthenticated && (
+                    <LoginLogoutButton />
+                )}
+
             </div>
         </div>
     );
