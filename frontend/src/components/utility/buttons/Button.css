@@ -1,17 +1,49 @@
 /* Styles für die Schlangen-Buttons */
-.snake-button {
-    display: inline-block;
-    margin: 20px;
-    padding: 15px 30px;
-    font-size: 1.5em;
-    text-decoration: none;
-    color: #fff;
-    border: 2px solid #fff;
-    /*border-radius: 30px;*/
-    transition: all 0.3s ease;
-    position: relative;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+
+.dashboard-buttons{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    margin: auto;
+
 }
+
+
+.snake-button{
+    --b: 3px; /* border thickness */
+    --s: .45em; /* size of the corner */
+    --color: #b6fb61;;
+  
+    padding: calc(.5em + var(--s)) calc(.9em + var(--s));
+    color: var(--color);
+    margin-top: 35px;
+    --_p: var(--s);
+    background: conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color) 0) var(--_p) var(--_p)/calc(100% - var(--b) - 2 * var(--_p)) calc(100% - var(--b) - 2 * var(--_p));
+    transition: .3s linear, color 0s, background-color 0s;
+    outline: var(--b) solid #0000;
+    outline-offset: .6em;
+    font-size: 20px;
+    font-weight: bold;
+    border: 0;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  
+  }
+  
+  .snake-button:hover,
+  .snake-button:focus-visible {
+      --_p: 0px;
+      outline-color: var(--color);
+      outline-offset: .05em;
+  }
+  .snake-button:active {
+      background: var(--color);
+      color: #fff;
+  }
+
+
 
 .snake-button:hover {
     transform: scale(1.1);
@@ -19,18 +51,18 @@
 }
 
 .snake-button.cobra {
-    background-color: #8e24aa;
-    border-radius: 50%;
+    color: #16f0f7;
+    border-radius: 5%;
 }
 
 .snake-button.python {
-    background-color: #d81b60;
-    border-radius: 25px 50px 50px 25px;
+    color: #16f0f7;
+    border-radius: 5%;
 }
 
 .snake-button.rattlesnake {
-    background-color: #43a047;
-    border-radius: 25px 50px;
+    color: #16f0f7;
+    border-radius: 5%;
 }
 
 

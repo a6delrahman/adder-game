@@ -15,7 +15,7 @@ import ProfilePage from "./ProfilePage.jsx";
 import GameSessionPage from "./GameSessionPage.jsx";
 import GameTypeSelectionPage from "./GameTypeSelectionPage.jsx";
 import GameCanvas from "./GameCanvas.jsx";
-import logo from "../../assets/logo.jpg";
+import logo from "../../assets/logo.png";
 <img src={logo} alt="App Logo" />
 import {WebSocketProvider} from "../../context/WebSocketContext.jsx";
 
@@ -29,7 +29,7 @@ function PageWrapper() {
         <img 
             src={logo} 
             alt="App Logo" 
-            style={{ width: "200px", margin: "10px auto", display: "block" }}/>
+            style={{ width: "400px", margin: "10px auto", display: "block" }}/>
 
             <Routes>
                 <Route path="/" element={<HomePage/>}/>

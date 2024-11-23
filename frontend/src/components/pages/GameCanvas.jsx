@@ -32,7 +32,7 @@ const GameCanvas = () => {
 
     useEffect(() => {
         const image = new Image();
-        image.src = '../src/assets/space.jpg' // Bild-URL
+        image.src = '/src/assets/space.jpg' // Bild-URL
         backgroundImageRef.current = image;
     }, []);
 
@@ -140,8 +140,6 @@ const GameCanvas = () => {
             ctx.fill();
         });
     };
-
-
 
 
     // Haupt-Rendering-Schleife

@@ -97,7 +97,7 @@ const ProfilePage = () => {
                                     value={newUsername}
                                     onChange={(e) => setNewUsername(e.target.value)}
                                 />
-                                <button onClick={handleUsernameUpdate}>Update Username</button>
+                                <button onClick={handleUsernameUpdate}>Apply</button>
                             </div>
                         ) : (
                             <div>
@@ -117,7 +117,7 @@ const ProfilePage = () => {
                                     value={newEmail}
                                     onChange={(e) => setNewEmail(e.target.value)}
                                 />
-                                <button onClick={handleEmailUpdate}>Change</button>
+                                <button onClick={handleEmailUpdate}>Apply</button>
                             </div>
                         ) : (
                             <div>
@@ -126,26 +126,33 @@ const ProfilePage = () => {
                             </div>
                         )}
                     </div>
-                    <form onSubmit={handlePasswordChange}>
-                    <label>Change Password:</label>
-                    {editField === 'username' ? (
 
-                        <input
-                            type="password"
-                            placeholder="New password (min 8 characters)"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />):(<div>
-                            <span>{user.password}</span>
-                            <button onClick={() => setEditField('passworf')}>Update Password</button>
-                        </div>)}
-                        <button type="submit">Update Password</button>
-                    </form>
-
+                    {/* E-Mail */}
+                    <form className='profile-password' onSubmit={handlePasswordChange}>
+                        
+                    {editField === 'password' ? (
+                        <div>
+                            <input
+                                type="password"
+                                placeholder="New password (min 8 characters)"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required/>
+                            <button onClick={handlePasswordChange}>Apply</button>
+                        </div>
+                       ) : (
+                            <div>
+                                <span>{user.password}</span>
+                                <button onClick={() => setEditField('password')}>Change Password</button>
+                            </div>
+                        )}
                     <button onClick={handleDeleteAccount} className="delete-account-btn">
                         Delete Account
                     </button>
+
+                    </form>
+
+
                 </div>
             ) : (
                 <p>Loading user data...</p>
