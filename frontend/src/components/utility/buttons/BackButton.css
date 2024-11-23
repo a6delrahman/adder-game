@@ -12,13 +12,13 @@
     outline: var(--b) solid #0000;
     outline-offset: .6em;
     font-size: 16px;
-    text-underline: none;
-
+    cursor: pointer;
     border: 0;
-
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
+    margin-left: 30px;
+    
 }
 
 .back-button:hover,

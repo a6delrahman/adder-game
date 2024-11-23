@@ -16,7 +16,7 @@ const DashboardPage = () => {
 
     return (
         <div className="dashboard-page">
-            <h1>Welcome to Adder Game</h1>
+     
             <div className="dashboard-buttons">
                 <Button text="Play" style="snake-button cobra" onClick={() => handleClick("/gameSessionPage")} />
                 <Button text="Instructions" style="snake-button python" onClick={() => handleClick("/instructions")} />

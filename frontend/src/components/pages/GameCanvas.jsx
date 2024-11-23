@@ -9,6 +9,7 @@ const GameCanvas = () => {
     const boost = useRef(false); // Boost-Status
     const { playerSnake, otherSnakes, sendMessage, boundaries, food } = useWebSocket(); // Zugriff auf den zentralisierten Zustand
     const prevLocation = useRef(location.pathname);
+    const backgroundImageRef = useRef(null); // Referenz für das Hintergrundbild
 
 
     // Sendet die Bewegung an den Server
@@ -29,26 +30,57 @@ const GameCanvas = () => {
         });
     };
 
-    // Zeichnet den Hintergrund des Canvas
-    const drawBackground = (ctx) => {
-        ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    useEffect(() => {
+        const image = new Image();
+        image.src = '/src/assets/space.jpg' // Bild-URL
+        backgroundImageRef.current = image;
+    }, []);
 
-        ctx.strokeStyle = '#ccc';
-        const gridSize = 30;
-        for (let x = 0; x < ctx.canvas.width; x += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, ctx.canvas.height);
-            ctx.stroke();
-        }
-        for (let y = 0; y < ctx.canvas.height; y += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(ctx.canvas.width, y);
-            ctx.stroke();
+    // Zeichnet das Hintergrundbild
+    const drawBackground = (ctx) => {
+        const image = backgroundImageRef.current;
+        if (image?.complete) { // Prüfen, ob das Bild geladen ist
+            ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        } else {
+            ctx.fillStyle = '#f0f0f0'; // Fallback-Hintergrundfarbe
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            ctx.strokeStyle = '#ccc';
+            const gridSize = 30;
+            for (let x = 0; x < ctx.canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, ctx.canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < ctx.canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(ctx.canvas.width, y);
+                ctx.stroke();
+            }
         }
     };
+
+    // Zeichnet den Hintergrund des Canvas
+    // const drawBackground = (ctx) => {
+
+    //     ctx.fillStyle = '#4a4848';
+    //     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+
+    //     const gridSize = 30;
+    //     for (let x = 0; x < ctx.canvas.width; x += gridSize) {
+    //         ctx.beginPath();
+    //         ctx.moveTo(x, 0);
+    //         ctx.lineTo(x, ctx.canvas.height);
+    //     }
+    //     for (let y = 0; y < ctx.canvas.height; y += gridSize) {
+    //         ctx.beginPath();
+    //         ctx.moveTo(0, y);
+    //         ctx.lineTo(ctx.canvas.width, y);
+    //     }
+    // };
 
     // Zeichnet alle Schlangen auf das Canvas
     const renderSnakes = (ctx) => {
@@ -79,7 +111,7 @@ const GameCanvas = () => {
     };
 
     const renderScores = (ctx) => {
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = '#fff';
         ctx.font = '16px Arial';
         let yPosition = 20;
 
@@ -110,13 +142,10 @@ const GameCanvas = () => {
     };
 
 
-
-
     // Haupt-Rendering-Schleife
     const render = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-
         drawBackground(ctx); // Hintergrund zeichnen
         renderSnakes(ctx); // Schlangen zeichnen
         renderScores(ctx); // Punktzahlen zeichnen
@@ -124,8 +153,6 @@ const GameCanvas = () => {
 
         requestAnimationFrame(render); // Nächsten Frame planen
     };
-
-
 
     // Starte das Rendering und füge Event-Listener hinzu
     useEffect(() => {

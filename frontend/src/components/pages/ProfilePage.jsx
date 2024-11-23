@@ -86,9 +86,9 @@ const ProfilePage = () => {
             <h1>User Profile</h1>
             {message && <p>{message}</p>}
             {user ? (
-                <div>
+                <div className='profileFields'>
                     {/* Benutzername */}
-                    <div className="profile-field">
+                    <div className="profile-field-username">
                         <label>Username:</label>
                         {editField === 'username' ? (
                             <div>
@@ -97,18 +97,18 @@ const ProfilePage = () => {
                                     value={newUsername}
                                     onChange={(e) => setNewUsername(e.target.value)}
                                 />
-                                <button onClick={handleUsernameUpdate}>Save</button>
+                                <button onClick={handleUsernameUpdate}>Apply</button>
                             </div>
                         ) : (
                             <div>
                                 <span>{user.username}</span>
-                                <button onClick={() => setEditField('username')}>Update</button>
+                                <button onClick={() => setEditField('username')}>Change</button>
                             </div>
                         )}
                     </div>
 
                     {/* E-Mail */}
-                    <div className="profile-field">
+                    <div className="profile-field-email">
                         <label>Email:</label>
                         {editField === 'email' ? (
                             <div>
@@ -117,29 +117,42 @@ const ProfilePage = () => {
                                     value={newEmail}
                                     onChange={(e) => setNewEmail(e.target.value)}
                                 />
-                                <button onClick={handleEmailUpdate}>Save</button>
+                                <button onClick={handleEmailUpdate}>Apply</button>
                             </div>
                         ) : (
                             <div>
                                 <span>{user.email}</span>
-                                <button onClick={() => setEditField('email')}>Update</button>
+                                <button onClick={() => setEditField('email')}>Update Email</button>
                             </div>
                         )}
                     </div>
-                    <form onSubmit={handlePasswordChange}>
-                        <input
-                            type="password"
-                            placeholder="New password (min 8 characters)"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                        <button type="submit">Update Password</button>
-                    </form>
 
+                    {/* E-Mail */}
+                    <form className='profile-password' onSubmit={handlePasswordChange}>
+                        
+                    {editField === 'password' ? (
+                        <div>
+                            <input
+                                type="password"
+                                placeholder="New password (min 8 characters)"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required/>
+                            <button onClick={handlePasswordChange}>Apply</button>
+                        </div>
+                       ) : (
+                            <div>
+                                <span>{user.password}</span>
+                                <button onClick={() => setEditField('password')}>Change Password</button>
+                            </div>
+                        )}
                     <button onClick={handleDeleteAccount} className="delete-account-btn">
                         Delete Account
                     </button>
+
+                    </form>
+
+
                 </div>
             ) : (
                 <p>Loading user data...</p>

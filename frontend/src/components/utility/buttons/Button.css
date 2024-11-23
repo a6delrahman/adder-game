@@ -1,17 +1,49 @@
 /* Styles für die Schlangen-Buttons */
-.snake-button {
-    display: inline-block;
-    margin: 20px;
-    padding: 15px 30px;
-    font-size: 1.5em;
-    text-decoration: none;
-    color: #fff;
-    border: 2px solid #fff;
-    /*border-radius: 30px;*/
-    transition: all 0.3s ease;
-    position: relative;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+
+.dashboard-buttons{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    margin: auto;
+
 }
+
+
+.snake-button{
+    --b: 3px; /* border thickness */
+    --s: .45em; /* size of the corner */
+    --color: #b6fb61;;
+    width: 200px;
+    padding: calc(.5em + var(--s)) calc(.9em + var(--s));
+    color: var(--color);
+    margin-top: 35px;
+    --_p: var(--s);
+    background: conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color) 0) var(--_p) var(--_p)/calc(100% - var(--b) - 2 * var(--_p)) calc(100% - var(--b) - 2 * var(--_p));
+    transition: .3s linear, color 0s, background-color 0s;
+    outline: var(--b) solid #0000;
+    outline-offset: .6em;
+    font-size: 18px;
+    font-weight: bold;
+    border: 0;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  
+  }
+  
+  .snake-button:hover,
+  .snake-button:focus-visible {
+      --_p: 0px;
+      outline-color: var(--color);
+      outline-offset: .05em;
+  }
+  .snake-button:active {
+      background: var(--color);
+      color: #fff;
+  }
+
+
 
 .snake-button:hover {
     transform: scale(1.1);
@@ -19,18 +51,18 @@
 }
 
 .snake-button.cobra {
-    background-color: #8e24aa;
-    border-radius: 50%;
+    color: #16f0f7;
+    border-radius: 5%;
 }
 
 .snake-button.python {
-    background-color: #d81b60;
-    border-radius: 25px 50px 50px 25px;
+    color: #16f0f7;
+    border-radius: 5%;
 }
 
 .snake-button.rattlesnake {
-    background-color: #43a047;
-    border-radius: 25px 50px;
+    color: #16f0f7;
+    border-radius: 5%;
 }
 
 
@@ -321,74 +353,67 @@
 
 /*button-51*/
 .button-51 {
-    background-color: transparent;
-    border: 1px solid #266DB6;
-    box-sizing: border-box;
-    color: #00132C;
-    font-family: "Avenir Next LT W01 Bold", sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 24px;
-    padding: 16px 23px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 13px 20px 13px;
+    outline: 0;
+    border: 1px solid rgb(255, 255, 255);
+    cursor: pointer;
     position: relative;
-    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.42);
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
+    transform: rotate(-1deg);
+    margin-bottom: 30px;
 }
 
-.button-51:hover,
-.button-51:active {
-    outline: 0;
-}
-
-.button-51:hover {
-    background-color: transparent;
-    cursor: pointer;
-}
-
-.button-51:before {
-    background-color: #D5EDF6;
+.button-51:after {
     content: "";
-    height: calc(100% + 3px);
-    position: absolute;
-    right: -7px;
-    top: -9px;
-    transition: background-color 300ms ease-in;
+    background-color: #20d138;
     width: 100%;
     z-index: -1;
+    position: absolute;
+    height: 100%;
+    top: 7px;
+    left: 7px;
+    transition: 0.2s;
 }
 
-.button-51:hover:before {
-    background-color: #6DCFF6;
+.button-51:hover:after {
+    top: 0px;
+    left: 0px;
 }
 
 @media (min-width: 768px) {
     .button-51 {
-        padding: 16px 32px;
+        padding: 13px 50px 13px;
     }
+
 }
 
 
 /*button-52*/
 .button-52 {
-    font-size: 16px;
-    font-weight: 200;
+    font-size: 20px;
+    font-weight: 800;
     letter-spacing: 1px;
     padding: 13px 20px 13px;
     outline: 0;
-    border: 1px solid black;
+    border: 1px solid rgb(255, 255, 255);
     cursor: pointer;
     position: relative;
-    background-color: rgba(0, 0, 0, 0);
+    background-color: rgba(255, 255, 255, 0.42);
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
+    transform: rotate(1deg);
 }
 
 .button-52:after {
     content: "";
-    background-color: #ffe54c;
+    background-color: #ffff4c;
     width: 100%;
     z-index: -1;
     position: absolute;
@@ -411,53 +436,41 @@
 
 /*button-53*/
 .button-53 {
-    background-color: #3DD1E7;
-    border: 0 solid #E5E7EB;
-    box-sizing: border-box;
-    color: #000000;
-    display: flex;
-    font-family: ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    font-size: 1rem;
-    font-weight: 700;
-    justify-content: center;
-    line-height: 1.75rem;
-    padding: .75rem 1.65rem;
-    position: relative;
-    text-align: center;
-    text-decoration: none #000000 solid;
-    text-decoration-thickness: auto;
-    width: 100%;
-    max-width: 460px;
-    position: relative;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 13px 20px 13px;
+    outline: 0;
+    border: 1px solid rgb(255, 255, 255);
     cursor: pointer;
-    transform: rotate(-2deg);
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.42);
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-}
-
-.button-53:focus {
-    outline: 0;
+    transform: rotate(-1deg);
+    margin-top: 30px;
 }
 
 .button-53:after {
-    content: '';
+    content: "";
+    background-color: #5cfffa;
+    width: 100%;
+    z-index: -1;
     position: absolute;
-    border: 1px solid #000000;
-    bottom: 4px;
-    left: 4px;
-    width: calc(100% - 1px);
-    height: calc(100% - 1px);
+    height: 100%;
+    top: 7px;
+    left: 7px;
+    transition: 0.2s;
 }
 
 .button-53:hover:after {
-    bottom: 2px;
-    left: 2px;
+    top: 0px;
+    left: 0px;
 }
 
 @media (min-width: 768px) {
-    .button-53 {
-        padding: .75rem 3rem;
-        font-size: 1.25rem;
+    .button-52 {
+        padding: 13px 50px 13px;
     }
 }
