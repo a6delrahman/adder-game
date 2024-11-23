@@ -41,15 +41,6 @@ export const WebSocketProvider = ({ children }) => {
         },
 
         session_broadcast: (data) => {
-            // const updatedSnakes = {};
-            // data.players.forEach((player) => {
-            //     if (player.snakeId === playerSnake.current.snakeId) {
-            //         playerSnake.current.headPosition = player.headPosition; // Aktualisiert die eigene Schlange
-            //         playerSnake.current.segments = player.segments;
-            //     } else {
-            //         updatedSnakes[player.snakeId] = player; // Aktualisiert andere Schlangen
-            //     }
-            // });
             otherSnakes.current = data.players; // Speichert alle Schlangen
             // boundaries.current = data.boundaries; // Speichert die Spielfeldgrenzen
             food.current = data.food; // Speichert die Nahrung

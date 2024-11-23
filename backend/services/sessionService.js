@@ -16,6 +16,16 @@ const ZONE_COUNT = 4; // Gittergröße 4x4
 const MIN_FOOD_PER_ZONE = 2; // Mindestens 2 Nahrungspunkte pro Zone
 const MAX_FOOD_PER_ZONE = 5; // Maximal 5 Nahrungspunkte pro Zone
 
+let sessionActive = false;
+
+const isSessionActive = () => {
+    return sessionActive;
+}
+
+const setActiveSessions = (value) => {
+    sessionActive = value;
+}
+
 function createInitialGameState() {
     return {
         players: {}, // { snakeId: { headPosition, targetPosition, segments, queuedSegments, boost } }
@@ -36,6 +46,7 @@ function createOrFindSession(gameType) {
             maxsize: 100,
         };
         sessions.set(session.id, session);
+        setActiveSessions(true);
     }
 
     return session;
@@ -205,7 +216,7 @@ function getWebSocketBySnakeId(snakeId) {
 }
 
 // Hilfsfunktion: Spieler im Umkreis finden
-function getNearbyPlayers(currentPlayer, allPlayers, boundaries, range) {
+function getNearbyPlayers(currentPlayer, allPlayers) {
     const nearbyPlayers = [];
 
     Object.values(allPlayers).forEach((player) => {
@@ -350,37 +361,36 @@ function movePlayers() {
     });
 }
 
-
-
-
-// Bewegungslogik auslagern
 function movePlayer(playerState, boundaries) {
     const dx = playerState.targetPosition.x - playerState.headPosition.x;
     const dy = playerState.targetPosition.y - playerState.headPosition.y;
-    const distanceSquared = dx * dx + dy * dy;
 
-    // Bewegung durchführen, wenn Distanz > 0
-    if (distanceSquared > 0) {
-        const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
-        const distance = Math.sqrt(distanceSquared);
+    // Richtung normalisieren
+    const magnitude = Math.sqrt(dx * dx + dy * dy);
+    const directionX = magnitude > 0 ? dx / magnitude : 0;
+    const directionY = magnitude > 0 ? dy / magnitude : 0;
 
-        playerState.headPosition.x += (dx / distance) * speed;
-        playerState.headPosition.y += (dy / distance) * speed;
+    // Geschwindigkeit berücksichtigen
+    const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
 
-        // Begrenze Position auf Spielfeld
-        playerState.headPosition.x = Math.max(0, Math.min(playerState.headPosition.x, boundaries.width));
-        playerState.headPosition.y = Math.max(0, Math.min(playerState.headPosition.y, boundaries.height));
+    // Kopfposition aktualisieren
+    playerState.headPosition.x += directionX * speed;
+    playerState.headPosition.y += directionY * speed;
 
-        // Neues Segment anfügen
-        playerState.segments.unshift({ ...playerState.headPosition });
+    // Begrenze Position auf Spielfeld
+    playerState.headPosition.x = Math.max(0, Math.min(playerState.headPosition.x, boundaries.width));
+    playerState.headPosition.y = Math.max(0, Math.min(playerState.headPosition.y, boundaries.height));
 
-        // Überschüssige Segmente entfernen
-        const maxSegments = SNAKE_INITIAL_LENGTH + playerState.queuedSegments;
-        if (playerState.segments.length > maxSegments) {
-            playerState.segments.pop();
-        }
+    // Neues Segment anfügen
+    playerState.segments.unshift({ ...playerState.headPosition });
+
+    // Überschüssige Segmente entfernen
+    const maxSegments = SNAKE_INITIAL_LENGTH + playerState.queuedSegments;
+    if (playerState.segments.length > maxSegments) {
+        playerState.segments.pop();
     }
 }
+
 
 function handleBoostPenalty(playerState, gameState) {
     if (playerState.boost) {
@@ -573,6 +583,9 @@ function removePlayerFromSession(ws) {
         if (Object.keys(gameState.players).length === 0) {
             gameStates.delete(sessionId);
             sessions.delete(sessionId);
+            if (gameStates.size === 0) {
+                setActiveSessions(false);
+            }
         }
     }
 
@@ -594,6 +607,7 @@ function getRandomPosition(boundaries) {
 
 
 module.exports = {
+    isSessionActive,
     createOrFindSession,
     addPlayerToSession,
     getAllSessions,
@@ -601,5 +615,7 @@ module.exports = {
     handleMovement,
     movePlayers,
     leaveSession,
-    removePlayerFromSession
+    removePlayerFromSession,
+    broadcastGameStateWithDeltas,
+
 };
