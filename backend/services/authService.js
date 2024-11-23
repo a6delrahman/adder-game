@@ -25,7 +25,7 @@ function generateAccessToken(user) {
 }
 
 function generateRefreshToken(user) {
-    const refreshToken = jwt.sign(user, REFRESH_SECRET_KEY);
+    const refreshToken = jwt.sign(user, REFRESH_SECRET_KEY, {expiresIn: '7d'});
     refreshTokens.push(refreshToken); // Speichere den Refresh Token
     return refreshToken;
 }

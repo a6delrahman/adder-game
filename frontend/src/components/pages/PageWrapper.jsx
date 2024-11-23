@@ -38,11 +38,7 @@ function PageWrapper() {
                 <Route path="/dashboard" element={<DashboardPage/>}/>
                 <Route path="/instructions" element={<InstructionsPage/>}/>
                 {/* Route für die Spielsession-Seite */}
-                <Route path={"/GameCanvas"} element={
-                    // <WebSocketProvider>
-                        <GameCanvas/>
-                    // </WebSocketProvider>
-                }/>
+                <Route path={"/GameCanvas"} element={<GameCanvas/>}/>
                 <Route path={"/gameTypeSelectionPage"} element={<GameTypeSelectionPage/>}/>
                 <Route path="/session/:id" element={<GameSessionPage/>}/>
                 <Route path="/gameSessionPage" element={
