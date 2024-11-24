@@ -72,8 +72,11 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
         segments: Array.from({length: SNAKE_INITIAL_LENGTH}, (_, i) => ({x: startPosition.x, y: startPosition.y + i * SNAKE_SPEED})),
         queuedSegments: 0,
         fieldOfView: fieldOfView,
+        currentEquation: null, // Platzhalter für die aktuelle Aufgabe
         score: 0,
     };
+    assignNewMathEquation(playerState); // Neue Mathematikaufgabe zuweisen
+
 
     // Spieler zum GameState hinzufügen
     if (!gameStates.has(session.id)) {
@@ -85,6 +88,7 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     }
     const gameState = gameStates.get(session.id);
     gameState.players[snakeId] = playerState;
+    gameState.food.push(generateMathFoodOptions(gameState.boundaries, playerState)); // Neue Optionen generieren
 
     // Spieler-Index aktualisieren
     playerIndex.set(ws, {sessionId: session.id, snakeId});
@@ -182,15 +186,16 @@ function broadcastGameState() {
 
         // Iteriere durch alle Spieler in der Sitzung
         Object.values(players).forEach((player) => {
-            const nearbyPlayers = getNearbyPlayers(player, players, player.fieldOfView); // Spieler im Umkreis von 200px
+            const nearbyPlayers = getNearbyPlayers(player, players); // Spieler im Umkreis von 200px
 
             // Erstelle die Nachricht mit relevanten Daten
             const message = JSON.stringify({
                 type: 'session_broadcast',
-                players: nearbyPlayers.map(({snakeId, headPosition, segments, score}) => ({
+                players: nearbyPlayers.map(({snakeId, headPosition, segments, currentEquation, score}) => ({
                     snakeId,
                     headPosition,
                     segments, // Reduziert die Datenmenge
+                    currentEquation, // Sende die aktuelle Aufgabe mit
                     score, // Sende den Punktestand mit
                 })),
                 food, // Sende die Positionen der Nahrung mit
@@ -221,6 +226,7 @@ function getNearbyPlayers(currentPlayer, allPlayers) {
 
     Object.values(allPlayers).forEach((player) => {
         if (player.snakeId === currentPlayer.snakeId) {
+            player.currentEquation = currentPlayer.currentEquation; // Übertrage die aktuelle Aufgabe
             nearbyPlayers.push(player); // Füge den aktuellen Spieler hinzu
         } else {
             const dx = player.headPosition.x - currentPlayer.headPosition.x;
@@ -244,7 +250,7 @@ function broadcastGameStateWithDeltas() {
         const {players, boundaries} = gameState;
 
         Object.values(players).forEach((player) => {
-            const nearbyPlayers = getNearbyPlayers(player, players, boundaries, player.fieldOfView);
+            const nearbyPlayers = getNearbyPlayers(player, players, boundaries);
 
             // Erstelle das aktuelle Delta
             const currentState = nearbyPlayers.map(({snakeId, headPosition, segments}) => ({
@@ -435,17 +441,17 @@ function handleFoodCollision(playerState, gameState) {
 
         if (distanceSquared < 100) { // Abstand < 10px
             if (food.meta?.result !== undefined) {
-                // Mathematikaufgabe prüfen
-                // todo: Implement logic to check if the result is correct
                 const correctResult = playerState.currentEquation?.result;
                 if (food.meta.result === correctResult) {
-                    playerState.score += 50; // Richtig
+                    playerState.score += food.points; // Punkte für korrekte Antwort
+                    playerState.queuedSegments += food.points;
+                    assignNewMathEquation(playerState); // Neue Aufgabe zuweisen
+                    gameState.food.push(generateMathFoodOptions(gameState.boundaries, playerState)); // Neue Optionen generieren
                 } else {
-                    playerState.score = Math.max(0, playerState.score - 50); // Falsch
+                    playerState.score = Math.max(0, playerState.score - 50); // Abzug bei falscher Antwort
                 }
             } else {
-                // Normale Nahrung
-                playerState.score += food.points;
+                playerState.score += food.points; // Normale Nahrung
                 playerState.queuedSegments += food.points;
             }
             return false; // Nahrung entfernen
@@ -453,6 +459,23 @@ function handleFoodCollision(playerState, gameState) {
         return true; // Nahrung bleibt
     });
 }
+
+function generateMathFoodOptions(boundaries, playerState, spread = 50) {
+    const correctResult = playerState.currentEquation.result;
+
+    // Generiere Nahrung für die korrekte Antwort
+    const correctFood = generateFood(
+        {
+            x: Math.random() * boundaries.width,
+            y: Math.random() * boundaries.height,
+        },
+        50, // Punktewert
+        { equation: playerState.currentEquation.equation, result: correctResult }
+    );
+    return correctFood;
+}
+
+
 
 
 
@@ -486,6 +509,38 @@ function generateMathFood(gameState, equation, result, spread = 50) {
 }
 
 
+function generateMathEquation() {
+    const num1 = randomizedNumber(1, 10);
+    const num2 = randomizedNumber(1, 10);
+    const operators = ['+', '-', '*'];
+    const operator = operators[Math.floor(Math.random() * operators.length)];
+
+    let equation = `${num1} ${operator} ${num2}`;
+    let result;
+
+    switch (operator) {
+        case '+':
+            result = num1 + num2;
+            break;
+        case '-':
+            result = num1 - num2;
+            break;
+        case '*':
+            result = num1 * num2;
+            break;
+    }
+
+    return { equation, result };
+}
+
+function assignNewMathEquation(playerState) {
+    const { equation, result } = generateMathEquation();
+    playerState.currentEquation = { equation, result };
+}
+
+
+
+
 function randomizedNumber(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -506,6 +561,8 @@ function dropSpecialFood(playerState, gameState) {
         }
     });
 }
+
+
 
 
 

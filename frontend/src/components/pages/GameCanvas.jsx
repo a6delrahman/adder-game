@@ -62,25 +62,7 @@ const GameCanvas = () => {
         }
     };
 
-    // Zeichnet den Hintergrund des Canvas
-    // const drawBackground = (ctx) => {
 
-    //     ctx.fillStyle = '#4a4848';
-    //     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-
-    //     const gridSize = 30;
-    //     for (let x = 0; x < ctx.canvas.width; x += gridSize) {
-    //         ctx.beginPath();
-    //         ctx.moveTo(x, 0);
-    //         ctx.lineTo(x, ctx.canvas.height);
-    //     }
-    //     for (let y = 0; y < ctx.canvas.height; y += gridSize) {
-    //         ctx.beginPath();
-    //         ctx.moveTo(0, y);
-    //         ctx.lineTo(ctx.canvas.width, y);
-    //     }
-    // };
 
     // Zeichnet alle Schlangen auf das Canvas
     const renderSnakes = (ctx) => {
@@ -120,15 +102,35 @@ const GameCanvas = () => {
         });
     };
 
+    const renderMathEquations = (ctx, equation) => {
+        if (!equation) return; // Wenn keine Aufgabe vorhanden ist, nichts zeichnen
+
+        ctx.font = '24px Arial'; // Schriftart und Größe
+        ctx.fillStyle = '#fff'; // Textfarbe
+        ctx.textAlign = 'center'; // Zentriere den Text horizontal
+        ctx.fillText(equation, ctx.canvas.width / 2, 30); // Zeichne den Text (x = Mitte, y = 30px vom oberen Rand)
+    };
+
     const renderFood = (ctx, food) => {
         if (!food.current) return;
+
         food.current.forEach((foodItem) => {
+            // Zeichne das Food-Objekt als Kreis
             ctx.fillStyle = 'orange';
             ctx.beginPath();
             ctx.arc(foodItem.x, foodItem.y, 5, 0, Math.PI * 2);
             ctx.fill();
+
+            // Wenn Metadaten vorhanden sind und ein Resultat enthalten, zeichne den Text
+            if (foodItem.meta?.result !== undefined) {
+                ctx.font = '14px Arial'; // Schriftart und -größe
+                ctx.fillStyle = '#fff'; // Textfarbe
+                ctx.textAlign = 'center'; // Zentriere den Text horizontal
+                ctx.fillText(foodItem.meta.result, foodItem.x, foodItem.y - 10); // Zeichne das Resultat 10px über dem Kreis
+            }
         });
     };
+
 
 
     // Haupt-Rendering-Schleife
@@ -140,12 +142,15 @@ const GameCanvas = () => {
         renderScores(ctx); // Punktzahlen zeichnen
         renderFood(ctx, food); // Essen zeichnen
 
+        if (playerSnake.current?.currentEquation) {
+            renderMathEquations(ctx, playerSnake.current.currentEquation.equation); // Aufgabe zeichnen
+        }
+
         requestAnimationFrame(render); // Nächsten Frame planen
     };
 
     // Starte das Rendering und füge Event-Listener hinzu
     useEffect(() => {
-        render(); // Rendering starten
 
         const handleMouseMove = (e) => sendMovementData(e.clientX, e.clientY);
         const handleMouseDown = (e) => {
@@ -175,15 +180,19 @@ const GameCanvas = () => {
     }, [playerSnake]); // Aktualisiere Event-Listener, wenn sich `playerSnake` ändert
 
 
-    // // Detect route changes and send leave_session message
-    // useEffect(() => {
-    //     return () => {
-    //         if (prevLocation.current === '/gameCanvas') {
-    //             sendMessage({type: 'leave_session'});
-    //         }
-    //         prevLocation.current = location.pathname;
-    //     };
-    // }, []);
+    useEffect(() => {
+        let animationFrameId; // Speichert die ID des aktuellen Frames
+
+        const renderLoop = () => {
+            render(); // Starte das Zeichnen
+            animationFrameId = requestAnimationFrame(renderLoop); // Plan den nächsten Frame
+        };
+
+        renderLoop(); // Starte die Schleife
+
+        return () => cancelAnimationFrame(animationFrameId); // Stoppe die Schleife beim Unmount
+    }, []);
+
 
     return <canvas ref={canvasRef} width={800} height={600} />;
 };
