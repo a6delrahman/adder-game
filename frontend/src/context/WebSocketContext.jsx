@@ -52,6 +52,11 @@ export const WebSocketProvider = ({ children }) => {
             console.log('Game over:', data);
         },
 
+        update_equation: (data) => {
+            playerSnake.current.currentEquation = data.currentEquation;
+            console.log('update_equation:', data);
+        },
+
         remove_player: (data) => {
             console.log('Player removed:', data.snakeId);
             setOtherSnakes((prev) => {

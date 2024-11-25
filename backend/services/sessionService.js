@@ -1,5 +1,7 @@
 // services/sessionService.js
 const {v4: uuidv4} = require('uuid');
+const { equationManager } = require('../utils/mathEquations');
+
 
 const sessions = new Map();
 const gameStates = new Map(); // Separate GameState-Verwaltung für jedes Spiel
@@ -45,6 +47,7 @@ function createOrFindSession(gameType) {
             gameType,
             maxsize: 100,
         };
+        equationManager.initializeEquationsForSession(session.id, session.gameType);
         sessions.set(session.id, session);
         setActiveSessions(true);
     }
@@ -75,10 +78,15 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
         })),
         queuedSegments: 0,
         fieldOfView: fieldOfView,
+        level: 1, // Standardlevel
         currentEquation: null, // Platzhalter für die aktuelle Aufgabe
         score: 0,
     };
     assignNewMathEquation(playerState); // Neue Mathematikaufgabe zuweisen
+
+    // Generiere und weise eine Aufgabe zu
+    equationManager.addEquationsForSession(session.id, session.gameType, 5, playerState.level);
+    equationManager.assignEquationToPlayer(session.id, playerState, session.gameType);
 
 
     // Spieler zum GameState hinzufügen
@@ -420,6 +428,7 @@ function handleBoostPenalty(playerState, gameState) {
 
 // Nahrungskollisionen prüfen
 function handleFoodCollision(playerState, gameState) {
+    let playerSolvedEquationCorrectly = false;
     gameState.food = gameState.food.filter((food) => {
         const dx = food.x - playerState.headPosition.x;
         const dy = food.y - playerState.headPosition.y;
@@ -431,8 +440,8 @@ function handleFoodCollision(playerState, gameState) {
                 if (food.meta.result === correctResult) {
                     playerState.score += food.points; // Punkte für korrekte Antwort
                     playerState.queuedSegments += food.points;
-                    assignNewMathEquation(playerState); // Neue Aufgabe zuweisen
-                    gameState.food.push(generateMathFoodOptions(gameState.boundaries, playerState)); // Neue Optionen generieren
+                    // assignNewMathEquation(playerState); // Neue Aufgabe zuweisen
+                    playerSolvedEquationCorrectly = true;
                 } else {
                     playerState.score = Math.max(0, playerState.score - 50); // Abzug bei falscher Antwort
                 }
@@ -444,6 +453,19 @@ function handleFoodCollision(playerState, gameState) {
         }
         return true; // Nahrung bleibt
     });
+    if (playerSolvedEquationCorrectly) {
+        equationManager.assignEquationToPlayer(playerState.sessionId, playerState, playerState.currentEquation.type);
+        const newFood = generateMathFoodOptions(gameState.boundaries, playerState);
+        if (newFood) gameState.food.push(newFood); // Neue Optionen generieren// Neue Optionen generieren
+        const message = JSON.stringify({
+            type: 'update_equation',
+            currentEquation: playerState.currentEquation, // Sende die aktuelle Aufgabe mit
+        });
+        const ws = getWebSocketBySnakeId(playerState.snakeId);
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(message); // Nachricht an den Spieler send
+        }
+    }
 }
 
 function generateMathFoodOptions(boundaries, playerState, spread = 50) {

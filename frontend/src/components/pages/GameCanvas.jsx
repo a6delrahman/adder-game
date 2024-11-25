@@ -75,6 +75,7 @@ const GameCanvas = () => {
                         scale: 0.8,
                     });
                 }
+                player
                 playerSnakeRef.current.updatePosition(player.segments);
                 playerSnakeRef.current.draw(ctx);
             } else {
