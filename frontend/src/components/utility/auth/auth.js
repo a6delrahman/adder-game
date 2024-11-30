@@ -1,7 +1,7 @@
 // src/components/utility/auth/auth.js
 
 import axiosInstance from "../../../axiosInstance.js";
-
+// todo 1: save bearer token in session storage
 // Speichert das Access-Token
 export const setAuthToken = (token) => {
     if (token) {

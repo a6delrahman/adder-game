@@ -1,6 +1,7 @@
 // services/sessionService.js
 const {v4: uuidv4} = require('uuid');
 const { equationManager } = require('../utils/mathEquations');
+const WebSocket = require('ws');
 
 
 const sessions = new Map();
@@ -12,7 +13,7 @@ const SNAKE_SPEED = 2;
 const FIELD_WIDTH = 800;
 const FIELD_HEIGHT = 600;
 const SNAKE_INITIAL_LENGTH = 20;
-const BOUNDARY = {width: 800, height: 600};
+const BOUNDARY = {width: FIELD_WIDTH, height: FIELD_HEIGHT};
 
 const ZONE_COUNT = 4; // Gittergröße 4x4
 const MIN_FOOD_PER_ZONE = 2; // Mindestens 2 Nahrungspunkte pro Zone
