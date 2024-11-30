@@ -10,7 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const { handleConnection} = require('./controllers/webSocketController');
 const playerService = require('./services/playerService');
-const websocketService = require('./services/websocketService');
+const websocketService = require('./services/webSocketService');
 const sessionController = require('./controllers/sessionController');
 const sessionService = require('./services/sessionService');
 
