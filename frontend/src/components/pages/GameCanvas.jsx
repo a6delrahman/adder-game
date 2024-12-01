@@ -20,6 +20,9 @@ const GameCanvas = () => {
         const targetX = mouseX - rect.left;
         const targetY = mouseY - rect.top;
 
+        // playerSnakeRef.current.updatePositionLocal(targetX, targetY);
+        // playerSnakeRef.current.movePlayer(targetX, targetY);
+        playerSnakeRef.current.updateDirection(targetX, targetY);
         sendMessage({
             type: 'change_direction',
             snakeId: playerSnake.snakeId,
@@ -75,8 +78,7 @@ const GameCanvas = () => {
                         scale: 0.8,
                     });
                 }
-                player
-                playerSnakeRef.current.updatePosition(player.segments);
+                // playerSnakeRef.current.updatePosition(player.segments);
                 playerSnakeRef.current.draw(ctx);
             } else {
                 if (!otherSnakesRef.current[player.snakeId]) {
@@ -86,8 +88,8 @@ const GameCanvas = () => {
                         { color: 'red', scale: 0.6, }
                     );
                 }
-                otherSnakesRef.current[player.snakeId].updatePosition(player.segments);
-                otherSnakesRef.current[player.snakeId].draw(ctx);
+                // otherSnakesRef.current[player.snakeId].updatePosition(player.segments);
+                // otherSnakesRef.current[player.snakeId].draw(ctx);
             }
         });
     };
@@ -150,6 +152,12 @@ const GameCanvas = () => {
         requestAnimationFrame(render); // Nächsten Frame planen
     };
 
+    setInterval(() => {
+        if (playerSnakeRef.current) {
+            playerSnakeRef.current.movePlayer();
+        }
+    }   , 50);
+
     // Starte das Rendering und füge Event-Listener hinzu
     useEffect(() => {
 
@@ -184,7 +192,7 @@ const GameCanvas = () => {
     useEffect(() => {
         let animationFrameId; // Speichert die ID des aktuellen Frames
 
-        const renderLoop = () => {
+        const renderLoop = (timestamp) => {
             render(); // Starte das Zeichnen
             animationFrameId = requestAnimationFrame(renderLoop); // Plan den nächsten Frame
         };
