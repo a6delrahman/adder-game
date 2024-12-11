@@ -1,8 +1,9 @@
 // Snake.js
 class Snake {
-    constructor(initialX, initialY, options = {}) {
-        this.position = { x: initialX, y: initialY };
+    constructor(snakeId, initialX, initialY, options = {}) {
+        this.position = {x: initialX, y: initialY };
         this.segments = [];
+        this.snakeId = snakeId;
         this.segmentCount = options.segmentCount || 5;
         this.scale = options.scale || 0.6;
         this.color = options.color || 'green';
@@ -25,6 +26,26 @@ class Snake {
     //     // this.segments = newsegment;
     // }
 
+
+    updatePosition(targetX, targetY) {
+        // Update the head position
+        const head = this.segments[0];
+        head.x += (targetX - head.x) * this.speed;
+        head.y += (targetY - head.y) * this.speed;
+
+        // Update the rest of the segments
+        for (let i = 1; i < this.segments.length; i++) {
+            const segment = this.segments[i];
+            const prevSegment = this.segments[i - 1];
+            segment.x += (prevSegment.x - segment.x) * this.speed;
+            segment.y += (prevSegment.y - segment.y) * this.speed;
+        }
+    }
+
+
+
+
+
     updatePositionLocal(targetX, targetY) {
         // Update the head position
         const head = this.segments[0];
@@ -40,12 +61,17 @@ class Snake {
         }
     }
 
+    update(headPosition, segments) {
+        this.position = headPosition;
+        this.segments = segments;
+    }
+
     updateDirection(targetX, targetY) {
         this.targetX = targetX;
         this.targetY = targetY;
     }
 
-    movePlayer() {
+    moveSnake() {
         // First, the function calculates the difference between the target position and the current head position of the snake:
         const dx = this.targetX - this.position.x;
         const dy = this.targetY - this.position.y;

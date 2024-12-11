@@ -30,11 +30,16 @@ const setActiveSessions = (value) => {
 }
 
 function createInitialGameState() {
-    return {
+    const gameState = {
         players: {}, // { snakeId: { headPosition, targetPosition, segments, queuedSegments, boost } }
         food: [], // Für Nahrung oder andere Objekte
         boundaries: {width: FIELD_WIDTH, height: FIELD_HEIGHT},
     };
+
+    generateRandomFood(gameState, 10); // Generiere 10 Nahrungspunkte
+
+
+    return gameState;
 }
 
 function createOrFindSession(gameType) {
@@ -92,11 +97,11 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
 
     // Spieler zum GameState hinzufügen
     if (!gameStates.has(session.id)) {
-        const initialGameStateWithFood = createInitialGameState();
-        generateRandomFood(initialGameStateWithFood, 10); // Generiere 10 Nahrungspunkte
-        gameStates.set(session.id, initialGameStateWithFood);
+        const initialGameState = createInitialGameState();
+        // generateRandomFood(initialGameStateWithFood, 10); // Generiere 10 Nahrungspunkte
+        // gameStates.set(session.id, initialGameStateWithFood);
 
-        // gameStates.set(session.id, {...initialGameState});
+        gameStates.set(session.id, {...initialGameState});
     }
     const gameState = gameStates.get(session.id);
     gameState.players[snakeId] = playerState;
@@ -106,7 +111,7 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     playerIndex.set(ws, {sessionId: session.id, snakeId});
 
     // Nachricht an den Spieler senden
-    ws.send(JSON.stringify({type: 'session_joined', playerState, initialGameState: gameState}));
+    ws.send(JSON.stringify({type: 'session_joined', snakeId, initialGameState: gameState}));
 }
 
 
