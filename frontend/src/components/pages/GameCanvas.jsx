@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { useWebSocket } from '../../context/WebSocketContext';
-import Snake from '../../classes/Snake';
 import useRenderBackground from "../hooks/useRenderBackground.jsx";
 import useRenderSnakes from "../hooks/useRenderSnakes.jsx";
 import useRenderFood from "../hooks/useRenderFood.jsx";

@@ -2,6 +2,7 @@
 const {v4: uuidv4} = require('uuid');
 const { equationManager } = require('../utils/mathEquations');
 const WebSocket = require('ws');
+const Snake = require ('../../shared/classes/Snake').default;
 
 
 const sessions = new Map();
@@ -21,23 +22,20 @@ const MAX_FOOD_PER_ZONE = 5; // Maximal 5 Nahrungspunkte pro Zone
 
 let sessionActive = false;
 
-const isSessionActive = () => {
-    return sessionActive;
-}
+const isSessionActive = () => sessionActive;
 
 const setActiveSessions = (value) => {
     sessionActive = value;
-}
+};
 
 function createInitialGameState() {
     const gameState = {
-        players: {}, // { snakeId: { headPosition, targetPosition, segments, queuedSegments, boost } }
-        food: [], // Für Nahrung oder andere Objekte
-        boundaries: {width: FIELD_WIDTH, height: FIELD_HEIGHT},
+        players: {},
+        food: [],
+        boundaries: { width: FIELD_WIDTH, height: FIELD_HEIGHT },
     };
 
-    generateRandomFood(gameState, 10); // Generiere 10 Nahrungspunkte
-
+    generateRandomFood(gameState, 10);
 
     return gameState;
 }
@@ -64,30 +62,49 @@ function createOrFindSession(gameType) {
 
 function addPlayerToSession(session, ws, fieldOfView, userId) {
     if (playerIndex.has(ws)) {
-        removePlayerFromSession(ws); // Remove the player from the current session
+        removePlayerFromSession(ws);
     }
 
     const snakeId = uuidv4();
     const startPosition = getRandomPosition(BOUNDARY);
-    // Spielerstatus erstellen
+
+    const playerSnake = new Snake(snakeId, startPosition.x, startPosition.y, {
+        segmentCount: SNAKE_INITIAL_LENGTH,
+        speed: SNAKE_SPEED,
+        color: 'green',
+    });
+
     const playerState = {
         snakeId,
         sessionId: session.id,
         userId,
-        headPosition: startPosition,
+        snake: playerSnake,
         targetPosition: getRandomPosition(BOUNDARY),
         boost: false,
-        speed: SNAKE_SPEED,
-        segments: Array.from({length: SNAKE_INITIAL_LENGTH}, (_, i) => ({
-            x: startPosition.x,
-            y: startPosition.y + i * SNAKE_SPEED
-        })),
-        queuedSegments: 0,
-        fieldOfView: fieldOfView,
-        level: 1, // Standardlevel
-        currentEquation: null, // Platzhalter für die aktuelle Aufgabe
+        fieldOfView,
+        level: 1,
+        currentEquation: null,
         score: 0,
     };
+
+    // const playerState = {
+    //     snakeId,
+    //     sessionId: session.id,
+    //     userId,
+    //     headPosition: startPosition,
+    //     targetPosition: getRandomPosition(BOUNDARY),
+    //     boost: false,
+    //     speed: SNAKE_SPEED,
+    //     segments: Array.from({length: SNAKE_INITIAL_LENGTH}, (_, i) => ({
+    //         x: startPosition.x,
+    //         y: startPosition.y + i * SNAKE_SPEED
+    //     })),
+    //     queuedSegments: 0,
+    //     fieldOfView: fieldOfView,
+    //     level: 1, // Standardlevel
+    //     currentEquation: null, // Platzhalter für die aktuelle Aufgabe
+    //     score: 0,
+    // };
     assignNewMathEquation(playerState); // Neue Mathematikaufgabe zuweisen
 
     // Generiere und weise eine Aufgabe zu
@@ -98,20 +115,16 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     // Spieler zum GameState hinzufügen
     if (!gameStates.has(session.id)) {
         const initialGameState = createInitialGameState();
-        // generateRandomFood(initialGameStateWithFood, 10); // Generiere 10 Nahrungspunkte
-        // gameStates.set(session.id, initialGameStateWithFood);
-
         gameStates.set(session.id, {...initialGameState});
     }
     const gameState = gameStates.get(session.id);
     gameState.players[snakeId] = playerState;
-    gameState.food.push(generateMathFoodOptions(gameState.boundaries, playerState)); // Neue Optionen generieren
+    gameState.food.push(generateMathFoodOptions(gameState.boundaries, playerState));
 
     // Spieler-Index aktualisieren
     playerIndex.set(ws, {sessionId: session.id, snakeId});
 
-    // Nachricht an den Spieler senden
-    ws.send(JSON.stringify({type: 'session_joined', snakeId, initialGameState: gameState}));
+    ws.send(JSON.stringify({ type: 'session_joined', snakeId, initialGameState: gameState }));
 }
 
 
@@ -183,8 +196,8 @@ function getAllSessions() {
 
 
 function broadcastGameState() {
-    gameStates.forEach((gameState, sessionId) => {
-        const {players, boundaries, food} = gameState;
+    gameStates.forEach((gameState) => {
+        const {players, food} = gameState;
 
         // Iteriere durch alle Spieler in der Sitzung
         Object.values(players).forEach((player) => {
@@ -193,10 +206,10 @@ function broadcastGameState() {
             // Erstelle die Nachricht mit relevanten Daten
             const message = JSON.stringify({
                 type: 'session_broadcast',
-                players: nearbyPlayers.map(({snakeId, headPosition, segments, currentEquation, score}) => ({
+                players: nearbyPlayers.map(({snakeId, snake, currentEquation, score}) => ({
                     snakeId,
-                    headPosition,
-                    segments, // Reduziert die Datenmenge
+                    headPosition: snake.position,
+                    segments: snake.segments, // Reduziert die Datenmenge
                     currentEquation, // Sende die aktuelle Aufgabe mit
                     score, // Sende den Punktestand mit
                 })),
@@ -231,8 +244,8 @@ function getNearbyPlayers(currentPlayer, allPlayers) {
             player.currentEquation = currentPlayer.currentEquation; // Übertrage die aktuelle Aufgabe
             nearbyPlayers.push(player); // Füge den aktuellen Spieler hinzu
         } else {
-            const dx = player.headPosition.x - currentPlayer.headPosition.x;
-            const dy = player.headPosition.y - currentPlayer.headPosition.y;
+            const dx = player.snake.position.x - currentPlayer.snake.position.x;
+            const dy = player.snake.position.y - currentPlayer.snake.position.y;
 
             // Prüfe, ob der Spieler innerhalb des Bereichs liegt
             if (Math.sqrt(dx * dx + dy * dy) <= currentPlayer.fieldOfView) {
@@ -367,36 +380,45 @@ function movePlayers() {
     });
 }
 
+
 function movePlayer(playerState, boundaries) {
-    // First, the function calculates the difference between the target position and the current head position of the snake:
-    const dx = playerState.targetPosition.x - playerState.headPosition.x;
-    const dy = playerState.targetPosition.y - playerState.headPosition.y;
+    playerState.snake.updateDirection(playerState.targetPosition.x, playerState.targetPosition.y);
+    playerState.snake.moveSnake();
 
-    // Next, it normalizes the direction vector to ensure the movement is consistent regardless of the distance to the target:
-    const magnitude = Math.sqrt(dx * dx + dy * dy);
-    const directionX = magnitude > 0 ? dx / magnitude : 0;
-    const directionY = magnitude > 0 ? dy / magnitude : 0;
-
-    // The speed of the snake is then determined, doubling if the boost is active:
-    const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
-
-    // The head position of the snake is updated based on the direction and speed:
-    playerState.headPosition.x += directionX * speed;
-    playerState.headPosition.y += directionY * speed;
-
-    // To ensure the snake stays within the game boundaries, the new head position is clamped:
-    playerState.headPosition.x = Math.max(0, Math.min(playerState.headPosition.x, boundaries.width));
-    playerState.headPosition.y = Math.max(0, Math.min(playerState.headPosition.y, boundaries.height));
-
-    // A new segment is added to the front of the snake to represent the new head position:
-    playerState.segments.unshift({...playerState.headPosition});
-
-    // Finally, if the number of segments exceeds the maximum allowed (initial length plus any queued segments), the oldest segment is removed:
-    const maxSegments = SNAKE_INITIAL_LENGTH + playerState.queuedSegments;
-    if (playerState.segments.length > maxSegments) {
-        playerState.segments.pop();
-    }
+    playerState.headPosition = playerState.snake.position;
+    playerState.segments = playerState.snake.segments;
 }
+
+// function movePlayer(playerState, boundaries) {
+//     // First, the function calculates the difference between the target position and the current head position of the snake:
+//     const dx = playerState.targetPosition.x - playerState.headPosition.x;
+//     const dy = playerState.targetPosition.y - playerState.headPosition.y;
+//
+//     // Next, it normalizes the direction vector to ensure the movement is consistent regardless of the distance to the target:
+//     const magnitude = Math.sqrt(dx * dx + dy * dy);
+//     const directionX = magnitude > 0 ? dx / magnitude : 0;
+//     const directionY = magnitude > 0 ? dy / magnitude : 0;
+//
+//     // The speed of the snake is then determined, doubling if the boost is active:
+//     const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
+//
+//     // The head position of the snake is updated based on the direction and speed:
+//     playerState.headPosition.x += directionX * speed;
+//     playerState.headPosition.y += directionY * speed;
+//
+//     // To ensure the snake stays within the game boundaries, the new head position is clamped:
+//     playerState.headPosition.x = Math.max(0, Math.min(playerState.headPosition.x, boundaries.width));
+//     playerState.headPosition.y = Math.max(0, Math.min(playerState.headPosition.y, boundaries.height));
+//
+//     // A new segment is added to the front of the snake to represent the new head position:
+//     playerState.segments.unshift({...playerState.headPosition});
+//
+//     // Finally, if the number of segments exceeds the maximum allowed (initial length plus any queued segments), the oldest segment is removed:
+//     const maxSegments = SNAKE_INITIAL_LENGTH + playerState.queuedSegments;
+//     if (playerState.segments.length > maxSegments) {
+//         playerState.segments.pop();
+//     }
+// }
 
 
 function handleBoostPenalty(playerState, gameState) {

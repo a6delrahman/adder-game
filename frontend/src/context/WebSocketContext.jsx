@@ -1,7 +1,7 @@
 // WebSocketContext.jsx
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import Snake from "../classes/Snake.js";
+import Snake from "../../../shared/classes/Snake.js";
 
 export const WebSocketContext = createContext(null);
 
@@ -28,12 +28,7 @@ export const WebSocketProvider = ({ children }) => {
 
             // Initialisiere alle Schlangen
             Object.values(initialGameState.players).forEach((player) => {
-                otherSnakes.current[player.snakeId] = new Snake(
-                    player.snakeId,
-                    player.headPosition.x,
-                    player.headPosition.y,
-                    { color: player.snakeId === snakeId ? 'green' : 'red' }
-                );
+                otherSnakes.current[player.snakeId] = new Snake(player.snake);
             });
 
             // playerSnake.current = data.playerState; // Speichert die eigene Schlange
