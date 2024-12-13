@@ -3,7 +3,7 @@ class Snake {
     constructor(snakeData) {
         if (typeof snakeData === 'object') {
             this.snakeId = snakeData.snakeId || '';
-            this.headPosition = snakeData.headPosition || { x: 0, y: 0 };
+            this.headPosition = snakeData.headPosition || {x: 0, y: 0};
             this.targetPosition = snakeData.targetPosition;
             this.segments = snakeData.segments || [];
             this.segmentCount = snakeData.segmentCount || 5;
@@ -29,10 +29,19 @@ class Snake {
 
             // Initialize segments
             for (let i = 0; i < this.segmentCount; i++) {
-                this.segments.push({ headPosition });
+                this.segments.push({headPosition});
             }
         }
+        this.isBrowser = typeof window !== 'undefined';
+        // Lade die Textur nur im Browser
+        if (this.isBrowser) {
+            this.texture = new Image();
+            this.texture.src = '/public/images/texture.png'; // Relativer Pfad zur Textur
+        }
+
     }
+
+
 
     // updatePosition(segments) {
     //     this.segments = segments;
@@ -55,9 +64,6 @@ class Snake {
             segment.y += (prevSegment.y - segment.y) * this.speed;
         }
     }
-
-
-
 
 
     // updatePositionLocal(targetX, targetY) {
@@ -117,8 +123,8 @@ class Snake {
     }
 
     static visible(snake, camera) {
-        const { x, y } = snake.position;
-        const { width, height } = camera;
+        const {x, y} = snake.position;
+        const {width, height} = camera;
         return x >= 0 && x <= width && y >= 0 && y <= height;
     }
 
@@ -128,7 +134,7 @@ class Snake {
     }
 
     applyBoostPenalty(pointsToDrop) {
-        if (this.boost) {
+        if (this.boost && pointsToDrop > 0) {
             // this.boost = false; // Deaktiviere Boost, wenn Punkte abgezogen werden
             return this.segments.splice(-1, 1).map(segment => ({
                 x: segment.x,
@@ -152,26 +158,191 @@ class Snake {
 
 
 
-    draw(ctx) {
-        for (let i = 0; i < this.segments.length; i++) {
-            const segment = this.segments[i];
-            const gradient = ctx.createRadialGradient(
-                segment.x,
-                segment.y,
-                0,
-                segment.x,
-                segment.y,
-                10 * this.scale
-            );
-            gradient.addColorStop(0, this.color); // Startfarbe (z. B. grün)
-            gradient.addColorStop(1, 'black'); // Endfarbe (z. B. schwarz)
+    // // 1. Segment-Gradient-Farben
+    // draw(ctx) {
+    //     this.segments.forEach((segment, index) => {
+    //         // Überprüfen, ob die Werte gültig sind
+    //         if (
+    //             !Number.isFinite(segment.x) ||
+    //             !Number.isFinite(segment.y) ||
+    //             !Number.isFinite(this.scale)
+    //         ) {
+    //             console.error(`Ungültige Werte für Segment:`, { segment, scale: this.scale });
+    //             return;
+    //         }
+    //
+    //         // Erstelle den Farbverlauf für das Segment
+    //         const gradient = ctx.createRadialGradient(
+    //             segment.x,
+    //             segment.y,
+    //             0,
+    //             segment.x,
+    //             segment.y,
+    //             10 * this.scale
+    //         );
+    //         gradient.addColorStop(0, this.color); // Startfarbe
+    //         gradient.addColorStop(1, 'black'); // Endfarbe
+    //
+    //         // // Schattierung
+    //         // ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'; // Farbe des Schattens
+    //         // ctx.shadowBlur = 15; // Weichheit des Schattens
+    //         // ctx.shadowOffsetX = 3; // Horizontaler Offset
+    //         // ctx.shadowOffsetY = 3; // Vertikaler Offset
+    //
+    //
+    //
+    //         // Zeichne das Segment
+    //         ctx.fillStyle = gradient;
+    //         ctx.beginPath();
+    //         ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
+    //         ctx.fill();
+    //     });
+    // }
 
-            ctx.fillStyle = gradient;
+    // // 3. Kopf-Segment hervorheben
+    // draw(ctx) {
+    //     for (let i = 0; i < this.segments.length; i++) {
+    //         const segment = this.segments[i];
+    //
+    //         if (i === 0) {
+    //             // Kopf-Segment
+    //             ctx.fillStyle = 'yellow'; // Auffällige Farbe für den Kopf
+    //         } else {
+    //             ctx.fillStyle = this.color;
+    //         }
+    //
+    //         ctx.beginPath();
+    //         ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
+    //         ctx.fill();
+    //     }
+    // }
+
+
+    // 4. Animation durch pulsierende Segmente
+    draw(ctx) {
+        const timeFactor = Math.sin(Date.now() / 200); // Animationsfaktor
+
+        this.segments.forEach((segment, index) => {
+            const scaleFactor = 1 + (timeFactor * (index / this.segments.length) * 0.1); // Leichtes Pulsieren
+            ctx.fillStyle = this.color;
+
             ctx.beginPath();
-            ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
+            ctx.arc(segment.x, segment.y, 10 * this.scale * scaleFactor, 0, 2 * Math.PI);
             ctx.fill();
-        }
-    }
+        });
+
+
+
+
+    // // 5. Texturierte Segmente
+    // draw(ctx) {
+    //     if (!this.isBrowser) {
+    //         return; // Kein Rendering im Backend
+    //     }
+    //
+    //     this.segments.forEach(segment => {
+    //         if (this.texture && this.texture.complete) {
+    //             ctx.drawImage(this.texture, segment.x - 10, segment.y - 10, 20, 20);
+    //         } else {
+    //             ctx.fillStyle = this.color;
+    //             ctx.beginPath();
+    //             ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
+    //             ctx.fill();
+    //         }
+    //     });
+
+
+    // // 6. Körperform verbessern
+    // draw(ctx) {
+    //     this.segments.forEach((segment, index) => {
+    //         ctx.fillStyle = this.color;
+    //
+    //         ctx.beginPath();
+    //         ctx.ellipse(segment.x, segment.y, 12 * this.scale, 8 * this.scale, 0, 0, 2 * Math.PI);
+    //         ctx.fill();
+    //     });
+    // }
+
+    // // 7. Transparenz hinzufügen
+    // draw(ctx) {
+    //     this.segments.forEach((segment, index) => {
+    //         const alpha = 1 - index / this.segments.length; // Transparenz basierend auf der Position
+    //         ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`; // Transparente grüne Farbe
+    //
+    //         ctx.beginPath();
+    //         ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
+    //         ctx.fill();
+    //     });
+    // }
+
+    //
+    // // Code mit einem größeren, schlangenartigen Kopf
+    // draw(ctx) {
+    //     this.segments.forEach((segment, index) => {
+    //         // Überprüfen, ob die Werte gültig sind
+    //         if (
+    //             !Number.isFinite(segment.x) ||
+    //             !Number.isFinite(segment.y) ||
+    //             !Number.isFinite(this.scale)
+    //         ) {
+    //             console.error(`Ungültige Werte für Segment:`, { segment, scale: this.scale });
+    //             return;
+    //         }
+    //
+    //         if (index === 0) {
+    //             // Der Kopf der Schlange
+    //             const headGradient = ctx.createRadialGradient(
+    //                 segment.x,
+    //                 segment.y,
+    //                 0,
+    //                 segment.x,
+    //                 segment.y,
+    //                 20 * this.scale
+    //             );
+    //             headGradient.addColorStop(0, this.color); // Startfarbe
+    //             headGradient.addColorStop(1, 'darkred'); // Endfarbe
+    //
+    //             ctx.fillStyle = headGradient;
+    //
+    //             // Kopf in Tropfenform
+    //             ctx.beginPath();
+    //             ctx.ellipse(
+    //                 segment.x,
+    //                 segment.y,
+    //                 20 * this.scale, // Breite
+    //                 30 * this.scale, // Höhe
+    //                 Math.atan2(
+    //                     this.targetY - segment.y,
+    //                     this.targetX - segment.x
+    //                 ), // Richtung
+    //                 0,
+    //                 2 * Math.PI
+    //             );
+    //             ctx.fill();
+    //         } else {
+    //             // Körpersegmente
+    //             const bodyGradient = ctx.createRadialGradient(
+    //                 segment.x,
+    //                 segment.y,
+    //                 0,
+    //                 segment.x,
+    //                 segment.y,
+    //                 10 * this.scale
+    //             );
+    //             bodyGradient.addColorStop(0, this.color); // Startfarbe
+    //             bodyGradient.addColorStop(1, 'black'); // Endfarbe
+    //
+    //             ctx.fillStyle = bodyGradient;
+    //             ctx.beginPath();
+    //             ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
+    //             ctx.fill();
+    //         }
+    //     });
+    // }
+
+
+
+}
 
 }
 

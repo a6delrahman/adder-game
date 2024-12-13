@@ -13,7 +13,7 @@ const GameCanvas = () => {
     const backgroundImageRef = useRef(null); // Referenz für das Hintergrundbild
 
     // Custom Hooks
-    const drawBackground = useRenderBackground('/src/assets/cosmos.jpg');
+    // const drawBackground = useRenderBackground('/src/assets/cosmos.jpg');
     const renderSnakes = useRenderSnakes(playerSnakeId, otherSnakes);
     const renderFood = useRenderFood(food);
     const renderScores = useRenderScores(otherSnakes);
@@ -68,23 +68,89 @@ const GameCanvas = () => {
     // }, []);
 
 
-    // Haupt-Rendering-Schleife
+    // // Haupt-Rendering-Schleife
+    // const render = () => {
+    //     const canvas = canvasRef.current;
+    //     const ctx = canvas.getContext('2d');
+    //
+    //
+    //     drawBackground(ctx); // Hintergrund zeichnen
+    //     renderSnakes(ctx); // Schlangen zeichnen
+    //     renderScores(ctx); // Punktzahlen zeichnen
+    //     renderFood(ctx); // Essen zeichnen
+    //
+    //     if (otherSnakes[playerSnakeId]?.currentEquation) {
+    //         renderMathEquations(ctx, otherSnakes[playerSnakeId].currentEquation.equation);
+    //     }
+    //
+    //     // requestAnimationFrame(render); // Nächsten Frame planen
+    // };
+
     const render = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
+        const ownSnake = otherSnakes[playerSnakeId];
 
+        if (!ownSnake) return;
 
-        drawBackground(ctx); // Hintergrund zeichnen
-        renderSnakes(ctx); // Schlangen zeichnen
-        renderScores(ctx); // Punktzahlen zeichnen
-        renderFood(ctx); // Essen zeichnen
+        // Berechne die Kamera-Position basierend auf dem Kopf der Schlange
+        const camera = getCameraPosition(ownSnake.headPosition, boundaries.current, canvas.width, canvas.height);
 
-        if (otherSnakes[playerSnakeId]?.currentEquation) {
-            renderMathEquations(ctx, otherSnakes[playerSnakeId].currentEquation.equation);
-        }
+        // Clear the Canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // requestAnimationFrame(render); // Nächsten Frame planen
+        // Zeichne den Hintergrund (transformiere die Position basierend auf der Kamera)
+        drawBackground(ctx, camera);
+
+        // Zeichne die Schlangen
+        Object.values(otherSnakes).forEach(snake => {
+            snake.segments.forEach(segment => {
+                const transformed = transformPosition(segment, camera);
+                ctx.beginPath();
+                ctx.arc(transformed.x, transformed.y, 10, 0, 2 * Math.PI);
+                ctx.fillStyle = snake.color;
+                ctx.fill();
+            });
+        });
+
+        // Zeichne das Essen
+        Object.values(food).forEach(foodItem => {
+            const transformed = transformPosition(foodItem, camera);
+            ctx.beginPath();
+            ctx.arc(transformed.x, transformed.y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+        });
+
+        // Zeichne Punktzahlen, Gleichungen oder andere UI-Elemente hier
     };
+
+    const drawBackground = (ctx, camera) => {
+        const canvas = canvasRef.current; // Zugriff auf das Canvas-Element
+        const image = backgroundImageRef.current;
+
+        // Debug: Kamera-Position prüfen
+        console.log('Camera Position:', camera);
+
+        if (image) {
+            ctx.drawImage(
+                image,
+                camera.x,
+                camera.y,
+                canvas.width,
+                canvas.height,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+        } else {
+            console.warn('Background image not loaded');
+        }
+    };
+
+
+
 
     // setInterval(() => {
     //     if (otherSnakes.length > 0) {
@@ -132,6 +198,35 @@ const GameCanvas = () => {
             canvas.removeEventListener('mouseup', handleMouseUp);
         };
     }, []);
+
+    const getCameraPosition = (snakeHead, boundaries, viewportWidth, viewportHeight) => {
+        console.log('snakeHead:', snakeHead);
+        console.log('boundaries:', boundaries);
+        console.log('viewportWidth:', viewportWidth);
+        console.log('viewportHeight:', viewportHeight);
+
+        // Kamera zentriert auf den Kopf der Schlange
+        let cameraX = snakeHead.x - viewportWidth / 2;
+        let cameraY = snakeHead.y - viewportHeight / 2;
+
+        console.log('Initial cameraX:', cameraX, 'Initial cameraY:', cameraY);
+
+        // Begrenze die Kamera
+        cameraX = Math.max(0, Math.min(cameraX, boundaries.width - viewportWidth));
+        cameraY = Math.max(0, Math.min(cameraY, boundaries.height - viewportHeight));
+
+        console.log('Clamped cameraX:', cameraX, 'Clamped cameraY:', cameraY);
+
+        return { x: cameraX, y: cameraY };
+    };
+
+
+    const transformPosition = (position, camera) => ({
+        x: position.x - camera.x,
+        y: position.y - camera.y,
+    });
+
+
 
 
     return <canvas ref={canvasRef} width={800} height={600} />;
