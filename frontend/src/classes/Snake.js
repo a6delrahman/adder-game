@@ -62,7 +62,7 @@ class Snake {
     }
 
     update(headPosition, segments) {
-        this.position = headPosition;
+        this.headPosition = headPosition;
         this.segments = segments;
     }
 
@@ -73,8 +73,8 @@ class Snake {
 
     moveSnake() {
         // First, the function calculates the difference between the target position and the current head position of the snake:
-        const dx = this.targetX - this.position.x;
-        const dy = this.targetY - this.position.y;
+        const dx = this.targetX - this.headPosition.x;
+        const dy = this.targetY - this.headPosition.y;
 
         // Next, it normalizes the direction vector to ensure the movement is consistent regardless of the distance to the target:
         const magnitude = Math.sqrt(dx * dx + dy * dy);
@@ -85,15 +85,15 @@ class Snake {
         // const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
 
         // The head position of the snake is updated based on the direction and speed:
-        this.position.x += directionX * this.speed;
-        this.position.y += directionY * this.speed;
+        this.headPosition.x += directionX * this.speed;
+        this.headPosition.y += directionY * this.speed;
 
         // To ensure the snake stays within the game boundaries, the new head position is clamped:
-        this.position.x = Math.max(0, Math.min(this.position.x, 800));
-        this.position.y = Math.max(0, Math.min(this.position.y, 600));
+        this.headPosition.x = Math.max(0, Math.min(this.headPosition.x, 800));
+        this.headPosition.y = Math.max(0, Math.min(this.headPosition.y, 600));
 
         // A new segment is added to the front of the snake to represent the new head position:
-        this.segments.unshift({...this.position});
+        this.segments.unshift({...this.headPosition});
 
         // Finally, if the number of segments exceeds the maximum allowed (initial length plus any queued segments), the oldest segment is removed:
         const maxSegments = this.SNAKE_INITIAL_LENGTH + this.queuedSegments;

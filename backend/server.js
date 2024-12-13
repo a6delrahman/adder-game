@@ -20,7 +20,10 @@ const server = http.createServer(app);
 
 // Middleware für JSON-Daten
 app.use(express.json());
-app.use(cors());  // Allow all cross-origin requests
+// Allow all cross-origin requests
+app.use(cors());
+// Statische Dateien aus dem Public-Verzeichnis bereitstellen
+app.use(express.static('public'));
 
 // Verbindung zur MongoDB
 mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
@@ -35,6 +38,12 @@ mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/session', sessionRoutes);
+app.use('/api/admin', require('./routes/sessionRoutes'));
+
+// Neue Route für die Admin-Seite
+app.get('/admin', (req, res) => {
+    res.sendFile(__dirname + '/public/admin.html'); // Die HTML-Seite wird bereitgestellt
+});
 
 // WebSocket-Server erstellen und Verbindung verwalten
 const wss = new WebSocket.Server({ server });

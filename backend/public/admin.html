@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+<h1>Admin Dashboard</h1>
+<h2>Sessions</h2>
+<table id="sessionsTable">
+    <thead>
+    <tr>
+        <th>Session ID</th>
+        <th>Game Type</th>
+        <th>Players</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<h2>Players</h2>
+<table id="playersTable">
+    <thead>
+    <tr>
+        <th>Player ID</th>
+        <th>Session ID</th>
+        <th>Score</th>
+        <th>Position</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+
+<h4>Game Visualization</h4>
+<canvas id="gameCanvas" width="800" height="600" style="border: 1px solid black;"></canvas>
+
+
+<h2>Session Details</h2>
+<label for="sessionSelect">Select Session:</label>
+<select id="sessionSelect" onchange="loadSessionDetails()">
+    <option value="">-- Select a Session --</option>
+</select>
+<div id="sessionDetails">
+    <h3>Game Type: <span id="gameType"></span></h3>
+    <h4>Players</h4>
+    <table id="sessionPlayersTable">
+        <thead>
+        <tr>
+            <th>Player ID</th>
+            <th>Score</th>
+            <th>Position</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <h4>Food</h4>
+    <table id="sessionFoodTable">
+        <thead>
+        <tr>
+            <th>Position</th>
+            <th>Points</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<script>
+    async function fetchData(endpoint) {
+        const response = await fetch(endpoint);
+        return response.json();
+    }
+
+    async function loadSessions() {
+        const sessions = await fetchData('/api/admin/sessions');
+
+        // Speichere die aktuelle Auswahl
+        const select = document.getElementById('sessionSelect');
+        const currentSelection = select.value;
+
+        // Aktualisiere das Dropdown
+        select.innerHTML = '<option value="">-- Select a Session --</option>';
+        sessions.forEach(session => {
+            const option = `<option value="${session.id}">${session.id} (${session.gameType})</option>`;
+            select.innerHTML += option;
+        });
+
+        // Setze die vorherige Auswahl zurück
+        if (currentSelection) {
+            select.value = currentSelection;
+        }
+    }
+
+
+    async function loadSessionDetails() {
+        const sessionId = document.getElementById('sessionSelect').value;
+        if (!sessionId) return;
+
+        const session = await fetchData(`/api/admin/sessions/${sessionId}`);
+        document.getElementById('gameType').innerText = session.gameType;
+
+        // Update players table
+        const playersTbody = document.getElementById('sessionPlayersTable').querySelector('tbody');
+        playersTbody.innerHTML = '';
+        Object.values(session.players).forEach(player => {
+            const row = `<tr>
+            <td>${player.snakeId}</td>
+            <td>${player.score}</td>
+            <td>${player.headPosition?.x}, ${player.headPosition?.y}</td>
+        </tr>`;
+            playersTbody.innerHTML += row;
+        });
+
+        // Update food table
+        const foodTbody = document.getElementById('sessionFoodTable').querySelector('tbody');
+        foodTbody.innerHTML = '';
+        session.food.forEach(item => {
+            const row = `<tr>
+            <td>${item.x}, ${item.y}</td>
+            <td>${item.points}</td>
+        </tr>`;
+            foodTbody.innerHTML += row;
+        });
+
+        // Draw session visualization
+        drawGame(session);
+    }
+
+
+    async function loadPlayers() {
+        const players = await fetchData('/api/admin/players');
+        const tbody = document.querySelector('#playersTable tbody');
+        tbody.innerHTML = '';
+        players.forEach(player => {
+            const row = `<tr>
+                    <td>${player.snakeId}</td>
+                    <td>${player.sessionId}</td>
+                    <td>${player.score}</td>
+                    <td>${player.headPosition?.x}, ${player.headPosition?.y}</td>
+                </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function drawGame(session) {
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw boundaries
+        const { width, height } = session.boundaries || { width: canvas.width, height: canvas.height };
+        ctx.strokeStyle = 'black';
+        ctx.strokeRect(0, 0, width, height);
+
+        // Draw players
+        Object.values(session.players || {}).forEach(player => {
+            const { headPosition, segments, snakeId } = player.snake;
+
+            // Draw snake segments
+            ctx.fillStyle = snakeId === 'player_snake_id' ? 'green' : 'red'; // Different color for the current player
+            segments.forEach(segment => {
+                ctx.beginPath();
+                ctx.arc(segment.x, segment.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw snake head
+            ctx.fillStyle = 'blue';
+            ctx.beginPath();
+            ctx.arc(headPosition.x, headPosition.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Draw food
+        (session.food || []).forEach(food => {
+            ctx.fillStyle = 'orange';
+            ctx.beginPath();
+            ctx.arc(food.x, food.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+
+    async function loadData() {
+        await loadSessions();
+        await loadPlayers();
+    }
+
+    loadData();
+    setInterval(loadData, 5000); // Aktualisiere alle 5 Sekunden
+
+    setInterval(() => {
+        const sessionId = document.getElementById('sessionSelect').value;
+        if (sessionId) {
+            loadSessionDetails();
+        }
+    }, 50); // Aktualisierung alle 0.5 Sekunden
+</script>
+</body>
+</html>
