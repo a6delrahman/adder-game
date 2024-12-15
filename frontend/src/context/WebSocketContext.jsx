@@ -122,7 +122,7 @@ export const WebSocketProvider = ({ children }) => {
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log('Received message:', data);
+            // console.log('Received message:', data);
 
             const handler = messageHandlers.current[data.type] || messageHandlers.current.default;
             try {

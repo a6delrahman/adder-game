@@ -26,8 +26,12 @@ const GameCanvas = () => {
 
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
-        const targetX = mouseX - rect.left;
-        const targetY = mouseY - rect.top;
+        const targetX_ = mouseX - rect.left;
+        const targetY_ = mouseY - rect.top;
+
+        const camera = getCameraPosition(ownSnake.headPosition, boundaries.current, canvas.width, canvas.height);
+        const targetX = targetX_ + camera.x;
+        const targetY = targetY_ + camera.y;
 
         // playerSnakeRef.current.updatePositionLocal(targetX, targetY);
         // playerSnakeRef.current.moveSnake(targetX, targetY);
@@ -107,46 +111,95 @@ const GameCanvas = () => {
             snake.segments.forEach(segment => {
                 const transformed = transformPosition(segment, camera);
                 ctx.beginPath();
-                ctx.arc(transformed.x, transformed.y, 10, 0, 2 * Math.PI);
+                ctx.arc(transformed.x, transformed.y, snake.scale, 0, 2 * Math.PI);
                 ctx.fillStyle = snake.color;
                 ctx.fill();
             });
         });
 
         // Zeichne das Essen
-        Object.values(food).forEach(foodItem => {
-            const transformed = transformPosition(foodItem, camera);
-            ctx.beginPath();
-            ctx.arc(transformed.x, transformed.y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = 'red';
-            ctx.fill();
-        });
+        if (food?.current) {
+            Object.values(food.current).forEach(foodItem => {
+                const transformed = transformPosition(foodItem, camera);
+                // Debugging-Ausgabe
+                // console.log('Drawing Food at:', transformed);
+                ctx.beginPath();
+                ctx.arc(transformed.x, transformed.y, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+            });
+        } else {
+            console.warn('No food items to draw.');
+        }
 
         // Zeichne Punktzahlen, Gleichungen oder andere UI-Elemente hier
     };
 
+    // const drawBackground = (ctx, camera) => {
+    //     const canvas = canvasRef.current; // Zugriff auf das Canvas-Element
+    //     const image = backgroundImageRef.current;
+    //
+    //     // Debug: Kamera-Position prüfen
+    //     console.log('Camera Position:', camera);
+    //
+    //     if (image) {
+    //         ctx.drawImage(
+    //             image,
+    //             camera.x,
+    //             camera.y,
+    //             canvas.width,
+    //             canvas.height,
+    //             0,
+    //             0,
+    //             canvas.width,
+    //             canvas.height
+    //         );
+    //     } else {
+    //         console.warn('Background image not loaded');
+    //     }
+    // };
+
     const drawBackground = (ctx, camera) => {
-        const canvas = canvasRef.current; // Zugriff auf das Canvas-Element
-        const image = backgroundImageRef.current;
+        const canvas = canvasRef.current;
+        const hexSize = 30; // Größe der Hexagone
+        const gap = 2; // Abstand zwischen Hexagonen
+        const hexWidth = Math.sqrt(3) * hexSize; // Breite eines Hexagons
+        const hexHeight = 2 * hexSize; // Höhe eines Hexagons
+        const offset = 0.5 * hexWidth; // Versatz für jede zweite Reihe
 
-        // Debug: Kamera-Position prüfen
-        console.log('Camera Position:', camera);
+        // Hintergrundfarbe
+        ctx.fillStyle = '#1b1f2a'; // Dunkles Blau
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        if (image) {
-            ctx.drawImage(
-                image,
-                camera.x,
-                camera.y,
-                canvas.width,
-                canvas.height,
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
-        } else {
-            console.warn('Background image not loaded');
+        // Zeichne die Hexagon-Muster
+        for (let y = -hexHeight; y < canvas.height + hexHeight; y += hexHeight * 0.75) {
+            for (let x = -hexWidth; x < canvas.width + hexWidth; x += hexWidth) {
+                const xOffset = (Math.floor(y / (hexHeight * 0.75)) % 2 === 0) ? 0 : offset;
+                drawHexagon(ctx, x + xOffset - camera.x, y - camera.y, hexSize, gap);
+            }
         }
+    };
+
+// Hilfsfunktion: Zeichnet ein Hexagon
+    const drawHexagon = (ctx, x, y, size, gap) => {
+        const side = size - gap; // Berücksichtige den Abstand
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i; // 60° für jedes Hexagon
+            const xPos = x + side * Math.cos(angle);
+            const yPos = y + side * Math.sin(angle);
+            if (i === 0) {
+                ctx.moveTo(xPos, yPos);
+            } else {
+                ctx.lineTo(xPos, yPos);
+            }
+        }
+        ctx.closePath();
+        ctx.fillStyle = '#2a2f3c'; // Hexagon-Füllfarbe (etwas heller als der Hintergrund)
+        ctx.fill();
+        ctx.strokeStyle = '#101318'; // Hexagon-Randfarbe
+        ctx.lineWidth = 1.5; // Breite des Randes
+        ctx.stroke();
     };
 
 
@@ -200,22 +253,22 @@ const GameCanvas = () => {
     }, []);
 
     const getCameraPosition = (snakeHead, boundaries, viewportWidth, viewportHeight) => {
-        console.log('snakeHead:', snakeHead);
-        console.log('boundaries:', boundaries);
-        console.log('viewportWidth:', viewportWidth);
-        console.log('viewportHeight:', viewportHeight);
+        // console.log('snakeHead:', snakeHead);
+        // console.log('boundaries:', boundaries);
+        // console.log('viewportWidth:', viewportWidth);
+        // console.log('viewportHeight:', viewportHeight);
 
         // Kamera zentriert auf den Kopf der Schlange
         let cameraX = snakeHead.x - viewportWidth / 2;
         let cameraY = snakeHead.y - viewportHeight / 2;
 
-        console.log('Initial cameraX:', cameraX, 'Initial cameraY:', cameraY);
+        // console.log('Initial cameraX:', cameraX, 'Initial cameraY:', cameraY);
 
-        // Begrenze die Kamera
-        cameraX = Math.max(0, Math.min(cameraX, boundaries.width - viewportWidth));
-        cameraY = Math.max(0, Math.min(cameraY, boundaries.height - viewportHeight));
+        // // Begrenze die Kamera
+        // cameraX = Math.max(0, Math.min(cameraX, boundaries.width - viewportWidth));
+        // cameraY = Math.max(0, Math.min(cameraY, boundaries.height - viewportHeight));
 
-        console.log('Clamped cameraX:', cameraX, 'Clamped cameraY:', cameraY);
+        // console.log('Clamped cameraX:', cameraX, 'Clamped cameraY:', cameraY);
 
         return { x: cameraX, y: cameraY };
     };

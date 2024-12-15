@@ -5,9 +5,10 @@ class Snake {
             this.snakeId = snakeData.snakeId || '';
             this.headPosition = snakeData.headPosition || {x: 0, y: 0};
             this.targetPosition = snakeData.targetPosition;
+            this.direction = snakeData.direction || {x: 0.5, y: 0.5};
             this.segments = snakeData.segments || [];
-            this.segmentCount = snakeData.segmentCount || 5;
-            this.scale = snakeData.scale || 0.6;
+            this.segmentCount = snakeData.segmentCount || 20;
+            this.scale = snakeData.scale || 2;
             this.color = snakeData.color || 'green';
             this.speed = snakeData.speed || 2;
             this.SNAKE_INITIAL_LENGTH = snakeData.SNAKE_INITIAL_LENGTH || 20;
@@ -18,26 +19,27 @@ class Snake {
             this.snakeId = snakeId;
             this.headPosition = headPosition;
             this.targetPosition = targetPosition;
+            this.direction = {x: 0.5, y: 0.5};
             this.segments = [];
-            this.segmentCount = options.segmentCount || 5;
-            this.scale = options.scale || 0.6;
+            this.segmentCount = options.segmentCount || 20;
+            this.scale = options.scale || 2;
             this.color = options.color || 'green';
             this.speed = options.speed || 2;
             this.SNAKE_INITIAL_LENGTH = 20;
             this.queuedSegments = 0;
             this.boost = false;
 
-            // Initialize segments
-            for (let i = 0; i < this.segmentCount; i++) {
-                this.segments.push({headPosition});
-            }
+            // // Initialize segments
+            // for (let i = 0; i < this.segmentCount; i++) {
+            //     this.segments.push({headPosition});
+            // }
         }
-        this.isBrowser = typeof window !== 'undefined';
-        // Lade die Textur nur im Browser
-        if (this.isBrowser) {
-            this.texture = new Image();
-            this.texture.src = '/public/images/texture.png'; // Relativer Pfad zur Textur
-        }
+        // this.isBrowser = typeof window !== 'undefined';
+        // // Lade die Textur nur im Browser
+        // if (this.isBrowser) {
+        //     this.texture = new Image();
+        //     this.texture.src = '/public/images/texture.png'; // Relativer Pfad zur Textur
+        // }
 
     }
 
@@ -91,7 +93,7 @@ class Snake {
         this.targetY = targetY;
     }
 
-    moveSnake() {
+    moveSnake(boundaries) {
         // First, the function calculates the difference between the target position and the current head position of the snake:
         const dx = this.targetX - this.headPosition.x;
         const dy = this.targetY - this.headPosition.y;
@@ -109,8 +111,8 @@ class Snake {
         this.headPosition.y += directionY * speed;
 
         // To ensure the snake stays within the game boundaries, the new head position is clamped:
-        this.headPosition.x = Math.max(0, Math.min(this.headPosition.x, 800));
-        this.headPosition.y = Math.max(0, Math.min(this.headPosition.y, 600));
+        this.headPosition.x = Math.max(0, Math.min(this.headPosition.x, boundaries.width));
+        this.headPosition.y = Math.max(0, Math.min(this.headPosition.y, boundaries.height));
 
         // A new segment is added to the front of the snake to represent the new head position:
         this.segments.unshift({...this.headPosition});
@@ -134,7 +136,7 @@ class Snake {
     }
 
     applyBoostPenalty(pointsToDrop) {
-        if (this.boost && pointsToDrop > 0) {
+        if (this.boost && this.segments.length > this.SNAKE_INITIAL_LENGTH) {
             // this.boost = false; // Deaktiviere Boost, wenn Punkte abgezogen werden
             return this.segments.splice(-1, 1).map(segment => ({
                 x: segment.x,

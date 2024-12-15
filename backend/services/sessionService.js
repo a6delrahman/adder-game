@@ -11,8 +11,8 @@ const playerIndex = new Map(); // { ws: { sessionId, snakeId } }
 const lastSentStates = new Map(); // { playerId: { lastState } }
 
 const SNAKE_SPEED = 2;
-const FIELD_WIDTH = 800;
-const FIELD_HEIGHT = 600;
+const FIELD_WIDTH = 2000;
+const FIELD_HEIGHT = 2000;
 const SNAKE_INITIAL_LENGTH = 20;
 const BOUNDARY = {width: FIELD_WIDTH, height: FIELD_HEIGHT};
 
@@ -458,7 +458,7 @@ function movePlayer(playerState, boundaries) {
     // playerState.snake.setBoost(playerState.boost);
 
     // playerState.snake.updateDirection(playerState.targetPosition.x, playerState.targetPosition.y);
-    playerState.snake.moveSnake();
+    playerState.snake.moveSnake(boundaries);
 
     // playerState.headPosition = playerState.snake.headPosition;
     // playerState.segments = playerState.snake.segments;
