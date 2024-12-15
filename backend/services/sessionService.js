@@ -16,7 +16,7 @@ const FIELD_HEIGHT = 2000;
 const SNAKE_INITIAL_LENGTH = 20;
 const BOUNDARY = {width: FIELD_WIDTH, height: FIELD_HEIGHT};
 
-const ZONE_COUNT = 4; // Gittergröße 4x4
+const ZONE_COUNT = 10; // Gittergröße 4x4
 const MIN_FOOD_PER_ZONE = 2; // Mindestens 2 Nahrungspunkte pro Zone
 const MAX_FOOD_PER_ZONE = 5; // Maximal 5 Nahrungspunkte pro Zone
 
@@ -495,48 +495,50 @@ function movePlayer(playerState, boundaries) {
 //     }
 // }
 
-function handleBoostPenalty(playerState, gameState) {
-    const { snake } = playerState;
-    const droppedFood = snake.applyBoostPenalty(1);
-
-    if (droppedFood.length > 0) {
-        gameState.food.push(...droppedFood);
-    }
-}
-
-
-
 // function handleBoostPenalty(playerState, gameState) {
-//     if (playerState.boost) {
-//         // Score sicherstellen, dass er nicht negativ wird
-//         if (playerState.score <= 0) {
-//             playerState.score = 0; // Sicherstellen, dass der Score nicht negativ ist
-//             playerState.boost = false; // Boost deaktivieren
-//             return; // Keine weiteren Aktionen durchführen
-//         }
+//     const { snake } = playerState;
+//     const droppedFood = snake.applyBoostPenalty(1);
 //
-//         const POINT_LOSS = 1; // Punkteverlust pro Boost-Zyklus
-//         const TAIL_DROP_SPREAD = 20; // Versatz um das Schwanzsegment
-//
-//         // Punkteabzug
-//         playerState.score -= POINT_LOSS;
-//
-//         // Schwanzsegment ermitteln
-//         const tailSegment = playerState.segments[playerState.segments.length - 1];
-//
-//         // Nahrung fallen lassen
-//         if (tailSegment) {
-//             const randomOffsetX = Math.random() * TAIL_DROP_SPREAD * 2 - TAIL_DROP_SPREAD;
-//             const randomOffsetY = Math.random() * TAIL_DROP_SPREAD * 2 - TAIL_DROP_SPREAD;
-//
-//             const food = generateFood(
-//                 {x: tailSegment.x + randomOffsetX, y: tailSegment.y + randomOffsetY},
-//                 POINT_LOSS
-//             );
-//             if (food) gameState.food.push(food);
-//         }
+//     if (droppedFood.length > 0) {
+//         gameState.food.push(...droppedFood);
 //     }
 // }
+
+
+
+function handleBoostPenalty(playerState, gameState) {
+    const { snake } = playerState;
+    if (snake.boost) {
+        // Score sicherstellen, dass er nicht negativ wird
+        if (playerState.score <= 0) {
+            playerState.score = 0; // Sicherstellen, dass der Score nicht negativ ist
+            snake.setBoost(false); // Boost deaktivieren
+            return; // Keine weiteren Aktionen durchführen
+        }
+
+        const POINT_LOSS = 1; // Punkteverlust pro Boost-Zyklus
+        const TAIL_DROP_SPREAD = 20; // Versatz um das Schwanzsegment
+
+        // Punkteabzug
+        playerState.score -= POINT_LOSS;
+        snake.segments.pop();
+
+        // Schwanzsegment ermitteln
+        const tailSegment = snake.segments[snake.segments.length - 1];
+
+        // Nahrung fallen lassen
+        if (tailSegment) {
+            const randomOffsetX = Math.random() * TAIL_DROP_SPREAD * 2 - TAIL_DROP_SPREAD;
+            const randomOffsetY = Math.random() * TAIL_DROP_SPREAD * 2 - TAIL_DROP_SPREAD;
+
+            const food = generateFood(
+                {x: tailSegment.x + randomOffsetX, y: tailSegment.y + randomOffsetY},
+                POINT_LOSS
+            );
+            if (food) gameState.food.push(food);
+        }
+    }
+}
 
 function handleFoodCollision(playerState, gameState) {
     const { snake } = playerState;

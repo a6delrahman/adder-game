@@ -104,7 +104,7 @@ const GameCanvas = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Zeichne den Hintergrund (transformiere die Position basierend auf der Kamera)
-        drawBackground(ctx, camera);
+        drawBackground(ctx, camera, boundaries.current);
 
         // Zeichne die Schlangen
         Object.values(otherSnakes).forEach(snake => {
@@ -159,7 +159,7 @@ const GameCanvas = () => {
     //     }
     // };
 
-    const drawBackground = (ctx, camera) => {
+    const drawBackground = (ctx, camera, boundaries) => {
         const canvas = canvasRef.current;
         const hexSize = 30; // Größe der Hexagone
         const gap = 2; // Abstand zwischen Hexagonen
@@ -171,13 +171,37 @@ const GameCanvas = () => {
         ctx.fillStyle = '#1b1f2a'; // Dunkles Blau
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Zeichne die Hexagon-Muster
-        for (let y = -hexHeight; y < canvas.height + hexHeight; y += hexHeight * 0.75) {
-            for (let x = -hexWidth; x < canvas.width + hexWidth; x += hexWidth) {
+        // Bereiche außerhalb der Boundary rot einfärben
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // Halbtransparentes Rot
+        // Links
+        ctx.fillRect(0, 0, -camera.x, canvas.height); // Bereich links der Spielfeldgrenze
+        // Rechts
+        ctx.fillRect(boundaries.width - camera.x, 0, canvas.width - boundaries.width + camera.x, canvas.height);
+        // Oben
+        ctx.fillRect(0, 0, canvas.width, -camera.y); // Bereich oberhalb der Spielfeldgrenze
+        // Unten
+        ctx.fillRect(0, boundaries.height - camera.y, canvas.width, canvas.height - boundaries.height + camera.y);
+
+
+        // Hexagon-Muster über die gesamte Spielfeldgröße zeichnen
+        const startX = -hexWidth; // Start vor der linken Grenze
+        const endX = boundaries.width + hexWidth; // Bis nach der rechten Grenze
+        const startY = -hexHeight; // Start vor der oberen Grenze
+        const endY = boundaries.height + hexHeight; // Bis nach der unteren Grenze
+
+        for (let y = startY; y < endY; y += hexHeight * 0.75) {
+            for (let x = startX; x < endX; x += hexWidth) {
                 const xOffset = (Math.floor(y / (hexHeight * 0.75)) % 2 === 0) ? 0 : offset;
                 drawHexagon(ctx, x + xOffset - camera.x, y - camera.y, hexSize, gap);
             }
         }
+
+
+        // Boundary (Grenze) rot zeichnen
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(-camera.x, -camera.y, boundaries.width, boundaries.height);
+
     };
 
 // Hilfsfunktion: Zeichnet ein Hexagon

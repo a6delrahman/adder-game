@@ -8,7 +8,7 @@ class Snake {
             this.direction = snakeData.direction || {x: 0.5, y: 0.5};
             this.segments = snakeData.segments || [];
             this.segmentCount = snakeData.segmentCount || 20;
-            this.scale = snakeData.scale || 2;
+            this.scale = snakeData.scale || 5;
             this.color = snakeData.color || 'green';
             this.speed = snakeData.speed || 2;
             this.SNAKE_INITIAL_LENGTH = snakeData.SNAKE_INITIAL_LENGTH || 20;
@@ -22,7 +22,7 @@ class Snake {
             this.direction = {x: 0.5, y: 0.5};
             this.segments = [];
             this.segmentCount = options.segmentCount || 20;
-            this.scale = options.scale || 2;
+            this.scale = options.scale || 5;
             this.color = options.color || 'green';
             this.speed = options.speed || 2;
             this.SNAKE_INITIAL_LENGTH = 20;
@@ -89,43 +89,46 @@ class Snake {
     }
 
     updateDirection(targetX, targetY) {
-        this.targetX = targetX;
-        this.targetY = targetY;
+        const dx = targetX - this.headPosition.x;
+        const dy = targetY - this.headPosition.y;
+
+        const magnitude = Math.sqrt(dx * dx + dy * dy);
+
+        this.direction.x = magnitude > 0 ? dx / magnitude : 0;
+        this.direction.y = magnitude > 0 ? dy / magnitude : 0;
     }
 
+
     moveSnake(boundaries) {
-        // First, the function calculates the difference between the target position and the current head position of the snake:
-        const dx = this.targetX - this.headPosition.x;
-        const dy = this.targetY - this.headPosition.y;
+        // // Normiere die Richtung, falls sie nicht normalisiert ist
+        // const magnitude = Math.sqrt(this.direction.x * this.direction.x + this.direction.y * this.direction.y);
+        // const normalizedDirectionX = magnitude > 0 ? this.direction.x / magnitude : 0;
+        // const normalizedDirectionY = magnitude > 0 ? this.direction.y / magnitude : 0;
 
-        // Next, it normalizes the direction vector to ensure the movement is consistent regardless of the distance to the target:
-        const magnitude = Math.sqrt(dx * dx + dy * dy);
-        const directionX = magnitude > 0 ? dx / magnitude : 0;
-        const directionY = magnitude > 0 ? dy / magnitude : 0;
-
-        // // The speed of the snake is then determined, doubling if the boost is active:
+        // Berechne die Geschwindigkeit
         const speed = this.boost ? this.speed * 2 : this.speed;
 
-        // The head position of the snake is updated based on the direction and speed:
-        this.headPosition.x += directionX * speed;
-        this.headPosition.y += directionY * speed;
+        // Aktualisiere die Kopfposition basierend auf Richtung und Geschwindigkeit
+        this.headPosition.x += this.direction.x * speed;
+        this.headPosition.y += this.direction.y * speed;
 
-        // To ensure the snake stays within the game boundaries, the new head position is clamped:
+        // Begrenze die Kopfposition innerhalb der Spielfeldgrenzen
         this.headPosition.x = Math.max(0, Math.min(this.headPosition.x, boundaries.width));
         this.headPosition.y = Math.max(0, Math.min(this.headPosition.y, boundaries.height));
 
-        // A new segment is added to the front of the snake to represent the new head position:
+        // Füge ein neues Segment für die neue Kopfposition hinzu
         this.segments.unshift({...this.headPosition});
 
-        // Finally, if the number of segments exceeds the maximum allowed (initial length plus any queued segments), the oldest segment is removed:
+        // Entferne ältere Segmente, wenn die maximale Länge überschritten wird
         const maxSegments = this.segmentCount + this.queuedSegments;
         if (this.segments.length > maxSegments) {
             this.segments.pop();
         }
     }
 
+
     static visible(snake, camera) {
-        const {x, y} = snake.position;
+        const {x, y} = snake.headPosition;
         const {width, height} = camera;
         return x >= 0 && x <= width && y >= 0 && y <= height;
     }
@@ -217,7 +220,6 @@ class Snake {
     //         ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
     //         ctx.fill();
     //     }
-    // }
 
 
     // 4. Animation durch pulsierende Segmente
