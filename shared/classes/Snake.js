@@ -105,6 +105,8 @@ class Snake {
         // const normalizedDirectionX = magnitude > 0 ? this.direction.x / magnitude : 0;
         // const normalizedDirectionY = magnitude > 0 ? this.direction.y / magnitude : 0;
 
+
+
         // Berechne die Geschwindigkeit
         const speed = this.boost ? this.speed * 2 : this.speed;
 
@@ -134,7 +136,7 @@ class Snake {
     }
 
     setBoost(boostActive) {
-        console.log(`Setting boost for snake ${this.snakeId}: ${boostActive}`);
+        // console.log(`Setting boost for snake ${this.snakeId}: ${boostActive}`);
         this.boost = boostActive;
     }
 
@@ -163,46 +165,46 @@ class Snake {
 
 
 
-    // // 1. Segment-Gradient-Farben
-    // draw(ctx) {
-    //     this.segments.forEach((segment, index) => {
-    //         // Überprüfen, ob die Werte gültig sind
-    //         if (
-    //             !Number.isFinite(segment.x) ||
-    //             !Number.isFinite(segment.y) ||
-    //             !Number.isFinite(this.scale)
-    //         ) {
-    //             console.error(`Ungültige Werte für Segment:`, { segment, scale: this.scale });
-    //             return;
-    //         }
-    //
-    //         // Erstelle den Farbverlauf für das Segment
-    //         const gradient = ctx.createRadialGradient(
-    //             segment.x,
-    //             segment.y,
-    //             0,
-    //             segment.x,
-    //             segment.y,
-    //             10 * this.scale
-    //         );
-    //         gradient.addColorStop(0, this.color); // Startfarbe
-    //         gradient.addColorStop(1, 'black'); // Endfarbe
-    //
-    //         // // Schattierung
-    //         // ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'; // Farbe des Schattens
-    //         // ctx.shadowBlur = 15; // Weichheit des Schattens
-    //         // ctx.shadowOffsetX = 3; // Horizontaler Offset
-    //         // ctx.shadowOffsetY = 3; // Vertikaler Offset
-    //
-    //
-    //
-    //         // Zeichne das Segment
-    //         ctx.fillStyle = gradient;
-    //         ctx.beginPath();
-    //         ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
-    //         ctx.fill();
-    //     });
-    // }
+    // 1. Segment-Gradient-Farben
+    draw(ctx) {
+        this.segments.forEach((segment, index) => {
+            // Überprüfen, ob die Werte gültig sind
+            if (
+                !Number.isFinite(segment.x) ||
+                !Number.isFinite(segment.y) ||
+                !Number.isFinite(this.scale)
+            ) {
+                console.error(`Ungültige Werte für Segment:`, { segment, scale: this.scale });
+                return;
+            }
+
+            // Erstelle den Farbverlauf für das Segment
+            const gradient = ctx.createRadialGradient(
+                segment.x,
+                segment.y,
+                0,
+                segment.x,
+                segment.y,
+                10 * this.scale
+            );
+            gradient.addColorStop(0, this.color); // Startfarbe
+            gradient.addColorStop(1, 'black'); // Endfarbe
+
+            // // Schattierung
+            // ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'; // Farbe des Schattens
+            // ctx.shadowBlur = 15; // Weichheit des Schattens
+            // ctx.shadowOffsetX = 3; // Horizontaler Offset
+            // ctx.shadowOffsetY = 3; // Vertikaler Offset
+
+
+
+            // Zeichne das Segment
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+    }
 
     // // 3. Kopf-Segment hervorheben
     // draw(ctx) {

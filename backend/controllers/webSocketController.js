@@ -15,7 +15,7 @@ function handleConnection(ws, wss) {
 
     ws.on('message', (message) => {
         const data = JSON.parse(message);
-        console.log('Received message:', data);
+        // console.log('Received message:', data);
         // data.snakeId = snakeId;
 
         switch (data.type) {

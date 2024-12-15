@@ -345,10 +345,10 @@ function handleMovement(data, ws) {
     // Boost nur aktivieren, wenn Punkte > 0 sind
     player.snake.setBoost(!!(data.boost && player.score > 0));
 
-    console.log(`Updated movement for snakeId ${snakeId}:`, {
-        targetPosition: { x: data.targetX, y: data.targetY },
-        boost: player.snake.boost,
-    });
+    // console.log(`Updated movement for snakeId ${snakeId}:`, {
+    //     targetPosition: { x: data.targetX, y: data.targetY },
+    //     boost: player.snake.boost,
+    // });
 }
 
 

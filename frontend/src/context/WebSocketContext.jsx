@@ -58,6 +58,10 @@ export const WebSocketProvider = ({ children }) => {
                 }
             });
 
+            // Object.values(otherSnakes.current).forEach(snake => {
+            //     snake.moveSnake(boundaries.current);
+            // });
+
             data.players.forEach((player) => {
                 if (otherSnakes.current[player.snakeId]) {
                     otherSnakes.current[player.snakeId].update(player.headPosition, player.segments);

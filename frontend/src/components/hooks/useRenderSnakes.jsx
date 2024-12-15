@@ -1,13 +1,12 @@
-import { useCallback } from 'react';
-import Snake from '../../classes/Snake';
+import {useCallback} from 'react';
 
 const useRenderSnakes = (playerSnakeId, otherSnakes) => {
-    const renderSnakes = useCallback((ctx) => {
+    return useCallback((ctx) => {
         if (!playerSnakeId) return;
         if (!otherSnakes) return;
         Object.values(otherSnakes).forEach((snake) => {
-            snake.draw(ctx);
 
+            snake.draw(ctx);
             // const isPlayerSnake = snake.snakeId === playerSnakeId;
             // const snakeObject = new Snake(
             //     snake.position.x,
@@ -20,8 +19,6 @@ const useRenderSnakes = (playerSnakeId, otherSnakes) => {
             // snakeObject.draw(ctx);
         });
     }, [playerSnakeId, otherSnakes]);
-
-    return renderSnakes;
 };
 
 export default useRenderSnakes;
