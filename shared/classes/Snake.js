@@ -185,7 +185,7 @@ class Snake {
                 0,
                 segment.x,
                 segment.y,
-                10 * this.scale
+                this.scale
             );
             gradient.addColorStop(0, this.color); // Startfarbe
             gradient.addColorStop(1, 'black'); // Endfarbe
@@ -201,7 +201,7 @@ class Snake {
             // Zeichne das Segment
             ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.arc(segment.x, segment.y, 10 * this.scale, 0, 2 * Math.PI);
+            ctx.arc(segment.x, segment.y, this.scale, 0, 2 * Math.PI);
             ctx.fill();
         });
     }
@@ -223,21 +223,21 @@ class Snake {
     //         ctx.fill();
     //     }
 
-
-    // 4. Animation durch pulsierende Segmente
-    draw(ctx) {
-        const timeFactor = Math.sin(Date.now() / 200); // Animationsfaktor
-
-        this.segments.forEach((segment, index) => {
-            const scaleFactor = 1 + (timeFactor * (index / this.segments.length) * 0.1); // Leichtes Pulsieren
-            ctx.fillStyle = this.color;
-
-            ctx.beginPath();
-            ctx.arc(segment.x, segment.y, 10 * this.scale * scaleFactor, 0, 2 * Math.PI);
-            ctx.fill();
-        });
-
-
+    //
+    // // 4. Animation durch pulsierende Segmente
+    // draw(ctx) {
+    //     const timeFactor = Math.sin(Date.now() / 200); // Animationsfaktor
+    //
+    //     this.segments.forEach((segment, index) => {
+    //         const scaleFactor = 1 + (timeFactor * (index / this.segments.length) * 0.1); // Leichtes Pulsieren
+    //         ctx.fillStyle = this.color;
+    //
+    //         ctx.beginPath();
+    //         ctx.arc(segment.x, segment.y, 10 * this.scale * scaleFactor, 0, 2 * Math.PI);
+    //         ctx.fill();
+    //     });
+    //
+    // }
 
 
     // // 5. Texturierte Segmente
@@ -348,7 +348,7 @@ class Snake {
 
 
 
-}
+
 
 }
 
