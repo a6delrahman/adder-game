@@ -1,6 +1,6 @@
 // services/sessionService.js
 const {v4: uuidv4} = require('uuid');
-
+const {WebSocket} = require('ws');
 const sessions = new Map();
 const gameStates = new Map(); // Separate GameState-Verwaltung für jedes Spiel
 const playerIndex = new Map(); // { ws: { sessionId, snakeId } }
