@@ -10,7 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const { handleConnection} = require('./controllers/webSocketController');
 const playerService = require('./services/playerService');
-const websocketService = require('./services/websocketService');
+const websocketService = require('./services/webSocketService');
 const sessionController = require('./controllers/sessionController');
 const sessionService = require('./services/sessionService');
 
@@ -22,8 +22,8 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(cors());  // Allow all cross-origin requests
 
-// Verbindung zur MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
+// Verbindung zur MongoDB: mit localhost: mongodb://127.0.0.1:27017/Adder, mit docker: 'mongodb://user:pass@mongodb:27017/Adder'
+mongoose.connect('mongodb://mongodb:27017/Adder', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })

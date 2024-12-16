@@ -1,0 +1,39 @@
+version: '3'
+services:
+  backend:
+    build: ./backend
+    environment:
+      - CONN_STR=mongodb://user:pass@mongodb:27017
+    depends_on:
+      - mongodb
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+    volumes:
+      - mongodb-data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.runCommand('ping')"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:5173"
+
+    depends_on:
+      - backend
+volumes:
+  mongodb-data:
+    driver: local
