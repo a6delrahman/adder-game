@@ -22,8 +22,11 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(cors());  // Allow all cross-origin requests
 
-// Verbindung zur MongoDB: mit localhost: mongodb://127.0.0.1:27017/Adder, mit docker: 'mongodb://user:pass@mongodb:27017/Adder'
-mongoose.connect('mongodb://mongodb:27017/Adder', {
+// Verbindung zur MongoDB: conn_string mit localhost oder MongoDB Docker standalone: mongodb://127.0.0.1:27017/Adder
+// 
+// conn_string mit docker-compose: 'mongodb://user:pass@mongodb:27017/Adder'
+
+mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
