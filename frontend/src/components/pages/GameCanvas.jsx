@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useWebSocket} from '../../context/WebSocketContext';
 import useRenderBackground from "../hooks/useRenderBackground.jsx";
 import useRenderSnakes from "../hooks/useRenderSnakes.jsx";
@@ -10,7 +10,7 @@ const GameCanvas = () => {
     const canvasRef = useRef(null); // Canvas-Referenz
     const backgroundCanvasRef = useRef(null); // Offscreen-Canvas für Hintergrund
     const boost = useRef(false); // Boost-Status
-    const {playerSnakeId, otherSnakes, sendMessage, boundaries, food} = useWebSocket(); // Zugriff auf den zentralisierten Zustand
+    const {playerSnakeId, otherSnakes, sendMessage, boundaries, food, currentEquation} = useWebSocket(); // Zugriff auf den zentralisierten Zustand
     const backgroundImageRef = useRef(null); // Referenz für das Hintergrundbild
     const zoomLevel = useRef(1.1); // Start-Zoomlevel (1.5 = 150%)
 
@@ -19,7 +19,58 @@ const GameCanvas = () => {
     const renderSnakes = useRenderSnakes(playerSnakeId, otherSnakes);
     const renderFood = useRenderFood(food);
     const renderScores = useRenderScores(otherSnakes);
-    const renderMathEquations = useRenderMathEquations(otherSnakes[playerSnakeId]);
+    const renderMathEquations = useRenderMathEquations();
+
+    const [showScores, setShowScores] = useState(true); // Zustand für Scores-Anzeige
+
+    const toggleScores = () => setShowScores(prev => !prev);
+
+    // Event-Listener für Tastendruck (nur auf dem Desktop)
+    useEffect(() => {
+        const handleKeydown = (e) => {
+            if (e.key === 's' || e.key === 'S') { // Toggle mit "S"-Taste
+                toggleScores();
+            }
+        };
+        window.addEventListener('keydown', handleKeydown);
+        return () => window.removeEventListener('keydown', handleKeydown);
+    }, []);
+
+// // Overlay zeichnen (Scores + MathEquations)
+//     const renderOverlay = () => {
+//         const overlayCanvas = overlayCanvasRef.current;
+//         const ctx = overlayCanvas.getContext('2d');
+//
+//         ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); // Nur das Overlay löschen
+//
+//         // MathEquations (oben zentriert)
+//         if (currentEquation) {
+//             ctx.font = '24px Arial';
+//             ctx.fillStyle = '#fff';
+//             ctx.textAlign = 'center';
+//             ctx.fillText(currentEquation.equation, overlayCanvas.width / 2, 50);
+//         }
+//
+//         // Scores (unten links)
+//         if (showScores) {
+//             ctx.font = '16px Arial';
+//             ctx.fillStyle = '#fff';
+//             let yPosition = overlayCanvas.height - 100; // Start 100px über dem unteren Rand
+//             Object.values(otherSnakes).forEach((snake) => {
+//                 ctx.fillText(`Player ${snake.snakeId}: ${snake.score || 0} points`, 20, yPosition);
+//                 yPosition += 20;
+//             });
+//         }
+//     };
+//
+//
+//     useEffect(() => {
+//         const overlayLoop = () => {
+//             renderOverlay();
+//             requestAnimationFrame(overlayLoop);
+//         };
+//         overlayLoop();
+//     }, [showScores, otherSnakes, currentEquation]);
 
     backgroundCanvasRef.current = document.createElement('canvas');
     // const backgroundCtx = backgroundCanvas.getContext('2d');
@@ -195,9 +246,6 @@ const GameCanvas = () => {
             zoomLevel.current
         );
 
-
-
-
         // Clear the canvas
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -208,13 +256,13 @@ const GameCanvas = () => {
 
         // Kopiere den vorberechneten Hintergrund vom Offscreen-Canvas
         const backgroundCanvas = backgroundCanvasRef.current;
-        ctx.drawImage(
-            backgroundCanvas,
-            0,
-            0,
-            boundaries.current.width,
-            boundaries.current.height
-        );
+        if (backgroundCanvas) {
+            ctx.drawImage(backgroundCanvas, 0, 0, boundaries.current.width, boundaries.current.height);
+        }
+
+
+        renderSnakes(ctx); // Draw snakes
+        renderFood(ctx); // Draw food
 
         // // Bereiche außerhalb der Boundary rot einfärben
         // ctx.fillStyle = 'rgba(200, 0, 0, 0.3)'; // Halbtransparentes Rot
@@ -233,170 +281,34 @@ const GameCanvas = () => {
         ctx.lineWidth = 3;
         ctx.strokeRect(-camera.x, -camera.y, boundaries.width, boundaries.height);
 
-        // drawHexagonPattern(ctx, boundaries.current.width, boundaries.current.height);
-        // drawHexagon(ctx, 0, 0, 30, 2);
+        // Overlays zeichnen (Scores und MathEquations)
+        ctx.restore(); // Rückkehr zur ursprünglichen Position ohne Zoom
+        ctx.save();
 
+        // MathEquations (oben zentriert)
+        if (currentEquation) {
+            ctx.font = '24px Arial';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentEquation.equation, canvas.width / 2, 50);
+        }
 
-
-
-        // // Zeichne den Hintergrund (transformiere die Position basierend auf der Kamera)
-        // drawBackground(ctx, camera, boundaries.current);
-        // drawBackground(backgroundCtx, camera, boundaries.current);
-        //
-        // ctx.drawImage(backgroundCanvas, 0, 0);
-
-
-        // renderBackground(ctx); // Draw background
-        renderSnakes(ctx); // Draw snakes
-        renderFood(ctx); // Draw food
-        renderScores(ctx); // Draw scores
-        renderMathEquations(ctx); // Draw math equations
-
+        // Scores (unten links)
+        if (showScores) {
+            ctx.font = '16px Arial';
+            ctx.fillStyle = '#fff';
+            let yPosition = canvas.height - 100;
+            Object.values(otherSnakes).forEach((snake) => {
+                ctx.fillText(`Player ${snake.snakeId}: ${snake.score || 0} points`, 20, yPosition);
+                yPosition += 20;
+            });
+        }
 
         ctx.restore();
     };
 
 
-    // const render = () => {
-    //     const canvas = canvasRef.current;
-    //     const ctx = canvas.getContext('2d');
-    //     const ownSnake = otherSnakes[playerSnakeId];
-    //
-    //     if (!ownSnake) return;
-    //
-    //     // // Berechne die Kamera-Position basierend auf dem Kopf der Schlange
-    //     // const camera = getCameraPosition(
-    //     //     ownSnake.headPosition,
-    //     //     boundaries.current,
-    //     //     canvas.width / zoomLevel.current,
-    //     //     canvas.height / zoomLevel.current
-    //     // );
-    //
-    //     // Berechne die Kamera-Position basierend auf dem Kopf der Schlange
-    //     const camera = {
-    //         x: ownSnake.headPosition.x - canvas.width / (2 * zoomLevel.current),
-    //         y: ownSnake.headPosition.y - canvas.height / (2 * zoomLevel.current),
-    //     };
-    //
-    //
-    //     // // Kopiere den vorberechneten Hintergrund vom Offscreen-Canvas
-    //     // const backgroundCanvas = backgroundCanvasRef.current;
-    //     // ctx.drawImage(
-    //     //     backgroundCanvas,
-    //     //     camera.x,
-    //     //     camera.y,
-    //     //     canvas.width,
-    //     //     canvas.height,
-    //     //     0,
-    //     //     0,
-    //     //     canvas.width,
-    //     //     canvas.height
-    //     // );
-    //     //
-    //     // // Bereiche außerhalb der Boundary rot einfärben
-    //     // ctx.fillStyle = 'rgba(200, 0, 0, 0.3)'; // Halbtransparentes Rot
-    //     // // Links
-    //     // ctx.fillRect(0, 0, -camera.x, canvas.height);
-    //     // // Rechts
-    //     // ctx.fillRect(boundaries.width - camera.x, 0, canvas.width - boundaries.width + camera.x, canvas.height);
-    //     // // Oben
-    //     // ctx.fillRect(0, 0, canvas.width, -camera.y);
-    //     // // Unten
-    //     // ctx.fillRect(0, boundaries.height - camera.y, canvas.width, canvas.height - boundaries.height + camera.y);
-    //
-    //
-    //     // // Boundary (Grenze) rot zeichnen
-    //     // ctx.strokeStyle = 'red';
-    //     // ctx.lineWidth = 3;
-    //     // ctx.strokeRect(-camera.x, -camera.y, boundaries.width, boundaries.height);
-    //
-    //     // Clear the Canvas
-    //     ctx.save(); // Speichere den aktuellen Kontext
-    //     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //
-    //     // Wende Zoom und angepasste Kamera-Offsets an
-    //     ctx.scale(zoomLevel.current, zoomLevel.current);
-    //     ctx.translate(-camera.x * zoomLevel.current, -camera.y * zoomLevel.current);
-    //
-    //     // // Zeichne den Hintergrund (transformiere die Position basierend auf der Kamera)
-    //     // drawBackground(ctx, camera, boundaries.current);
-    //     // drawBackground(backgroundCtx, camera, boundaries.current);
-    //     //
-    //     // ctx.drawImage(backgroundCanvas, 0, 0);
-    //
-    //     // Schlangen zeichnen
-    //     Object.values(otherSnakes).forEach((snake) => {
-    //         snake.segments.forEach((segment) => {
-    //             ctx.beginPath();
-    //             ctx.arc(segment.x, segment.y, snake.scale, 0, 2 * Math.PI);
-    //             ctx.fillStyle = snake.color;
-    //             ctx.fill();
-    //         });
-    //     });
-    //
-    //     // Essen zeichnen
-    //     if (food?.current) {
-    //         Object.values(food.current).forEach((foodItem) => {
-    //             ctx.beginPath();
-    //             ctx.arc(foodItem.x, foodItem.y, 5, 0, 2 * Math.PI);
-    //             ctx.fillStyle = 'red';
-    //             ctx.fill();
-    //         });
-    //     }
-    //
-    //     ctx.restore(); // Kontext zurücksetzen
-    //
-    //     // Zeichne die Schlangen
-    //     // Object.values(otherSnakes).forEach(snake => {
-    //     //     snake.segments.forEach(segment => {
-    //     //         const transformed = transformPosition(segment, camera);
-    //     //
-    //     //         // Erstelle den Farbverlauf für das Segment
-    //     //         const gradient = ctx.createRadialGradient(
-    //     //             transformed.x,
-    //     //             transformed.y,
-    //     //             0,
-    //     //             transformed.x,
-    //     //             transformed.y,
-    //     //             snake.scale
-    //     //         );
-    //     //         gradient.addColorStop(0, 'orange'); // Startfarbe
-    //     //         gradient.addColorStop(1, snake.color); // Endfarbe
-    //     //
-    //     //         // Zeichne das Segment
-    //     //         ctx.fillStyle = gradient;
-    //     //         ctx.beginPath();
-    //     //         ctx.arc(transformed.x, transformed.y, snake.scale, 0, 2 * Math.PI);
-    //     //         ctx.fill();
-    //     //
-    //     //         // ctx.beginPath();
-    //     //         // ctx.arc(transformed.x, transformed.y, snake.scale, 0, 2 * Math.PI);
-    //     //         // ctx.fillStyle = snake.color;
-    //     //         // ctx.fill();
-    //     //     });
-    //     // });
-    //
-    //     // // Zeichne das Essen
-    //     // if (food?.current) {
-    //     //     Object.values(food.current).forEach(foodItem => {
-    //     //         if (!isInView(foodItem, camera, canvas.width, canvas.height)) return;
-    //     //         const transformed = transformPosition(foodItem, camera);
-    //     //         ctx.beginPath();
-    //     //         ctx.arc(transformed.x, transformed.y, 5, 0, 2 * Math.PI);
-    //     //         ctx.fillStyle = 'red';
-    //     //         ctx.fill();
-    //     //     });
-    //     // } else {
-    //     //     console.warn('No food items to draw.');
-    //     // }
-    //
-    //     // ctx.restore(); // Kontext zurücksetzen
-    //
-    //     // Zeichne Punktzahlen, Gleichungen oder andere UI-Elemente hier
-    // };
-
-
-// Zoom-Logik
+    // Zoom-Logik
     useEffect(() => {
         const handleWheel = (e) => {
             e.preventDefault();
@@ -522,7 +434,7 @@ const GameCanvas = () => {
 
         loop(); // Starte die Schleife
         return () => cancelAnimationFrame(loop); // Stoppe die Schleife beim Unmount
-    }, [otherSnakes, food]); // Abhängigkeiten hinzufügen
+    }, [otherSnakes, food, currentEquation, showScores]); // Abhängigkeiten hinzufügen
 
 
     // Füge Event-Listener hinzu
@@ -555,74 +467,36 @@ const GameCanvas = () => {
         };
     }, []);
 
-    // const getCameraPosition = (snakeHead, boundaries, viewportWidth, viewportHeight) => {
-    //     // console.log('snakeHead:', snakeHead);
-    //     // console.log('boundaries:', boundaries);
-    //     // console.log('viewportWidth:', viewportWidth);
-    //     // console.log('viewportHeight:', viewportHeight);
-    //
-    //     // Kamera zentriert auf den Kopf der Schlange
-    //     let cameraX = snakeHead.x - viewportWidth / 2;
-    //     let cameraY = snakeHead.y - viewportHeight / 2;
-    //
-    //     // console.log('Initial cameraX:', cameraX, 'Initial cameraY:', cameraY);
-    //
-    //     // // Begrenze die Kamera
-    //     // cameraX = Math.max(0, Math.min(cameraX, boundaries.width - viewportWidth));
-    //     // cameraY = Math.max(0, Math.min(cameraY, boundaries.height - viewportHeight));
-    //
-    //     // console.log('Clamped cameraX:', cameraX, 'Clamped cameraY:', cameraY);
-    //
-    //     return {x: cameraX, y: cameraY};
-    // };
-
     const getCameraPosition = (snakeHead, boundaries, viewportWidth, viewportHeight, zoomLevel) => {
         // Calculate the camera position centered on the snake's head
         let cameraX = snakeHead.x - (viewportWidth / (2 * zoomLevel));
         let cameraY = snakeHead.y - (viewportHeight / (2 * zoomLevel));
 
-        // // Clamp the camera position to the boundaries
-        // cameraX = Math.max(0, Math.min(cameraX, boundaries.width - viewportWidth / zoomLevel));
-        // cameraY = Math.max(0, Math.min(cameraY, boundaries.height - viewportHeight / zoomLevel));
-
         return {x: cameraX, y: cameraY};
     };
 
 
-    // const transformPosition = (position, camera) => ({
-    //     x: position.x - camera.x,
-    //     y: position.y - camera.y,
-    // });
 
-    // const transformPosition = (position, camera) => ({
-    //     x: (position.x - camera.x) * zoomLevel.current,
-    //     y: (position.y - camera.y) * zoomLevel.current,
-    // });
-
-    // useEffect(() => {
-    //     const handleResize = () => {
-    //         const canvas = canvasRef.current;
-    //         canvas.width = window.innerWidth;
-    //         canvas.height = window.innerHeight;
-    //         render(); // Re-render the canvas after resizing
-    //     };
-    //
-    //     window.addEventListener('resize', handleResize);
-    //
-    //     // Initial resize to set the canvas size
-    //     handleResize();
-    //
-    //     return () => {
-    //         window.removeEventListener('resize', handleResize);
-    //     };
-    // }, []);
 
 
     return (
         <>
-            <canvas ref={canvasRef} width={800} height={800}/>
-            {/*<canvas ref={canvasRef} width={window.width} height={window.height}/>*/}
-            <canvas ref={backgroundCanvasRef} style={{display: 'none'}}/>
+            <canvas
+                ref={canvasRef}
+                width={800}
+                height={800}
+                style={{display: 'block', margin: '0 auto', backgroundColor: 'transparent'}}
+            />
+
+
+            {/*/!* Haupt-Canvas für das Spielfeld *!/*/}
+            {/*<canvas ref={canvasRef} width={800} height={800}/>*/}
+
+            {/*/!*<canvas ref={canvasRef} width={window.width} height={window.height}/>*!/*/}
+            {/*<canvas ref={backgroundCanvasRef} style={{display: 'none'}}/>*/}
+            {/*/!* Overlay-Canvas für Scores und MathEquations *!/*/}
+            {/*/!*<canvas ref={overlayCanvasRef} width={800} height={800} style={{position: 'absolute', top: 0, left: 0}} />*!/*/}
+
         </>
     );
 };

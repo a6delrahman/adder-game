@@ -14,6 +14,8 @@ class Snake {
             this.SNAKE_INITIAL_LENGTH = snakeData.SNAKE_INITIAL_LENGTH || 20;
             this.queuedSegments = snakeData.queuedSegments || 0;
             this.boost = snakeData.boost || false;
+            this.currentEquation = snakeData.currentEquation || '';
+            this.score = snakeData.score || 0;
         } else {
             const [snakeId, headPosition, targetPosition, options = {}] = arguments;
             this.snakeId = snakeId;
@@ -28,6 +30,8 @@ class Snake {
             this.SNAKE_INITIAL_LENGTH = 20;
             this.queuedSegments = 0;
             this.boost = false;
+            this.currentEquation = {};
+            this.score = 0;
 
             // // Initialize segments
             // for (let i = 0; i < this.segmentCount; i++) {
@@ -86,6 +90,14 @@ class Snake {
     update(headPosition, segments) {
         this.headPosition = headPosition;
         this.segments = segments;
+    }
+
+    updateScore(score) {
+        this.score = score;
+    }
+
+    updateEquation(equation) {
+        this.currentEquation = equation
     }
 
     updateDirection(targetX, targetY) {
@@ -153,10 +165,16 @@ class Snake {
     }
 
     checkCollisionWith(otherSnake) {
-        return this.segments.some(segment =>
-            Math.hypot(segment.x - otherSnake.headPosition.x, segment.y - otherSnake.headPosition.y) < 10
+        if (this === otherSnake) return false; // Stelle sicher, dass die Schlange nicht mit sich selbst verglichen wird
+
+        const collisionRadius = 10; // Genauere Kollisionsdistanz definieren
+
+        // Überprüfe Kollision zwischen dem Kopf der eigenen Schlange und den Segmenten der anderen
+        return otherSnake.segments.some(segment =>
+            Math.hypot(segment.x - this.headPosition.x, segment.y - this.headPosition.y) < collisionRadius
         );
     }
+
 
     checkCollisionWithFood(food) {
         return Math.hypot(this.headPosition.x - food.x, this.headPosition.y - food.y) < 10;

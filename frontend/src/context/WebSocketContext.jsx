@@ -15,6 +15,7 @@ export const WebSocketProvider = ({ children }) => {
     const ws = useRef(null);
     const boundaries = useRef({ width: 0, height: 0 });
     const food = useRef([]);
+    const [currentEquation, setCurrentEquation] = useState(null);
 
     const messageHandlers = useRef({
         default: (data) => console.warn(`Unhandled message type: ${data.type}`, data),
@@ -37,6 +38,7 @@ export const WebSocketProvider = ({ children }) => {
 
             food.current = initialGameState.food; // Speichert die Nahrung
             boundaries.current = initialGameState.boundaries; // Speichert die Spielfeldgrenzen
+            setCurrentEquation(initialGameState.players[snakeId].currentEquation); // Speichert die aktuelle Aufgabe
             setPlayerSnakeId(snakeId); // Speichert die ID der eigenen Schlange
             setIsSessionActive(true);
 
@@ -65,6 +67,8 @@ export const WebSocketProvider = ({ children }) => {
             data.players.forEach((player) => {
                 if (otherSnakes.current[player.snakeId]) {
                     otherSnakes.current[player.snakeId].update(player.headPosition, player.segments);
+                    otherSnakes.current[player.snakeId].updateScore(player.score);
+                    otherSnakes.current[player.snakeId].updateEquation(player.currentEquation);
                 } else {
                     otherSnakes.current[player.snakeId] = new Snake(
                         player.snakeId,
@@ -160,8 +164,9 @@ export const WebSocketProvider = ({ children }) => {
         sessionId,
         boundaries,
         food,
+        currentEquation,
         sendMessage,
-    }), [isReady, playerSnakeId, playerSnake, isSessionActive, sessionId, boundaries, food]);
+    }), [isReady, playerSnakeId, playerSnake, isSessionActive, sessionId, boundaries, food, currentEquation]);
 
     return (
         <WebSocketContext.Provider value={value}>

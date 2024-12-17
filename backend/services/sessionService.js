@@ -678,10 +678,11 @@ function randomizedNumber(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function dropSpecialFood(playerState, gameState) {
+function dropSpecialFood(playerSnakeSegments, gameState) {
+    if (!playerSnakeSegments || !gameState) return;
     const SPECIAL_FOOD_SPREAD = 10;
 
-    playerState.segments.forEach((segment, index) => {
+    playerSnakeSegments.forEach((segment, index) => {
         if (index % 9 === 0) {
             const randomOffsetX = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
             const randomOffsetY = Math.random() * SPECIAL_FOOD_SPREAD * 2 - SPECIAL_FOOD_SPREAD;
@@ -737,10 +738,11 @@ function checkCollision(pos1, pos2) {
 function handlePlayerCollision(playerState) {
     const sessionId = playerState.sessionId;
     const gameState = gameStates.get(sessionId);
+    const playerSnakeSegments = playerState.snake.segments;
 
-    if (gameState) {
+    if (playerSnakeSegments && gameState) {
         // Spezialnahrung fallen lassen
-        dropSpecialFood(playerState, gameState);
+        dropSpecialFood(playerSnakeSegments, gameState);
     }
 
     const ws = getWebSocketBySnakeId(playerState.snakeId);
