@@ -26,12 +26,8 @@ app.use(cors());
 app.use(express.static('public'));
 
 // Verbindung zur MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/Adder', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
+mongoose.connect(process.env.CONN_STR, {})
+    .then(() => console.log('MongoDB connected')).catch(err => console.log(err));
 
 // API-Routen
 // app.use('/api/game', gameRoutes);
