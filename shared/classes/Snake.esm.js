@@ -1,5 +1,5 @@
 // shared/classes/Snake.js
-class Snake {
+export default class Snake {
     constructor(snakeData) {
         if (typeof snakeData === 'object') {
             this.snakeId = snakeData.snakeId || '';
@@ -361,8 +361,6 @@ class Snake {
 
 
 }
-
-module.exports = Snake;
 
 
 

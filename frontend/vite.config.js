@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -9,4 +10,10 @@ export default defineConfig({
       '/api': 'http://localhost:5000'
     }
   },
+  resolve: {
+    alias: {
+      shared: path.resolve(__dirname, '../shared'),
+    },
+  }
 })
+

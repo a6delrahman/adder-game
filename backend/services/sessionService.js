@@ -2,7 +2,9 @@
 const {v4: uuidv4} = require('uuid');
 const { equationManager } = require('../utils/mathEquations');
 const WebSocket = require('ws');
-const Snake = require ('../../shared/classes/Snake').default;
+const path = require('path');
+const Snake = require('shared/classes/Snake.common');
+
 
 
 const sessions = new Map();
