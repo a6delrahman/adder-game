@@ -80,6 +80,8 @@ function revokeRefreshToken(refreshToken) {
     if (index !== -1) refreshTokens.splice(index, 1);
 }
 
+
+
 module.exports = {
     authMiddleware,
     registerUser,

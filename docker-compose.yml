@@ -19,7 +19,6 @@ services:
     volumes:
       - mongodb-data:/data/db
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-      - ./shared:/app/shared
     ports:
       - "27017:27017"
     healthcheck:

@@ -1,7 +1,7 @@
 // WebSocketContext.jsx
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import Snake from 'shared/classes/snake.esm';
+import Snake from 'shared/classes/snake';
 
 export const WebSocketContext = createContext(null);
 

@@ -43,7 +43,7 @@ app.get('/admin', (req, res) => {
 
 // WebSocket-Server erstellen und Verbindung verwalten
 const wss = new WebSocket.Server({ server });
-wss.on('connection', (ws) => handleConnection(ws, wss));
+wss.on('connection', (ws, req) => handleConnection(ws, req));
 
 setInterval(() => {
     // playerService.movePlayers();

@@ -8,11 +8,10 @@ class Snake {
             this.direction = snakeData.direction || {x: 0.5, y: 0.5};
             this.segments = snakeData.segments || [];
             this.segmentCount = snakeData.segmentCount || 20;
-            this.scale = snakeData.scale || 5;
+            this.scale = snakeData.scale || 3;
             this.color = snakeData.color || 'green';
             this.speed = snakeData.speed || 2;
             this.SNAKE_INITIAL_LENGTH = snakeData.SNAKE_INITIAL_LENGTH || 20;
-            this.queuedSegments = snakeData.queuedSegments || 0;
             this.boost = snakeData.boost || false;
             this.currentEquation = snakeData.currentEquation || '';
             this.score = snakeData.score || 0;
@@ -24,11 +23,10 @@ class Snake {
             this.direction = {x: 0.5, y: 0.5};
             this.segments = [];
             this.segmentCount = options.segmentCount || 20;
-            this.scale = options.scale || 5;
+            this.scale = options.scale || 3;
             this.color = options.color || 'green';
             this.speed = options.speed || 2;
             this.SNAKE_INITIAL_LENGTH = 20;
-            this.queuedSegments = 0;
             this.boost = false;
             this.currentEquation = {};
             this.score = 0;
@@ -48,13 +46,6 @@ class Snake {
     }
 
 
-    // updatePosition(segments) {
-    //     this.segments = segments;
-    //     // const newsegment = Array.from({ length: this.segmentCount }, (_, i) => ({ x: this.position.x, y: this.position.y + i * this.speed }))
-    //     // this.segments = newsegment;
-    // }
-
-
     updatePosition(targetX, targetY) {
         // Update the head position
         const head = this.segments[0];
@@ -69,22 +60,6 @@ class Snake {
             segment.y += (prevSegment.y - segment.y) * this.speed;
         }
     }
-
-
-    // updatePositionLocal(targetX, targetY) {
-    //     // Update the head position
-    //     const head = this.segments[0];
-    //     head.x += (targetX - head.x) * this.speed;
-    //     head.y += (targetY - head.y) * this.speed;
-    //
-    //     // Update the rest of the segments
-    //     for (let i = 1; i < this.segments.length; i++) {
-    //         const segment = this.segments[i];
-    //         const prevSegment = this.segments[i - 1];
-    //         segment.x += (prevSegment.x - segment.x) * this.speed;
-    //         segment.y += (prevSegment.y - segment.y) * this.speed;
-    //     }
-    // }
 
     update(headPosition, segments) {
         this.headPosition = headPosition;
@@ -132,7 +107,7 @@ class Snake {
         this.segments.unshift({...this.headPosition});
 
         // Entferne ältere Segmente, wenn die maximale Länge überschritten wird
-        const maxSegments = this.segmentCount + this.queuedSegments;
+        const maxSegments = this.segmentCount;
         if (this.segments.length > maxSegments) {
             this.segments.pop();
         }
@@ -204,11 +179,11 @@ class Snake {
             gradient.addColorStop(0, this.color); // Startfarbe
             gradient.addColorStop(1, 'black'); // Endfarbe
 
-            // // Schattierung
-            // ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'; // Farbe des Schattens
-            // ctx.shadowBlur = 15; // Weichheit des Schattens
-            // ctx.shadowOffsetX = 3; // Horizontaler Offset
-            // ctx.shadowOffsetY = 3; // Vertikaler Offset
+            // Schattierung
+            ctx.shadowColor = 'rgb(255,255,255)'; // Farbe des Schattens
+            ctx.shadowBlur = 2; // Weichheit des Schattens
+            ctx.shadowOffsetX = 2; // Horizontaler Offset
+            ctx.shadowOffsetY = 3; // Vertikaler Offset
 
 
             // Zeichne das Segment
@@ -358,11 +333,10 @@ class Snake {
     //         }
     //     });
     // }
-
-
 }
 
-module.exports = Snake;
+// Export für ES-Module
+export default Snake;
 
 
 

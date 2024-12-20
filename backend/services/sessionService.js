@@ -3,7 +3,9 @@ const {v4: uuidv4} = require('uuid');
 const { equationManager } = require('../utils/mathEquations');
 const WebSocket = require('ws');
 const path = require('path');
-const Snake = require('shared/classes/Snake.common');
+// const Snake = require('shared/classes/Snake.common');
+const Snake = require('../../shared/classes/Snake.common.js');
+const {saveFinalScore} = require("../models/ScoresModel");
 
 
 
@@ -12,11 +14,8 @@ const gameStates = new Map(); // Separate GameState-Verwaltung für jedes Spiel
 const playerIndex = new Map(); // { ws: { sessionId, snakeId } }
 const lastSentStates = new Map(); // { playerId: { lastState } }
 
-const SNAKE_SPEED = 2;
-const FIELD_WIDTH = 2000;
-const FIELD_HEIGHT = 2000;
-const SNAKE_INITIAL_LENGTH = 20;
-const BOUNDARY = {width: FIELD_WIDTH, height: FIELD_HEIGHT};
+
+const GAMEBOUNDARIES = {width: 2000, height: 2000};
 
 const ZONE_COUNT = 10; // Gittergröße 4x4
 const MIN_FOOD_PER_ZONE = 2; // Mindestens 2 Nahrungspunkte pro Zone
@@ -34,7 +33,7 @@ function createInitialGameState() {
     const gameState = {
         players: {},
         food: [],
-        boundaries: { width: FIELD_WIDTH, height: FIELD_HEIGHT },
+        boundaries: GAMEBOUNDARIES,
     };
 
     generateRandomFood(gameState, 10);
@@ -61,6 +60,13 @@ function createOrFindSession(gameType) {
     return session;
 }
 
+function generateRandomColor() {
+    // Zufällige Zahl zwischen 0 und 16777215 (0xFFFFFF) generieren
+    const randomColor = Math.floor(Math.random() * 16777216);
+    // Zahl in eine hexadezimale Zeichenfolge umwandeln und mit führenden Nullen auffüllen
+    return `#${randomColor.toString(16).padStart(6, '0')}`;
+}
+
 
 function addPlayerToSession(session, ws, fieldOfView, userId) {
     if (playerIndex.has(ws)) {
@@ -68,13 +74,12 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     }
 
     const snakeId = uuidv4();
-    const startPosition = getRandomPosition(BOUNDARY);
-    const targetPosition = getRandomPosition(BOUNDARY);
+    const startPosition = getRandomPosition(GAMEBOUNDARIES);
+    const targetPosition = getRandomPosition(GAMEBOUNDARIES);
+    const color = generateRandomColor();
 
     const playerSnake = new Snake(snakeId, startPosition, targetPosition, {
-        segmentCount: SNAKE_INITIAL_LENGTH,
-        speed: SNAKE_SPEED,
-        color: 'green',
+        color: color,
     });
 
     const playerState = {
@@ -82,7 +87,7 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
         sessionId: session.id,
         userId,
         snake: playerSnake,
-        // targetPosition: getRandomPosition(BOUNDARY),
+        // targetPosition: getRandomPosition(GAMEBOUNDARIES),
         boost: false,
         fieldOfView,
         level: 1,
@@ -90,24 +95,6 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
         score: 0,
     };
 
-    // const playerState = {
-    //     snakeId,
-    //     sessionId: session.id,
-    //     userId,
-    //     headPosition: startPosition,
-    //     targetPosition: getRandomPosition(BOUNDARY),
-    //     boost: false,
-    //     speed: SNAKE_SPEED,
-    //     segments: Array.from({length: SNAKE_INITIAL_LENGTH}, (_, i) => ({
-    //         x: startPosition.x,
-    //         y: startPosition.y + i * SNAKE_SPEED
-    //     })),
-    //     queuedSegments: 0,
-    //     fieldOfView: fieldOfView,
-    //     level: 1, // Standardlevel
-    //     currentEquation: null, // Platzhalter für die aktuelle Aufgabe
-    //     score: 0,
-    // };
     assignNewMathEquation(playerState); // Neue Mathematikaufgabe zuweisen
 
     // Generiere und weise eine Aufgabe zu
@@ -523,10 +510,12 @@ function handleBoostPenalty(playerState, gameState) {
 
         // Punkteabzug
         playerState.score -= POINT_LOSS;
-        snake.segments.pop();
+        snake.score -= POINT_LOSS;
+        snake.segmentCount -= POINT_LOSS;
 
         // Schwanzsegment ermitteln
-        const tailSegment = snake.segments[snake.segments.length - 1];
+        // const tailSegment = snake.segments[snake.segments.length - 1];
+        const tailSegment = snake.segments.pop();
 
         // Nahrung fallen lassen
         if (tailSegment) {
@@ -548,7 +537,8 @@ function handleFoodCollision(playerState, gameState) {
     gameState.food = gameState.food.filter(food => {
         if (snake.checkCollisionWithFood(food)) {
             playerState.score += food.points;
-            playerState.snake.queuedSegments += food.points;
+            snake.score += food.points;
+            snake.segmentCount += food.points;
             return false; // Entferne Nahrung
         }
         return true; // Nahrung bleibt
@@ -766,6 +756,17 @@ function removePlayerFromSession(ws) {
 
     const {sessionId, snakeId} = playerInfo;
     const gameState = gameStates.get(sessionId);
+
+    const finalStats = {
+        score: gameState.players[snakeId].score,
+        eatenFood: 0,
+        correctAnswers: 0,
+        wrongAnswers: 0,
+    }
+
+    await saveFinalScore(playerInfo.userId, gameState.gameType, finalStats);
+
+
 
     if (gameState) {
         const playerState = gameState.players[snakeId];

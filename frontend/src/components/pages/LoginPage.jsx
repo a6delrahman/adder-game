@@ -3,7 +3,7 @@
 import React, { useState, useContext } from 'react';
 import axiosInstance from '../../axiosInstance';
 import { useNavigate } from 'react-router-dom';
-import { setAuthToken, setRefreshToken } from '../utility/auth/auth.js'; // Importiere Funktionen
+import { setAuthToken, setRefreshToken, setUserId } from '../utility/auth/auth.js'; // Importiere Funktionen
 import { AuthContext } from "../../context/AuthContext.jsx";
 
 const LoginPage = () => {
@@ -25,6 +25,7 @@ const LoginPage = () => {
             // Token und Refresh-Token speichern
             setAuthToken(data.accessToken);
             setRefreshToken(data.refreshToken);
+            setUserId(data.user.id);
 
             // Setzt Authentifizierungsstatus auf true
             setIsAuthenticated(true);

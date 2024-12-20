@@ -35,7 +35,17 @@ export const handleLogout = async () => {
         }
         setAuthToken(null);
         setRefreshToken(null);
+        setUserId(null);
     } catch (err) {
         console.error('Logout failed', err);
+    }
+};
+
+// Speichert die Benutzerdaten
+export const setUserId = (userId) => {
+    if (userId) {
+        localStorage.setItem('userId', userId);
+    } else {
+        localStorage.removeItem('userId');
     }
 };

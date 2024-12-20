@@ -12,7 +12,7 @@ const GameCanvas = () => {
     const boost = useRef(false); // Boost-Status
     const {playerSnakeId, otherSnakes, sendMessage, boundaries, food, currentEquation} = useWebSocket(); // Zugriff auf den zentralisierten Zustand
     const backgroundImageRef = useRef(null); // Referenz für das Hintergrundbild
-    const zoomLevel = useRef(1.1); // Start-Zoomlevel (1.5 = 150%)
+    const zoomLevel = useRef(3); // Start-Zoomlevel (1.5 = 150%)
 
     // Custom Hooks
     const renderBackground = useRenderBackground('/src/assets/cosmos.jpg');
