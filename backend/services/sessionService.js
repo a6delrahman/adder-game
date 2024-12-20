@@ -112,7 +112,7 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     gameState.food.push(generateMathFoodOptions(gameState.boundaries, playerState));
 
     // Spieler-Index aktualisieren
-    playerIndex.set(ws, {sessionId: session.id, snakeId});
+    playerIndex.set(ws, {sessionId: session.id, snakeId, userId});
 
     ws.send(JSON.stringify({ type: 'session_joined', snakeId, initialGameState: gameState }));
 }
@@ -754,17 +754,19 @@ function removePlayerFromSession(ws) {
     const playerInfo = playerIndex.get(ws);
     if (!playerInfo) return;
 
-    const {sessionId, snakeId} = playerInfo;
+    const {sessionId, snakeId, userId} = playerInfo;
     const gameState = gameStates.get(sessionId);
+    const gameType = sessions.get(sessionId).gameType;
+    const score = gameState.players[snakeId].score;
 
     const finalStats = {
-        score: gameState.players[snakeId].score,
+        score: score,
         eatenFood: 0,
         correctAnswers: 0,
         wrongAnswers: 0,
     }
 
-    await saveFinalScore(playerInfo.userId, gameState.gameType, finalStats);
+    saveFinalScore(userId, gameType, finalStats);
 
 
 
