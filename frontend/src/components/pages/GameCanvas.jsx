@@ -1,3 +1,5 @@
+// GameCanvas.jsx
+
 import React, {useEffect, useRef, useState} from 'react';
 import {useWebSocket} from '../../context/WebSocketContext';
 import useRenderBackground from "../hooks/useRenderBackground.jsx";
@@ -101,12 +103,15 @@ const GameCanvas = () => {
 
 
         // playerSnake.current.updateDirection(targetX, targetY);
-        sendMessage({
-            type: 'change_direction',
+        const payload = {
             snakeId: playerSnakeId,
             targetX,
             targetY,
             boost: boost.current,
+        }
+        sendMessage({
+            type: 'change_direction',
+            payload: payload,
         });
     };
 

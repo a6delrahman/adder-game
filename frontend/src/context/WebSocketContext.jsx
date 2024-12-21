@@ -25,7 +25,7 @@ export const WebSocketProvider = ({ children }) => {
         },
 
         session_joined: (data) => {
-            const { initialGameState, snakeId } = data;
+            const { initialGameState, snakeId } = data.payload;
 
             // Initialisiere alle Schlangen
             Object.values(initialGameState.players).forEach((player) => {
@@ -42,7 +42,7 @@ export const WebSocketProvider = ({ children }) => {
             setPlayerSnakeId(snakeId); // Speichert die ID der eigenen Schlange
             setIsSessionActive(true);
 
-            console.log('Session joined:', playerSnake);
+            console.log(`Session joined! Snake ID: ${snakeId}`);
         },
 
         snake_id: (data) => {
@@ -85,6 +85,12 @@ export const WebSocketProvider = ({ children }) => {
         },
 
         game_over: (data) => {
+            setIsSessionActive(false);
+            alert(`Game Over! Your score: ${data.score}`);
+            console.log('Game over:', data);
+        },
+
+        error: (data) => {
             setIsSessionActive(false);
             alert(`Game Over! Your score: ${data.score}`);
             console.log('Game over:', data);

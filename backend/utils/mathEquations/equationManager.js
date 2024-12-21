@@ -19,6 +19,14 @@ function addEquationsForSession(sessionId, equationType, count, level) {
     }
 }
 
+function removeEquationsForSession(sessionId) {
+    if (!sessionEquations.has(sessionId)){
+        console.error(`Session ${sessionId} not found!`);
+        return;
+    }
+    sessionEquations.delete(sessionId);
+}
+
 function assignEquationToPlayer(sessionId, playerState, equationType) {
     const session = sessionEquations.get(sessionId);
     if (!session || !session[equationType]) {
@@ -39,5 +47,6 @@ function assignEquationToPlayer(sessionId, playerState, equationType) {
 module.exports = {
     initializeEquationsForSession,
     addEquationsForSession,
+    removeEquationsForSession,
     assignEquationToPlayer
 };

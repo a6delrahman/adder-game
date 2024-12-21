@@ -37,19 +37,31 @@ function handleConnection(ws) {
 
     // Handle connection close
     ws.on('close', () => {
-        sessionController.leaveSession(ws);
+        sessionService.leaveSession(ws)
+            .then(() => console.log(`Client ${clientId} disconnected`))
+            .catch((error) => console.error('Error during session leave:', error));
         delete clients[clientId];
-        console.log(`Client ${clientId} disconnected`);
     });
 }
 
 function messageHandler(data, ws, clientId) {
     switch (data.type) {
         case 'change_direction':
-            sessionController.handleMovement(data.payload, ws)
+            sessionService.handleMovement(data, ws)
                 .catch((error) => {
                     console.error('Error handling movement:', error);
                     sendMessage(ws, 'error', { message: 'Failed to handle movement' });
+                });
+            break;
+
+        case 'create_session':
+            sessionController.createSession(data, ws)
+                .then((response) => {
+                    sendMessage(ws, 'session_created', response);
+                })
+                .catch((error) => {
+                    console.error('Error creating session:', error);
+                    sendMessage(ws, 'error', { message: 'Failed to create session' });
                 });
             break;
 
@@ -59,12 +71,13 @@ function messageHandler(data, ws, clientId) {
                     sendMessage(ws, 'session_joined', response);
                 })
                 .catch((error) => {
+                    console.error('Error joining session:', error);
                     sendMessage(ws, 'error', { message: error.message });
                 });
             break;
 
         case 'leave_session':
-            sessionController.leaveSession(ws)
+            sessionService.leaveSession(ws)
                 .then(() => sendMessage(ws, 'session_left'))
                 .catch((error) => {
                     console.error('Error leaving session:', error);

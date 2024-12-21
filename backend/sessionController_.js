@@ -1,38 +1,26 @@
-// controllers/sessionController.js
+// SessionController.js
 const sessionService = require('../services/sessionService');
-const {validate} = require("uuid");
 
 /**
- * Handle player movement.
- * @param {Object} data - { targetX, targetY, boost }
- * @param {Object} ws - WebSocket reference
- * @returns {Promise<void>}
+ * Create or find a session based on gameType and userId.
+ * @param {Object} data - { gameType, userId }
+ * @returns {Promise<Object>} - { sessionId }
  */
-async function handleMovement(data, ws) {
-    const { targetX, targetY, boost } = data;
-
-    if (typeof targetX !== 'number' || typeof targetY !== 'number' || typeof boost !== 'boolean') {
-        throw new Error('Invalid data format for movement');
-    }
-
-    try {
-        await sessionService.updatePlayerMovement(data, ws);
-    } catch (err) {
-        console.error('Error handling movement:', err);
-        throw new Error('Failed to handle movement');
-    }
-}
-
-exports.createSession = async (data, ws) => {
+async function createSession(data) {
     const { gameType, userId } = data;
+
+    if (!gameType || !userId) {
+        throw new Error('Missing required fields: gameType or userId');
+    }
+
     try {
-        sessionService.createOrFindSession(gameType, userId);
-        ws.send(JSON.stringify({ type: 'session_created', sessionId: session.id }));
+        const session = await sessionService.createOrFindSession(gameType, userId);
+        return { sessionId: session.id };
     } catch (err) {
         console.error('Error creating session:', err);
-        ws.send(JSON.stringify({ type: 'error', message: 'Failed to create session' }));
+        throw new Error('Failed to create session');
     }
-};
+}
 
 /**
  * Add a player to an existing session.
@@ -55,20 +43,28 @@ async function joinSession(data, ws) {
     }
 }
 
-exports.getSessions = async (ws) => {
+/**
+ * Retrieve all sessions.
+ * @returns {Promise<Array>} - List of sessions.
+ */
+async function getSessions() {
     try {
         return await sessionService.getAllSessions();
     } catch (err) {
-        console.error('Error getting sessions:', err);
-        ws.send(JSON.stringify({ type: 'error', message: 'Failed to get sessions' }));
+        console.error('Error retrieving sessions:', err);
+        throw new Error('Failed to retrieve sessions');
     }
 }
 
-exports.handleGameSessionBroadcast = async () => {
+/**
+ * Broadcast the game state to all connected players.
+ */
+async function handleGameSessionBroadcast() {
     try {
-        sessionService.broadcastGameState();
+        await sessionService.broadcastGameState();
     } catch (err) {
         console.error('Error broadcasting game sessions:', err);
+        throw new Error('Failed to broadcast game state');
     }
 }
 
@@ -86,4 +82,10 @@ async function leaveSession(ws) {
     }
 }
 
-module.exports = { joinSession, leaveSession, handleMovement};
+module.exports = {
+    createSession,
+    joinSession,
+    getSessions,
+    handleGameSessionBroadcast,
+    leaveSession,
+};

@@ -5,7 +5,12 @@ const {
     generateDivisionEquation,
     generateEquationByTypeAndLevel
 } = require('./equationGenerator');
-const {initializeEquationsForSession, addEquationsForSession, assignEquationToPlayer} = require('./equationManager');
+const {
+    initializeEquationsForSession,
+    addEquationsForSession,
+    removeEquationsForSession,
+    assignEquationToPlayer
+} = require('./equationManager');
 
 module.exports = {
     equationGenerator: {
@@ -18,6 +23,7 @@ module.exports = {
     equationManager: {
         initializeEquationsForSession,
         addEquationsForSession,
+        removeEquationsForSession,
         assignEquationToPlayer
     }
 };

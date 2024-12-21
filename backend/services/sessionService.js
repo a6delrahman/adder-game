@@ -41,7 +41,7 @@ function createInitialGameState() {
     return gameState;
 }
 
-function createOrFindSession(gameType) {
+async function createOrFindSession(gameType) {
     let session = Array.from(sessions.values()).find(
         (sess) => sess.gameType === gameType
     );
@@ -68,10 +68,12 @@ function generateRandomColor() {
 }
 
 
-function addPlayerToSession(session, ws, fieldOfView, userId) {
+async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
     if (playerIndex.has(ws)) {
         removePlayerFromSession(ws);
     }
+
+    const session = await createOrFindSession(gameType);
 
     const snakeId = uuidv4();
     const startPosition = getRandomPosition(GAMEBOUNDARIES);
@@ -114,7 +116,12 @@ function addPlayerToSession(session, ws, fieldOfView, userId) {
     // Spieler-Index aktualisieren
     playerIndex.set(ws, {sessionId: session.id, snakeId, userId});
 
-    ws.send(JSON.stringify({ type: 'session_joined', snakeId, initialGameState: gameState }));
+    return {
+        snakeId,
+        initialGameState: gameState,
+    };
+
+    // ws.send(JSON.stringify({ type: 'session_joined', snakeId, initialGameState: gameState }));
 }
 
 
@@ -298,22 +305,53 @@ function calculateDelta(lastState, currentState) {
     return delta;
 }
 
+async function updatePlayerMovement(data, ws) {
+    const { targetX, targetY, boost } = data;
+
+    const playerInfo = playerIndex.get(ws);
+    if (!playerInfo) {
+        throw new Error('Player not found for WebSocket');
+    }
+
+    const { sessionId, snakeId } = playerInfo;
+    const gameState = gameStates.get(sessionId);
+    if (!gameState) {
+        throw new Error(`Game state not found for session ID: ${sessionId}`);
+    }
+
+    const player = gameState.players[snakeId];
+    if (!player) {
+        throw new Error(`Player not found in game state for snake ID: ${snakeId}`);
+    }
+
+    // Update player movement
+    if (targetX !== undefined && targetY !== undefined) {
+        player.snake.updateDirection(targetX, targetY);
+    }
+
+    // Update boost state only if the player has enough score
+    if (boost && player.score > 0) {
+        player.snake.setBoost(true);
+    } else {
+        player.snake.setBoost(false);
+    }
+}
+
+
 function handleMovement(data, ws) {
-    if (isNaN(data.targetX) || isNaN(data.targetY)) {
-        console.error('Invalid target coordinates');
-        return;
+    const { targetX, targetY, boost } = data;
+
+    if (isNaN(targetX) || isNaN(targetY)) {
+        throw new Error('Invalid target coordinates');
     }
 
     // Spielerinformationen über den Index finden
     const playerInfo = playerIndex.get(ws);
     if (!playerInfo) {
-        console.error('Player not found for WebSocket');
-        return;
+        throw new Error('Player not found for WebSocket');
     }
 
     const { sessionId, snakeId } = playerInfo;
-
-    // Spielstatus der Session abrufen
     const gameState = gameStates.get(sessionId);
     if (!gameState) {
         console.error(`GameState not found for sessionId: ${sessionId}`);
@@ -327,12 +365,18 @@ function handleMovement(data, ws) {
     }
 
     // Zielposition aktualisieren
-    if (data.targetX !== undefined && data.targetY !== undefined) {
-        player.snake.updateDirection(data.targetX, data.targetY);
+    if (targetX !== undefined && targetY !== undefined) {
+        player.snake.updateDirection(targetX, targetY);
     }
 
     // Boost nur aktivieren, wenn Punkte > 0 sind
-    player.snake.setBoost(!!(data.boost && player.score > 0));
+    // Update boost state only if the player has enough score
+    if (boost && player.score > 0) {
+        player.snake.setBoost(true);
+    } else {
+        player.snake.setBoost(false);
+    }
+    // player.snake.setBoost(!!(boost && player.score > 0));
 
     // console.log(`Updated movement for snakeId ${snakeId}:`, {
     //     targetPosition: { x: data.targetX, y: data.targetY },
@@ -750,7 +794,7 @@ function leaveSession(ws) {
     removePlayerFromSession(ws)
 }
 
-function removePlayerFromSession(ws) {
+async function removePlayerFromSession(ws) {
     const playerInfo = playerIndex.get(ws);
     if (!playerInfo) return;
 
@@ -766,31 +810,33 @@ function removePlayerFromSession(ws) {
         wrongAnswers: 0,
     }
 
-    saveFinalScore(userId, gameType, finalStats);
+    saveFinalScore(userId, gameType, finalStats).then(r => {
+        console.log('Final score saved successfully', r);
+    });
 
 
 
     if (gameState) {
         const playerState = gameState.players[snakeId];
         if (playerState) {
-            // // Spezialnahrung fallen lassen
-            // dropSpecialFood(playerState, gameState);
-
-            // Spieler entfernen
             delete gameState.players[snakeId];
         }
 
         // Entferne Session, wenn sie leer ist
         if (Object.keys(gameState.players).length === 0) {
-            gameStates.delete(sessionId);
-            sessions.delete(sessionId);
-            if (gameStates.size === 0) {
-                setActiveSessions(false);
-            }
+            removeSession(sessionId);
         }
     }
 
     playerIndex.delete(ws);
+}
+
+function removeSession(sessionId) {
+    gameStates.delete(sessionId);
+    sessions.delete(sessionId);
+    if (gameStates.size === 0) {
+        setActiveSessions(false);
+    }
 }
 
 
@@ -809,6 +855,7 @@ module.exports = {
     addPlayerToSession,
     getAllSessions,
     broadcastGameState,
+    updatePlayerMovement,
     handleMovement,
     movePlayers,
     leaveSession,
