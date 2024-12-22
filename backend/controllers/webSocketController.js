@@ -1,13 +1,10 @@
 // backend/controllers/webSocketController.js
-
 const sessionController = require('./sessionController');
-const sessionService = require('../services/sessionService');
-const { v4: uuidv4 } = require('uuid');
-
+const {v4: uuidv4} = require('uuid');
 const clients = {};
 
 function sendMessage(ws, type, payload = null) {
-    const message = { type, payload };
+    const message = {type, payload};
     try {
         ws.send(JSON.stringify(message));
     } catch (error) {
@@ -18,10 +15,10 @@ function sendMessage(ws, type, payload = null) {
 function handleConnection(ws) {
     // Generate a new clientId
     const clientId = uuidv4();
-    clients[clientId] = { ws };
+    clients[clientId] = {ws};
 
     // Send back the client connection message
-    sendMessage(ws, 'connect', { clientId });
+    sendMessage(ws, 'connect', {clientId});
     console.log(`Client ${clientId} connected`);
 
     // Handle incoming messages
@@ -31,15 +28,21 @@ function handleConnection(ws) {
             messageHandler(data, ws, clientId);
         } catch (error) {
             console.error(`Failed to parse message: ${message}`, error);
-            sendMessage(ws, 'error', { message: 'Invalid message format' });
+            sendMessage(ws, 'error', {message: 'Invalid message format'});
         }
     });
 
     // Handle connection close
     ws.on('close', () => {
-        sessionController.leaveSession(ws);
-        delete clients[clientId];
-        console.log(`Client ${clientId} disconnected`);
+        sessionController.leaveSession(ws)
+            .then(() => {
+                delete clients[clientId];
+                console.log(`Client ${clientId} disconnected`)
+            })
+            .catch((error) => {
+                console.error('Error leaving session:', error);
+                sendMessage(ws, 'error', {message: 'Failed to leave session'});
+            });
     });
 }
 
@@ -49,7 +52,7 @@ function messageHandler(data, ws, clientId) {
             sessionController.handleMovement(data.payload, ws)
                 .catch((error) => {
                     console.error('Error handling movement:', error);
-                    sendMessage(ws, 'error', { message: 'Failed to handle movement' });
+                    sendMessage(ws, 'error', {message: 'Failed to handle movement'});
                 });
             break;
 
@@ -59,7 +62,8 @@ function messageHandler(data, ws, clientId) {
                     sendMessage(ws, 'session_joined', response);
                 })
                 .catch((error) => {
-                    sendMessage(ws, 'error', { message: error.message });
+                    console.error('Error joining session:', error);
+                    sendMessage(ws, 'error', {message: 'Failed to join session'});
                 });
             break;
 
@@ -68,14 +72,14 @@ function messageHandler(data, ws, clientId) {
                 .then(() => sendMessage(ws, 'session_left'))
                 .catch((error) => {
                     console.error('Error leaving session:', error);
-                    sendMessage(ws, 'error', { message: 'Failed to leave session' });
+                    sendMessage(ws, 'error', {message: 'Failed to leave session'});
                 });
             break;
 
         default:
             console.warn(`Unknown message type: ${data.type}`);
-            sendMessage(ws, 'error', { message: `Unknown message type: ${data.type}` });
+            sendMessage(ws, 'error', {message: `Unknown message type: ${data.type}`});
     }
 }
 
-module.exports = { handleConnection };
+module.exports = {handleConnection};

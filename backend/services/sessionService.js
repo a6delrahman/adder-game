@@ -1,18 +1,16 @@
 // services/sessionService.js
 const {v4: uuidv4} = require('uuid');
-const { equationManager } = require('../utils/mathEquations');
+const {equationManager} = require('../utils/mathEquations');
 const WebSocket = require('ws');
 const path = require('path');
-// const Snake = require('shared/classes/Snake.common');
-const Snake = require('../../shared/classes/Snake.common.js');
+const Snake = require('../classes/Snake');
 const {saveFinalScore} = require("../models/ScoresModel");
 
 
-
 const sessions = new Map();
-const gameStates = new Map(); // Separate GameState-Verwaltung für jedes Spiel
-const playerIndex = new Map(); // { ws: { sessionId, snakeId } }
-const lastSentStates = new Map(); // { playerId: { lastState } }
+const gameStates = new Map();
+const playerIndex = new Map();
+const lastSentStates = new Map();
 
 
 const GAMEBOUNDARIES = {width: 2000, height: 2000};
@@ -120,8 +118,6 @@ async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
         snakeId,
         initialGameState: gameState,
     };
-
-    // ws.send(JSON.stringify({ type: 'session_joined', snakeId, initialGameState: gameState }));
 }
 
 
@@ -203,12 +199,12 @@ function broadcastGameState() {
             // Erstelle die Nachricht mit relevanten Daten
             const message = JSON.stringify({
                 type: 'session_broadcast',
-                players: nearbyPlayers.map(({snakeId, snake, currentEquation, score}) => ({
+                players: nearbyPlayers.map(({snakeId, headPosition, segments,currentEquation, score}) => ({
                     snakeId,
-                    headPosition: snake.headPosition,
-                    segments: snake.segments, // Reduziert die Datenmenge
-                    currentEquation, // Sende die aktuelle Aufgabe mit
-                    score, // Sende den Punktestand mit
+                    headPosition,
+                    segments,
+                    currentEquation,
+                    score,
                 })),
                 food, // Sende die Positionen der Nahrung mit
             });
@@ -239,14 +235,14 @@ function getNearbyPlayers(currentPlayer, allPlayers) {
     Object.values(allPlayers).forEach((player) => {
         if (player.snakeId === currentPlayer.snakeId) {
             player.currentEquation = currentPlayer.currentEquation; // Übertrage die aktuelle Aufgabe
-            nearbyPlayers.push(player); // Füge den aktuellen Spieler hinzu
+            nearbyPlayers.push(player.snake); // Füge den aktuellen Spieler hinzu
         } else {
             const dx = player.snake.headPosition.x - currentPlayer.snake.headPosition.x;
             const dy = player.snake.headPosition.y - currentPlayer.snake.headPosition.y;
 
             // Prüfe, ob der Spieler innerhalb des Bereichs liegt
             if (Math.sqrt(dx * dx + dy * dy) <= currentPlayer.fieldOfView) {
-                nearbyPlayers.push(player);
+                nearbyPlayers.push(player.snake);
             }
         }
     });
@@ -306,14 +302,14 @@ function calculateDelta(lastState, currentState) {
 }
 
 async function updatePlayerMovement(data, ws) {
-    const { targetX, targetY, boost } = data;
+    const {targetX, targetY, boost} = data;
 
     const playerInfo = playerIndex.get(ws);
     if (!playerInfo) {
         throw new Error('Player not found for WebSocket');
     }
 
-    const { sessionId, snakeId } = playerInfo;
+    const {sessionId, snakeId} = playerInfo;
     const gameState = gameStates.get(sessionId);
     if (!gameState) {
         throw new Error(`Game state not found for session ID: ${sessionId}`);
@@ -339,7 +335,7 @@ async function updatePlayerMovement(data, ws) {
 
 
 function handleMovement(data, ws) {
-    const { targetX, targetY, boost } = data;
+    const {targetX, targetY, boost} = data;
 
     if (isNaN(targetX) || isNaN(targetY)) {
         throw new Error('Invalid target coordinates');
@@ -351,7 +347,7 @@ function handleMovement(data, ws) {
         throw new Error('Player not found for WebSocket');
     }
 
-    const { sessionId, snakeId } = playerInfo;
+    const {sessionId, snakeId} = playerInfo;
     const gameState = gameStates.get(sessionId);
     if (!gameState) {
         console.error(`GameState not found for sessionId: ${sessionId}`);
@@ -376,62 +372,11 @@ function handleMovement(data, ws) {
     } else {
         player.snake.setBoost(false);
     }
-    // player.snake.setBoost(!!(boost && player.score > 0));
-
-    // console.log(`Updated movement for snakeId ${snakeId}:`, {
-    //     targetPosition: { x: data.targetX, y: data.targetY },
-    //     boost: player.snake.boost,
-    // });
 }
-
-
-
-//
-// function handleMovement(data, ws) {
-//     if (isNaN(data.targetX) || isNaN(data.targetY)) {
-//         console.error('Invalid target coordinates');
-//         return;
-//     }
-//
-//     // Spielerinformationen über den Index finden
-//     const playerInfo = playerIndex.get(ws);
-//     if (!playerInfo) {
-//         console.error('Player not found for WebSocket');
-//         return;
-//     }
-//
-//     const {sessionId, snakeId} = playerInfo;
-//
-//     // Spielstatus der Session abrufen
-//     const gameState = gameStates.get(sessionId);
-//     if (!gameState) {
-//         console.error(`GameState not found for sessionId: ${sessionId}`);
-//         return;
-//     }
-//
-//     const player = gameState.players[snakeId];
-//     if (!player) {
-//         console.error(`Player not found in GameState for snakeId: ${snakeId}`);
-//         return;
-//     }
-//
-//     // Zielposition und Boost-Status aktualisieren
-//     if (data.targetX !== undefined && data.targetY !== undefined) {
-//         player.targetPosition = {x: data.targetX, y: data.targetY};
-//     }
-//
-//     // Boost nur aktivieren, wenn Punkte > 0 sind
-//     player.boost = !!(data.boost && player.score > 0);
-//
-//     console.log(`Updated movement for snakeId ${snakeId}:`, {
-//         targetPosition: player.targetPosition,
-//         boost: player.boost,
-//     });
-// }
 
 function movePlayers() {
     gameStates.forEach((gameState, sessionId) => {
-        const { players, boundaries} = gameState;
+        const {players, boundaries} = gameState;
 
         // Zonen berechnen und Nahrung zählen
         const zones = calculateZones(boundaries, ZONE_COUNT);
@@ -457,76 +402,9 @@ function movePlayers() {
 
 
 
-// function movePlayers() {
-//     gameStates.forEach((gameState, sessionId) => {
-//         const {players, boundaries, food} = gameState;
-//
-//         // Zonen berechnen und Nahrung zählen
-//         const zones = calculateZones(boundaries, ZONE_COUNT);
-//         updateZoneFoodCounts(gameState, zones);
-//
-//         // Nahrung in unterversorgten Zonen ergänzen
-//         replenishFoodInZones(gameState, zones, MIN_FOOD_PER_ZONE, MAX_FOOD_PER_ZONE);
-//
-//
-//         // Position aller Spieler aktualisieren
-//         Object.values(players).forEach((playerState) => {
-//             movePlayer(playerState, boundaries);
-//             handleFoodCollision(playerState, gameState);
-//
-//             // Boost-Punkteabzug verarbeiten
-//             handleBoostPenalty(playerState, gameState);
-//         });
-//
-//         // Kollisionserkennung
-//         Object.values(players).forEach((playerState) => {
-//             checkPlayerCollisions(playerState, players);
-//         });
-//     });
-// }
-
-
 function movePlayer(playerState, boundaries) {
-    // // Stelle sicher, dass der Boost berücksichtigt wird
-    // playerState.snake.setBoost(playerState.boost);
-
-    // playerState.snake.updateDirection(playerState.targetPosition.x, playerState.targetPosition.y);
     playerState.snake.moveSnake(boundaries);
-
-    // playerState.headPosition = playerState.snake.headPosition;
-    // playerState.segments = playerState.snake.segments;
 }
-
-// function movePlayer(playerState, boundaries) {
-//     // First, the function calculates the difference between the target position and the current head position of the snake:
-//     const dx = playerState.targetPosition.x - playerState.headPosition.x;
-//     const dy = playerState.targetPosition.y - playerState.headPosition.y;
-//
-//     // Next, it normalizes the direction vector to ensure the movement is consistent regardless of the distance to the target:
-//     const magnitude = Math.sqrt(dx * dx + dy * dy);
-//     const directionX = magnitude > 0 ? dx / magnitude : 0;
-//     const directionY = magnitude > 0 ? dy / magnitude : 0;
-//
-//     // The speed of the snake is then determined, doubling if the boost is active:
-//     const speed = playerState.boost ? SNAKE_SPEED * 2 : SNAKE_SPEED;
-//
-//     // The head position of the snake is updated based on the direction and speed:
-//     playerState.headPosition.x += directionX * speed;
-//     playerState.headPosition.y += directionY * speed;
-//
-//     // To ensure the snake stays within the game boundaries, the new head position is clamped:
-//     playerState.headPosition.x = Math.max(0, Math.min(playerState.headPosition.x, boundaries.width));
-//     playerState.headPosition.y = Math.max(0, Math.min(playerState.headPosition.y, boundaries.height));
-//
-//     // A new segment is added to the front of the snake to represent the new head position:
-//     playerState.segments.unshift({...playerState.headPosition});
-//
-//     // Finally, if the number of segments exceeds the maximum allowed (initial length plus any queued segments), the oldest segment is removed:
-//     const maxSegments = SNAKE_INITIAL_LENGTH + playerState.queuedSegments;
-//     if (playerState.segments.length > maxSegments) {
-//         playerState.segments.pop();
-//     }
-// }
 
 // function handleBoostPenalty(playerState, gameState) {
 //     const { snake } = playerState;
@@ -538,9 +416,8 @@ function movePlayer(playerState, boundaries) {
 // }
 
 
-
 function handleBoostPenalty(playerState, gameState) {
-    const { snake } = playerState;
+    const {snake} = playerState;
     if (snake.boost) {
         // Score sicherstellen, dass er nicht negativ wird
         if (playerState.score <= 0) {
@@ -576,7 +453,7 @@ function handleBoostPenalty(playerState, gameState) {
 }
 
 function handleFoodCollision(playerState, gameState) {
-    const { snake } = playerState;
+    const {snake} = playerState;
 
     gameState.food = gameState.food.filter(food => {
         if (snake.checkCollisionWithFood(food)) {
@@ -589,50 +466,6 @@ function handleFoodCollision(playerState, gameState) {
     });
 }
 
-
-
-
-// // Nahrungskollisionen prüfen
-// function handleFoodCollision(playerState, gameState) {
-//     let playerSolvedEquationCorrectly = false;
-//     gameState.food = gameState.food.filter((food) => {
-//         const dx = food.x - playerState.headPosition.x;
-//         const dy = food.y - playerState.headPosition.y;
-//         const distanceSquared = dx * dx + dy * dy;
-//
-//         if (distanceSquared < 100) { // Abstand < 10px
-//             if (food.meta?.result !== undefined) {
-//                 const correctResult = playerState.currentEquation?.result;
-//                 if (food.meta.result === correctResult) {
-//                     playerState.score += food.points; // Punkte für korrekte Antwort
-//                     playerState.queuedSegments += food.points;
-//                     // assignNewMathEquation(playerState); // Neue Aufgabe zuweisen
-//                     playerSolvedEquationCorrectly = true;
-//                 } else {
-//                     playerState.score = Math.max(0, playerState.score - 50); // Abzug bei falscher Antwort
-//                 }
-//             } else {
-//                 playerState.score += food.points; // Normale Nahrung
-//                 playerState.queuedSegments += food.points;
-//             }
-//             return false; // Nahrung entfernen
-//         }
-//         return true; // Nahrung bleibt
-//     });
-//     if (playerSolvedEquationCorrectly) {
-//         equationManager.assignEquationToPlayer(playerState.sessionId, playerState, playerState.currentEquation.type);
-//         const newFood = generateMathFoodOptions(gameState.boundaries, playerState);
-//         if (newFood) gameState.food.push(newFood); // Neue Optionen generieren// Neue Optionen generieren
-//         const message = JSON.stringify({
-//             type: 'update_equation',
-//             currentEquation: playerState.currentEquation, // Sende die aktuelle Aufgabe mit
-//         });
-//         const ws = getWebSocketBySnakeId(playerState.snakeId);
-//         if (ws && ws.readyState === WebSocket.OPEN) {
-//             ws.send(message); // Nachricht an den Spieler send
-//         }
-//     }
-// }
 
 function generateMathFoodOptions(boundaries, playerState, spread = 50) {
     const correctResult = playerState.currentEquation.result;
@@ -744,32 +577,6 @@ function checkPlayerCollisions(currentPlayer, players) {
 }
 
 
-// // Kollisionsprüfung
-// function checkPlayerCollisions(currentPlayer, players) {
-//     Object.values(players).forEach((otherPlayer) => {
-//         if (currentPlayer.snakeId === otherPlayer.snakeId) return;
-//
-//         // Prüfe Kopf-zu-Kopf-Kollision
-//         if (checkCollision(currentPlayer.headPosition, otherPlayer.headPosition)) {
-//             handlePlayerCollision(currentPlayer);
-//         }
-//
-//         // Prüfe Kopf-zu-Segment-Kollision
-//         otherPlayer.segments.forEach((segment) => {
-//             if (checkCollision(currentPlayer.headPosition, segment)) {
-//                 handlePlayerCollision(currentPlayer);
-//             }
-//         });
-//     });
-// }
-
-// Hilfsfunktion: Kollision erkennen
-function checkCollision(pos1, pos2) {
-    const dx = pos1.x - pos2.x;
-    const dy = pos1.y - pos2.y;
-    return dx * dx + dy * dy < 100; // Abstand < 10px
-}
-
 // Kollisionsverarbeitung
 function handlePlayerCollision(playerState) {
     const sessionId = playerState.sessionId;
@@ -789,10 +596,6 @@ function handlePlayerCollision(playerState) {
     removePlayerFromSession(ws);
 }
 
-
-function leaveSession(ws) {
-    removePlayerFromSession(ws)
-}
 
 async function removePlayerFromSession(ws) {
     const playerInfo = playerIndex.get(ws);
@@ -815,7 +618,6 @@ async function removePlayerFromSession(ws) {
     });
 
 
-
     if (gameState) {
         const playerState = gameState.players[snakeId];
         if (playerState) {
@@ -827,7 +629,6 @@ async function removePlayerFromSession(ws) {
             removeSession(sessionId);
         }
     }
-
     playerIndex.delete(ws);
 }
 
@@ -858,10 +659,6 @@ module.exports = {
     updatePlayerMovement,
     handleMovement,
     movePlayers,
-    leaveSession,
-    getAllSessions,
     gameStates,
     removePlayerFromSession,
-    broadcastGameStateWithDeltas,
-
 };

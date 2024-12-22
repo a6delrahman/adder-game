@@ -1,7 +1,7 @@
 // WebSocketContext.jsx
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import Snake from 'shared/classes/snake';
+import Snake from '../classes/Snake';
 
 export const WebSocketContext = createContext(null);
 
@@ -21,7 +21,7 @@ export const WebSocketProvider = ({ children }) => {
         default: (data) => console.warn(`Unhandled message type: ${data.type}`, data),
 
         connect: (data) => {
-            console.log('Connected, clientId:', data.clientId);
+            console.log('Connected, clientId:', data.payload.clientId);
         },
 
         session_joined: (data) => {
@@ -92,8 +92,8 @@ export const WebSocketProvider = ({ children }) => {
 
         error: (data) => {
             setIsSessionActive(false);
-            alert(`Game Over! Your score: ${data.score}`);
-            console.log('Game over:', data);
+            alert(`Error: ${data.payload.message}`);
+            console.log(`Error: ${data.payload.message}`);
         },
 
         update_equation: (data) => {

@@ -46,9 +46,6 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', (ws) => handleConnection(ws));
 
 setInterval(() => {
-    // playerService.movePlayers();
-    // websocketService.broadcastPlayerPositions(wss, playerService.getPlayers());
-    // playerService.broadcastPlayerPositions();
     if (sessionService.isSessionActive()) {
         sessionService.movePlayers();
         sessionService.broadcastGameState();

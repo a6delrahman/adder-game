@@ -10,10 +10,5 @@ export default defineConfig({
       '/api': 'http://localhost:5000'
     }
   },
-  resolve: {
-    alias: {
-      shared: path.resolve(__dirname, '../shared'),
-    },
-  }
 })
 

@@ -23,17 +23,6 @@ async function handleMovement(data, ws) {
     }
 }
 
-exports.createSession = async (data, ws) => {
-    const { gameType, userId } = data;
-    try {
-        sessionService.createOrFindSession(gameType, userId);
-        ws.send(JSON.stringify({ type: 'session_created', sessionId: session.id }));
-    } catch (err) {
-        console.error('Error creating session:', err);
-        ws.send(JSON.stringify({ type: 'error', message: 'Failed to create session' }));
-    }
-};
-
 /**
  * Add a player to an existing session.
  * @param {Object} data - { gameType, fieldOfView, userId }
