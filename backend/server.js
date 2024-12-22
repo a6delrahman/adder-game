@@ -13,6 +13,8 @@ const playerService = require('./services/playerService');
 const websocketService = require('./services/webSocketService');
 const sessionController = require('./controllers/sessionController');
 const sessionService = require('./services/sessionService');
+const {connectMongoDBWithRetry} = require("./utils/mongoDB/mongoDB");
+
 
 // App-Instanz erstellen
 const app = express();
@@ -26,8 +28,7 @@ app.use(cors());
 app.use(express.static('public'));
 
 // Verbindung zur MongoDB
-mongoose.connect(process.env.CONN_STR, {})
-    .then(() => console.log('MongoDB connected')).catch(err => console.log(err));
+connectMongoDBWithRetry();
 
 // API-Routen
 // app.use('/api/game', gameRoutes);

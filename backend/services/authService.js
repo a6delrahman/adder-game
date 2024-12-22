@@ -33,7 +33,10 @@ function generateRefreshToken(user) {
 async function registerUser(username, email, password) {
     // Überprüfen, ob der Benutzer bereits existiert
     let user = await User.findOne({email});
-    if (user) throw new Error('User already exists');
+    if (user) throw new Error('Email already exists');
+
+    user = await User.findOne({username});
+    if (user) throw new Error('Username already exists');
 
     // Passwort hashen
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -41,12 +44,14 @@ async function registerUser(username, email, password) {
     // Benutzer erstellen und in der Datenbank speichern
     user = new User({username, email, password: hashedPassword});
     await user.save();
+    const storedUser = await User.findOne({email});
 
     const payload = {id: user._id};
     return {
         msg: 'User registered successfully',
         accessToken: generateAccessToken(payload),
         refreshToken: generateRefreshToken(payload),
+        user: {id: storedUser._id, username: storedUser.username, email: storedUser.email},
     };
 }
 
