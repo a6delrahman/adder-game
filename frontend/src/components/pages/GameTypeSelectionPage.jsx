@@ -1,10 +1,17 @@
 // GameTypeSelectionPage.jsx
 import React from 'react';
 import { useWebSocket} from "../../context/WebSocketContext.jsx";
+import Button from "../utility/buttons/Button.jsx";
+import {useNavigate} from "react-router-dom";
 
 const GameTypeSelectionPage = () => {
     const { sendMessage } = useWebSocket();
     const userId = localStorage.getItem('userId');
+
+    const navigate = useNavigate();
+    function handleClick(page) {
+        navigate(page);
+    }
 
 
     const handleJoinSession = (selectedGameType) => {
@@ -25,6 +32,7 @@ const GameTypeSelectionPage = () => {
                     Multiplication
                 </button>
             </div>
+            <Button text="Dashboard" style= "snake-button cobra" onClick={() => handleClick("/dashboard")} />
         </div>
     );
 };

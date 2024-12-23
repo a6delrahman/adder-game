@@ -2,6 +2,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const {getUserByUsername, getUserByEmail} = require("../services/userService")
 const SECRET_KEY = '!dTW4S*UmP^BwVpbm#H7b!kNbn#n5yb^qPUxTspS^L5LqTmGP3^VndLS%v@T"';
 const REFRESH_SECRET_KEY = 'tvYFPJ2qmg*7XFrnFmhFjb8weAn4d66%N%Zt56EjegLLGkD@2NffLp#K&D^T';
 
@@ -10,8 +11,7 @@ function authMiddleware(req, res, next) {
     if (!token) return res.status(401).json({msg: 'No token, authorization denied'});
 
     try {
-        const decoded = jwt.verify(token, SECRET_KEY);
-        req.user = decoded;
+        req.user = jwt.verify(token, SECRET_KEY);
         next();
     } catch (err) {
         res.status(401).json({msg: 'Token is not valid'});
@@ -31,12 +31,22 @@ function generateRefreshToken(user) {
 }
 
 async function registerUser(username, email, password) {
-    // Überprüfen, ob der Benutzer bereits existiert
-    let user = await User.findOne({email});
-    if (user) throw new Error('Email already exists');
 
-    user = await User.findOne({username});
-    if (user) throw new Error('Username already exists');
+    await getUserByEmail().then((user) => {
+        if (user) throw new Error('Email already exists');
+    });
+
+    await getUserByUsername().then((user) => {
+        if (user) throw new Error('Username already exists');
+    });
+
+
+    // // Überprüfen, ob der Benutzer bereits existiert
+    // let user = await User.findOne({email});
+    // if (user) throw new Error('Email already exists');
+    //
+    // user = await User.findOne({username});
+    // if (user) throw new Error('Username already exists');
 
     // Passwort hashen
     const hashedPassword = await bcrypt.hash(password, 10);

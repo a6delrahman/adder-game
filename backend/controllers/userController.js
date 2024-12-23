@@ -4,7 +4,7 @@ const userService = require('../services/userService');
 // Benutzerprofil abrufen
 exports.getUserProfile = async (req, res) => {
     try {
-        const user = await userService.getUserProfile(req.user.id);
+        const user =await userService.getUserProfile(req.user.id);
         res.json(user);
     } catch (err) {
         res.status(500).json({ msg: err.message || 'Server error' });
