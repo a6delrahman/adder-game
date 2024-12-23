@@ -54,10 +54,17 @@ async function getUserProfile(userId) {
     return user;
 }
 
+async function getUsernameByUserId(userId) {
+    const user = await User.findById(userId);
+    if (!user) throw new Error('User not found');
+    return user.username;
+}
+
 module.exports = {
     updateEmail,
     updatePassword,
     updateUsername,
     deleteUser,
-    getUserProfile
+    getUserProfile,
+    getUsernameByUserId
 };

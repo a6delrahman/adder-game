@@ -3,6 +3,7 @@ class Snake {
     constructor(snakeData) {
         if (typeof snakeData === 'object') {
             this.snakeId = snakeData.snakeId || '';
+            this.name = snakeData.name || '';
             this.headPosition = snakeData.headPosition || {x: 0, y: 0};
             this.targetPosition = snakeData.targetPosition;
             this.direction = snakeData.direction || {x: 0.5, y: 0.5};
@@ -18,6 +19,7 @@ class Snake {
         } else {
             const [snakeId, headPosition, targetPosition, options = {}] = arguments;
             this.snakeId = snakeId;
+            this.name = options.name;
             this.headPosition = headPosition;
             this.targetPosition = targetPosition;
             this.direction = {x: 0.5, y: 0.5};

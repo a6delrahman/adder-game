@@ -32,8 +32,8 @@ async function handleMovement(data, ws) {
 async function joinSession(data, ws) {
     const { gameType, fieldOfView, userId } = data;
 
-    if (!gameType || typeof fieldOfView !== 'number' || !userId) {
-        throw new Error('Invalid or missing required fields: gameType, fieldOfView, or userId');
+    if (!gameType || typeof fieldOfView !== 'number') {
+        throw new Error('Invalid or missing required fields: gameType or fieldOfView');
     }
 
     try {

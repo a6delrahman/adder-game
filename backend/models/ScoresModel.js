@@ -25,19 +25,17 @@ async function saveFinalScore(userId, gameType, finalStats) {
         });
 
         await scoreEntry.save();
-        console.log('Final score saved successfully.');
     } catch (error) {
-        console.error('Error saving final score:', error);
+        throw new Error('Error saving final score:', error);
     }
 }
 
 async function getTopScores(gameType, limit = 10) {
     try {
-        const topScores = await Scores.find({ gameType })
-            .sort({ score: -1 }) // Sortiere nach Punktzahl absteigend
-            .limit(limit); // Begrenze auf die Top-N-Ergebnisse
-
-        return topScores;
+        // Begrenze auf die Top-N-Ergebnisse
+        return await Scores.find({gameType})
+        .sort({score: -1}) // Sortiere nach Punktzahl absteigend
+        .limit(limit);
     } catch (error) {
         console.error('Error fetching top scores:', error);
         return [];

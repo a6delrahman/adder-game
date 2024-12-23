@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 const path = require('path');
 const Snake = require('../classes/Snake');
 const {saveFinalScore} = require("../models/ScoresModel");
+const {getUsernameByUserId} = require("./userService");
 
 
 const sessions = new Map();
@@ -34,7 +35,7 @@ function createInitialGameState() {
         boundaries: GAMEBOUNDARIES,
     };
 
-    generateRandomFood(gameState, 10);
+    generateRandomFood(gameState, GAMEBOUNDARIES/100);
 
     return gameState;
 }
@@ -65,20 +66,39 @@ function generateRandomColor() {
     return `#${randomColor.toString(16).padStart(6, '0')}`;
 }
 
+async function tryToGetUsername(userId) {
+    try {
+        return await getUsernameByUserId(userId);
+    } catch (e) {
+        console.error('Error fetching user profile:', e);
+        return getRandomUsername();
+    }
+}
+
+function getRandomUsername() {
+    const adjectives = ['Fast', 'Furious', 'Swift', 'Speedy', 'Rapid', 'Quick', 'Nimble', 'Agile', 'Brisk', 'Zippy'];
+    const animals = ['Fox', 'Wolf', 'Tiger', 'Lion', 'Jaguar', 'Cheetah', 'Panther', 'Puma', 'Leopard', 'Cougar'];
+    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+    return `${randomAdjective} ${randomAnimal}`;
+}
+
 
 async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
     if (playerIndex.has(ws)) {
-        removePlayerFromSession(ws);
+        await removePlayerFromSession(ws);
     }
 
     const session = await createOrFindSession(gameType);
 
+    const username = await tryToGetUsername(userId);
     const snakeId = uuidv4();
     const startPosition = getRandomPosition(GAMEBOUNDARIES);
     const targetPosition = getRandomPosition(GAMEBOUNDARIES);
     const color = generateRandomColor();
 
     const playerSnake = new Snake(snakeId, startPosition, targetPosition, {
+        name: username,
         color: color,
     });
 
@@ -87,7 +107,6 @@ async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
         sessionId: session.id,
         userId,
         snake: playerSnake,
-        // targetPosition: getRandomPosition(GAMEBOUNDARIES),
         boost: false,
         fieldOfView,
         level: 1,
@@ -95,7 +114,7 @@ async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
         score: 0,
     };
 
-    assignNewMathEquation(playerState); // Neue Mathematikaufgabe zuweisen
+    // assignNewMathEquation(playerState); // Neue Mathematikaufgabe zuweisen
 
     // Generiere und weise eine Aufgabe zu
     equationManager.addEquationsForSession(session.id, session.gameType, 5, playerState.level);
@@ -592,14 +611,22 @@ function handlePlayerCollision(playerState) {
     if (ws) {
         ws.send(JSON.stringify({type: 'game_over', score: playerState.score}));
     }
-    console.log(`Collision: Player ${playerState.snakeId} eliminated`);
-    removePlayerFromSession(ws);
+
+    removePlayerFromSession(ws).then(
+        () => {
+            console.log('Player removed after collision');
+        }
+    ).catch(e => {
+        console.error('Error removing player after collision:', e);
+    });
 }
 
 
 async function removePlayerFromSession(ws) {
     const playerInfo = playerIndex.get(ws);
-    if (!playerInfo) return;
+    if (!playerInfo){
+        throw new Error('Player not found for WebSocket');
+    }
 
     const {sessionId, snakeId, userId} = playerInfo;
     const gameState = gameStates.get(sessionId);
@@ -607,14 +634,21 @@ async function removePlayerFromSession(ws) {
     const score = gameState.players[snakeId].score;
 
     const finalStats = {
+        userId,
+        gameType,
         score: score,
         eatenFood: 0,
         correctAnswers: 0,
         wrongAnswers: 0,
+        playedAt: Date.now()
     }
 
+
+
     saveFinalScore(userId, gameType, finalStats).then(r => {
-        console.log('Final score saved successfully', r);
+        console.log('Final score saved successfully')
+    }).catch(e => {
+        console.error('Error saving final score:', e);
     });
 
 

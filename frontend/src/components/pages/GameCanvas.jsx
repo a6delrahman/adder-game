@@ -38,6 +38,21 @@ const GameCanvas = () => {
         return () => window.removeEventListener('keydown', handleKeydown);
     }, []);
 
+    // Canvas-Größe anpassen
+    const resizeCanvas = () => {
+        const canvas = canvasRef.current;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+
+    useEffect(() => {
+        resizeCanvas(); // Initiale Anpassung
+        window.addEventListener('resize', resizeCanvas); // Listener für Fensteränderung
+        return () => {
+            window.removeEventListener('resize', resizeCanvas); // Listener entfernen
+        };
+    }, []);
+
 // // Overlay zeichnen (Scores + MathEquations)
 //     const renderOverlay = () => {
 //         const overlayCanvas = overlayCanvasRef.current;
@@ -300,13 +315,14 @@ const GameCanvas = () => {
 
         // Scores (unten links)
         if (showScores) {
-            ctx.font = '16px Arial';
-            ctx.fillStyle = '#fff';
-            let yPosition = canvas.height - 100;
-            Object.values(otherSnakes).forEach((snake) => {
-                ctx.fillText(`Player ${snake.snakeId}: ${snake.score || 0} points`, 20, yPosition);
-                yPosition += 20;
-            });
+            renderScores(ctx);
+            // ctx.font = '16px Arial';
+            // ctx.fillStyle = '#fff';
+            // let yPosition = canvas.height - 100;
+            // Object.values(otherSnakes).forEach((snake) => {
+            //     ctx.fillText(`Player ${snake.snakeId}: ${snake.score || 0} points`, 20, yPosition);
+            //     yPosition += 20;
+            // });
         }
 
         ctx.restore();
@@ -488,16 +504,27 @@ const GameCanvas = () => {
         <>
             <canvas
                 ref={canvasRef}
-                width={800}
-                height={800}
-                style={{display: 'block', margin: '0 auto', backgroundColor: 'transparent'}}
+                style={{
+                    display: 'block',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'black',
+                }}
             />
+            {/*<canvas*/}
+            {/*    ref={canvasRef}*/}
+            {/*    style={{display: 'block', margin: '0 auto', backgroundColor: 'transparent'}}*/}
+            {/*/>*/}
 
 
             {/*/!* Haupt-Canvas für das Spielfeld *!/*/}
             {/*<canvas ref={canvasRef} width={800} height={800}/>*/}
 
-            {/*/!*<canvas ref={canvasRef} width={window.width} height={window.height}/>*!/*/}
+            {/*<canvas ref={canvasRef} width={window.width}*/}
+            {/*        height={window.height}/>*/}
             {/*<canvas ref={backgroundCanvasRef} style={{display: 'none'}}/>*/}
             {/*/!* Overlay-Canvas für Scores und MathEquations *!/*/}
             {/*/!*<canvas ref={overlayCanvasRef} width={800} height={800} style={{position: 'absolute', top: 0, left: 0}} />*!/*/}

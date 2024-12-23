@@ -11,6 +11,17 @@ exports.getUserProfile = async (req, res) => {
     }
 };
 
+exports.getUsernameByUserId = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const username = await userService.getUsernameByUserId(userId);
+        res.json({ username });
+    } catch (err) {
+        res.status(500).json({ msg: err.message || 'Server error' });
+    }
+}
+
 // E-Mail aktualisieren
 exports.updateEmail = async (req, res) => {
     const { email } = req.body;
