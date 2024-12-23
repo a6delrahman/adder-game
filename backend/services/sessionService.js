@@ -14,7 +14,7 @@ const playerIndex = new Map();
 const lastSentStates = new Map();
 
 
-const GAMEBOUNDARIES = {width: 2000, height: 2000};
+const GAMEBOUNDARIES = {width: 500, height: 500};
 
 const ZONE_COUNT = 10; // Gittergröße 4x4
 const MIN_FOOD_PER_ZONE = 2; // Mindestens 2 Nahrungspunkte pro Zone
@@ -35,7 +35,7 @@ function createInitialGameState() {
         boundaries: GAMEBOUNDARIES,
     };
 
-    generateRandomFood(gameState, GAMEBOUNDARIES/100);
+    generateRandomFood(gameState, (GAMEBOUNDARIES.width/100));
 
     return gameState;
 }

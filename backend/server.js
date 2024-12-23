@@ -27,8 +27,7 @@ app.use(cors());
 // Statische Dateien aus dem Public-Verzeichnis bereitstellen
 app.use(express.static('public'));
 
-// Verbindung zur MongoDB
-connectMongoDBWithRetry();
+
 
 // API-Routen
 // app.use('/api/game', gameRoutes);
@@ -41,7 +40,8 @@ app.use('/api/admin', require('./routes/sessionRoutes'));
 app.get('/admin', (req, res) => {
     res.sendFile(__dirname + '/public/admin.html'); // Die HTML-Seite wird bereitgestellt
 });
-
+// Verbindung zur MongoDB
+connectMongoDBWithRetry();
 // WebSocket-Server erstellen und Verbindung verwalten
 const wss = new WebSocket.Server({ server });
 wss.on('connection', (ws) => handleConnection(ws));
