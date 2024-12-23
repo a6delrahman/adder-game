@@ -27,7 +27,7 @@ function removeEquationsForSession(sessionId) {
     sessionEquations.delete(sessionId);
 }
 
-function assignEquationToPlayer(sessionId, playerState, equationType) {
+function assignEquationToPlayer(sessionId, snake, equationType) {
     const session = sessionEquations.get(sessionId);
     if (!session || !session[equationType]) {
         console.error(`No equations available for session ${sessionId} and type ${equationType}`);
@@ -37,11 +37,11 @@ function assignEquationToPlayer(sessionId, playerState, equationType) {
     // Stelle sicher, dass genügend Gleichungen vorhanden sind
     if (session[equationType].length === 0) {
         console.warn(`No equations left for session ${sessionId}, generating more...`);
-        addEquationsForSession(sessionId, equationType, 5, playerState.level || 1);
+        addEquationsForSession(sessionId, equationType, 5, snake.level || 1);
     }
 
     // Weise die nächste Gleichung zu
-    playerState.currentEquation = session[equationType].pop();
+    snake.currentEquation = session[equationType].pop();
 }
 
 module.exports = {

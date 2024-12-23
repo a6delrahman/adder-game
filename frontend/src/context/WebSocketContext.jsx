@@ -13,7 +13,7 @@ export const WebSocketProvider = ({ children }) => {
     const [isSessionActive, setIsSessionActive] = useState(false);
     const sessionId = useRef(null);
     const ws = useRef(null);
-    const boundaries = useRef({ width: 0, height: 0 });
+    const boundaries = useRef({});
     const food = useRef([]);
     const [currentEquation, setCurrentEquation] = useState(null);
 
@@ -26,6 +26,7 @@ export const WebSocketProvider = ({ children }) => {
 
         session_joined: (data) => {
             const { initialGameState, snakeId } = data.payload;
+            // const {players, food, boundaries} = initialGameState;
 
             // Initialisiere alle Schlangen
             Object.values(initialGameState.players).forEach((player) => {
@@ -38,7 +39,7 @@ export const WebSocketProvider = ({ children }) => {
 
             food.current = initialGameState.food; // Speichert die Nahrung
             boundaries.current = initialGameState.boundaries; // Speichert die Spielfeldgrenzen
-            setCurrentEquation(initialGameState.players[snakeId].currentEquation); // Speichert die aktuelle Aufgabe
+            setCurrentEquation(initialGameState.players[snakeId].snake.currentEquation); // Speichert die aktuelle Aufgabe
             setPlayerSnakeId(snakeId); // Speichert die ID der eigenen Schlange
             setIsSessionActive(true);
 
@@ -69,6 +70,7 @@ export const WebSocketProvider = ({ children }) => {
                     otherSnakes.current[player.snakeId].update(player.headPosition, player.segments);
                     otherSnakes.current[player.snakeId].updateScore(player.score);
                     otherSnakes.current[player.snakeId].updateEquation(player.currentEquation);
+                    setCurrentEquation(player.currentEquation);
                 } else {
                     otherSnakes.current[player.snakeId] = new Snake(
                         player.snakeId,
@@ -97,7 +99,7 @@ export const WebSocketProvider = ({ children }) => {
         },
 
         update_equation: (data) => {
-            playerSnake.current.currentEquation = data.currentEquation;
+            otherSnakes[playerSnakeId].currentEquation = data.currentEquation;
             console.log('update_equation:', data);
         },
 
