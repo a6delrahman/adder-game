@@ -21,11 +21,13 @@ const GameCanvas = () => {
     const renderSnakes = useRenderSnakes(playerSnakeId, otherSnakes);
     const renderFood = useRenderFood(food);
     const renderScores = useRenderScores(otherSnakes);
-    const renderMathEquations = useRenderMathEquations();
+    const renderMathEquations = useRenderMathEquations(currentEquation.equation);
 
     const [showScores, setShowScores] = useState(true); // Zustand für Scores-Anzeige
 
     const toggleScores = () => setShowScores(prev => !prev);
+
+
 
     // Event-Listener für Tastendruck (nur auf dem Desktop)
     useEffect(() => {
@@ -89,7 +91,10 @@ const GameCanvas = () => {
 //         overlayLoop();
 //     }, [showScores, otherSnakes, currentEquation]);
 
-    backgroundCanvasRef.current = document.createElement('canvas');
+    useEffect(() => {
+        backgroundCanvasRef.current = document.createElement('canvas');
+    }, []);
+    // backgroundCanvasRef.current = document.createElement('canvas');
     // const backgroundCtx = backgroundCanvas.getContext('2d');
 
 
@@ -307,22 +312,12 @@ const GameCanvas = () => {
 
         // MathEquations (oben zentriert)
         if (currentEquation) {
-            ctx.font = '24px Arial';
-            ctx.fillStyle = '#fff';
-            ctx.textAlign = 'center';
-            ctx.fillText(currentEquation.equation, canvas.width / 2, 50);
+            renderMathEquations(ctx);
         }
 
-        // Scores (unten links)
+        // Scores (oben links)
         if (showScores) {
             renderScores(ctx);
-            // ctx.font = '16px Arial';
-            // ctx.fillStyle = '#fff';
-            // let yPosition = canvas.height - 100;
-            // Object.values(otherSnakes).forEach((snake) => {
-            //     ctx.fillText(`Player ${snake.snakeId}: ${snake.score || 0} points`, 20, yPosition);
-            //     yPosition += 20;
-            // });
         }
 
         ctx.restore();
@@ -446,16 +441,20 @@ const GameCanvas = () => {
     //     }
     // }   , 100);
 
-    //Starte Rendering-Schleife
+
     useEffect(() => {
+        let animationFrameId; // Speichert die ID des aktuellen Frames
+
         const loop = () => {
-            render();
-            requestAnimationFrame(loop);
+            render(); // Render-Funktion ausführen
+            animationFrameId = requestAnimationFrame(loop); // Nächsten Frame planen
         };
 
-        loop(); // Starte die Schleife
-        return () => cancelAnimationFrame(loop); // Stoppe die Schleife beim Unmount
-    }, [otherSnakes, food, currentEquation, showScores]); // Abhängigkeiten hinzufügen
+        loop(); // Schleife starten
+
+        return () => cancelAnimationFrame(animationFrameId); // Schleife beim Unmount stoppen
+    }, [otherSnakes, food, currentEquation, showScores]); // Keine zusätzlichen Abhängigkeiten
+
 
 
     // Füge Event-Listener hinzu
@@ -501,7 +500,6 @@ const GameCanvas = () => {
 
 
     return (
-        <>
             <canvas
                 ref={canvasRef}
                 style={{
@@ -514,22 +512,6 @@ const GameCanvas = () => {
                     backgroundColor: 'black',
                 }}
             />
-            {/*<canvas*/}
-            {/*    ref={canvasRef}*/}
-            {/*    style={{display: 'block', margin: '0 auto', backgroundColor: 'transparent'}}*/}
-            {/*/>*/}
-
-
-            {/*/!* Haupt-Canvas für das Spielfeld *!/*/}
-            {/*<canvas ref={canvasRef} width={800} height={800}/>*/}
-
-            {/*<canvas ref={canvasRef} width={window.width}*/}
-            {/*        height={window.height}/>*/}
-            {/*<canvas ref={backgroundCanvasRef} style={{display: 'none'}}/>*/}
-            {/*/!* Overlay-Canvas für Scores und MathEquations *!/*/}
-            {/*/!*<canvas ref={overlayCanvasRef} width={800} height={800} style={{position: 'absolute', top: 0, left: 0}} />*!/*/}
-
-        </>
     );
 };
 
