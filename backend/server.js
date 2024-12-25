@@ -13,6 +13,8 @@ const playerService = require('./services/playerService');
 const websocketService = require('./services/webSocketService');
 const sessionController = require('./controllers/sessionController');
 const sessionService = require('./services/sessionService');
+const {connectMongoDBWithRetry} = require("./utils/mongoDB/mongoDB");
+
 
 // App-Instanz erstellen
 const app = express();
@@ -20,32 +22,36 @@ const server = http.createServer(app);
 
 // Middleware für JSON-Daten
 app.use(express.json());
-app.use(cors());  // Allow all cross-origin requests
+// Allow all cross-origin requests
+app.use(cors());
+// Statische Dateien aus dem Public-Verzeichnis bereitstellen
+app.use(express.static('public'));
 
-// Verbindung zur MongoDB: conn_string mit localhost oder MongoDB Docker standalone: mongodb://127.0.0.1:27017/Adder
-// 
-// conn_string mit docker-compose: 'mongodb://user:pass@mongodb:27017/Adder'
-
-mongoose.connect(process.env.CONN_STR, {})
-    .then(() => console.log('MongoDB connected')).catch(err => console.log(err));
+// Verbindung zur MongoDB
+connectMongoDBWithRetry();
 
 // API-Routen
 // app.use('/api/game', gameRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/session', sessionRoutes);
+app.use('/api/admin', require('./routes/sessionRoutes'));
+
+// Neue Route für die Admin-Seite
+app.get('/admin', (req, res) => {
+    res.sendFile(__dirname + '/public/admin.html'); // Die HTML-Seite wird bereitgestellt
+});
 
 // WebSocket-Server erstellen und Verbindung verwalten
 const wss = new WebSocket.Server({ server });
-wss.on('connection', (ws) => handleConnection(ws, wss));
+wss.on('connection', (ws) => handleConnection(ws));
 
 setInterval(() => {
-    // playerService.movePlayers();
-    // websocketService.broadcastPlayerPositions(wss, playerService.getPlayers());
-    // playerService.broadcastPlayerPositions();
-
-    sessionService.movePlayers();
-    sessionService.broadcastGameState();
+    if (sessionService.isSessionActive()) {
+        sessionService.movePlayers();
+        sessionService.broadcastGameState();
+        // sessionService.broadcastGameStateWithDeltas();
+    }
 }, 50);
 
 // Server starten

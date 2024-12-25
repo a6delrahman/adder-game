@@ -3,8 +3,9 @@
 .dashboard-buttons{
     display: flex;
     flex-direction: column;
-    width: 50%;
-    margin: auto;
+    align-items: center;
+    /*width: 50%;*/
+    /*margin: auto;*/
 
 }
 
@@ -12,7 +13,7 @@
 .snake-button{
     --b: 3px; /* border thickness */
     --s: .45em; /* size of the corner */
-    --color: #b6fb61;;
+    --color: #b6fb61;
     width: 200px;
     padding: calc(.5em + var(--s)) calc(.9em + var(--s));
     color: var(--color);
@@ -65,6 +66,10 @@
     border-radius: 5%;
 }
 
+.snake-button.login-logout-button {
+    color: #f71616;
+    border-radius: 5%;
+}
 
 /*!* Animation für Schlängeln *!*/
 /*.snake-button::before {*/

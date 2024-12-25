@@ -47,3 +47,5 @@ exports.logout = (req, res) => {
     authService.revokeRefreshToken(refreshToken);
     res.status(200).json({ msg: 'User logged out successfully' });
 };
+
+

@@ -4,10 +4,11 @@ import { useWebSocket} from "../../context/WebSocketContext.jsx";
 
 const GameTypeSelectionPage = () => {
     const { sendMessage } = useWebSocket();
+    const userId = localStorage.getItem('userId');
 
 
     const handleJoinSession = (selectedGameType) => {
-        sendMessage({ type: 'join_session', gameType: selectedGameType, fieldOfView: 800 });
+        sendMessage({ type: 'join_session', gameType: selectedGameType, fieldOfView: 800, userId: userId });
     };
 
     return (

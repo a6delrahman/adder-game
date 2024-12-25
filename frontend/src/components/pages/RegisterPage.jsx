@@ -1,7 +1,11 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../axiosInstance.js'; // Verwende die angepasste Axios-Instanz
-import { setAuthToken, setRefreshToken } from '../utility/auth/auth.js'; // Importiere die Funktionen
+import {
+    setAuthToken,
+    setRefreshToken,
+    setUserId
+} from '../utility/auth/auth.js'; // Importiere die Funktionen
 import { AuthContext } from '../../context/AuthContext.jsx';
 
 const RegisterPage = () => {
@@ -20,19 +24,17 @@ const RegisterPage = () => {
         e.preventDefault();
         try {
             // Send POST request to backend API
-            const response = await axiosInstance.post('/api/auth/register', formData);
-            const token = response.data.token;
+            const { data }  = await axiosInstance.post('/api/auth/register', formData);
 
             // Speichere Access-Token und Refresh-Token
-            setAuthToken(response.data.accessToken);
-            setRefreshToken(response.data.refreshToken);
+            setAuthToken(data.accessToken);
+            setRefreshToken(data.refreshToken);
+            setUserId(data.user.id);
 
             // Setze Authentifizierungsstatus auf true
             setIsAuthenticated(true);
-
-            console.log(response); // Log the response for debugging
-            // Weiterleiten zum Dashboard
-            navigate('/dashboard');
+            setMessage('Registration erfolgreich');
+            navigate('/');
         } catch (err) {
             console.error('Registration failed', err);
             setMessage(err.response?.data.msg || 'Fehler bei der Registrierung');

@@ -1,7 +1,7 @@
 // src/components/utility/auth/auth.js
 
 import axiosInstance from "../../../axiosInstance.js";
-
+// todo 1: save bearer token in session storage
 // Speichert das Access-Token
 export const setAuthToken = (token) => {
     if (token) {
@@ -35,7 +35,17 @@ export const handleLogout = async () => {
         }
         setAuthToken(null);
         setRefreshToken(null);
+        setUserId(null);
     } catch (err) {
         console.error('Logout failed', err);
+    }
+};
+
+// Speichert die Benutzerdaten
+export const setUserId = (userId) => {
+    if (userId) {
+        localStorage.setItem('userId', userId);
+    } else {
+        localStorage.removeItem('userId');
     }
 };

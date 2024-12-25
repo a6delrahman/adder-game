@@ -1,12 +1,8 @@
-.login-logout-button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+/*.login-logout-button {*/
+/*    color: #f71652;*/
+/*    border-radius: 5%;*/
+/*}*/
 
-.login-logout-button:hover {
-    background-color: #45a049;
-}
+/*.login-logout-button:hover {*/
+/*    background-color: #45a049;*/
+/*}*/

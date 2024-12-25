@@ -1,5 +1,5 @@
 // src/context/AuthContext.js
-import { createContext, useState, useEffect } from 'react';
+import {createContext, useState, useEffect, useMemo} from 'react';
 import { getAuthToken } from '../components/utility/auth/auth.js';
 import PropTypes from "prop-types";
 
@@ -13,8 +13,13 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(!!token);
     }, []);
 
+    const value = useMemo(() => ({
+        isAuthenticated,
+        setIsAuthenticated,
+    }), [isAuthenticated]);
+
     return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
