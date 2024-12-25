@@ -68,15 +68,28 @@ async function getUserProfile(userId) {
 
 
 async function getUsernameByUserId(userId) {
-    if (!db.connected) throw new Error('Database connection error');
+    if (!userId || typeof userId !== 'string') {
+        throw new Error('Invalid userId');
+    }
+
+    // if (!db?.connected) {
+    //     throw new Error('Database connection error');
+    // }
+
     try {
         const user = await User.findById(userId);
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
         return user.username;
     } catch (error) {
         if (error.message.includes('failed to connect')) {
             throw new Error('Database connection error');
         }
-        throw error;
+        console.error('Unexpected error in getUsernameByUserId:', error);
+        throw new Error('An unexpected error occurred');
     }
 }
 

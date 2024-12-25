@@ -84,6 +84,8 @@ function getRandomUsername() {
   return `${randomAdjective} ${randomAnimal}`;
 }
 
+
+
 async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
   if (playerIndex.has(ws)) {
     await removePlayerFromSession(ws);
@@ -478,48 +480,123 @@ function handleBoostPenalty(playerState, gameState) {
 }
 
 function handleFoodCollision(playerState, gameState) {
-  const {snake} = playerState;
+  const { snake } = playerState;
 
+  // Temporary array to hold newly generated food items
+  const newFoods = [];
+
+  // Process collision for all current food items
   gameState.food = gameState.food.filter(food => {
     if (snake.checkCollisionWithFood(food)) {
-      if (food.meta?.result !== undefined) {
-        const correctResult = snake.currentEquation?.result;
-        if (food.meta.result === correctResult) {
-          playerState.score += food.points;
-          snake.score += food.points;
-          snake.segmentCount += food.points;
-          // Neue Aufgabe zuweisen
-          equationManager.assignEquationToPlayer(playerState.sessionId,
-              snake, snake.currentEquation.type);
-          for (let i = 0; i < 10; i++) {
-            generateMathFood(gameState, snake.currentEquation.equation,
-                snake.currentEquation.result);
-          }
-        } else {
-          snake.score = Math.max(0, snake.score - 50); // Abzug bei falscher Antwort
-        }
-      } else {
-        playerState.score += food.points;
-        snake.score += food.points;
-        snake.segmentCount += food.points;
-      }
-
-      // Überprüfen der Berechnungen
-      if (playerState.score < 0) {
-        playerState.score = 0;
-      }
-      if (snake.score < 0) {
-        snake.score = 0;
-      }
-      if (snake.segmentCount < 0) {
-        snake.segmentCount = 0;
-      }
-
-      return false; // Entferne Nahrung
+      handleFoodConsumption(playerState, snake, gameState, food, newFoods);
+      return false; // Remove the consumed food
     }
-    return true; // Nahrung bleibt
+    return true; // Keep the food in the array
   });
+
+  // Append all newly generated foods to the game state
+  gameState.food = [...gameState.food, ...newFoods];
+
+  // Debugging new state
+  console.log("Updated food state after collision: ", gameState.food);
 }
+
+
+function handleFoodConsumption(playerState, snake, gameState, food, newFoods) {
+  if (food.meta?.result !== undefined) {
+    handleMathFoodCollision(playerState, snake, gameState, food, newFoods);
+  } else {
+    updateScoresAndSegments(playerState, snake, food.points);
+  }
+}
+
+function handleMathFoodCollision(playerState, snake, gameState, food, newFoods) {
+  const correctResult = snake.currentEquation?.result;
+  if (food.meta?.result === correctResult) {
+    updateScoresAndSegments(playerState, snake, food.points);
+
+    // Assign a new equation
+    equationManager.assignEquationToPlayer(
+        playerState.sessionId,
+        snake,
+        snake.currentEquation.type
+    );
+
+    // Generate new math food and collect in the `newFoods` array
+    newFoods.push(...generateMultipleMathFoods(gameState.boundaries, snake.currentEquation));
+  } else {
+    // Penalty for incorrect answer
+    snake.score = Math.max(0, snake.score - 50);
+  }
+}
+
+function updateScoresAndSegments(playerState, snake, points) {
+  playerState.score = Math.max(0, playerState.score + points);
+  snake.score = Math.max(0, snake.score + points);
+  snake.segmentCount = Math.max(0, snake.segmentCount + points);
+}
+
+function generateMultipleMathFoods(boundaries, equation) {
+  const newFoods = [];
+  for (let i = 0; i < 3; i++) {
+    const food = {
+      x: Math.random() * boundaries.width,
+      y: Math.random() * boundaries.height,
+      meta: { result: equation.result },
+      points: 10,
+    };
+    newFoods.push(food);
+  }
+
+  // Debugging: Log newly generated foods
+  console.log("Generated math foods: ", newFoods);
+
+  return newFoods; // Return instead of directly modifying gameState.food
+}
+
+// function handleFoodCollision(playerState, gameState) {
+//   const {snake} = playerState;
+//
+//   gameState.food = gameState.food.filter(food => {
+//     if (snake.checkCollisionWithFood(food)) {
+//       if (food.meta?.result !== undefined) {
+//         const correctResult = snake.currentEquation?.result;
+//         if (food.meta.result === correctResult) {
+//           playerState.score += food.points;
+//           snake.score += food.points;
+//           snake.segmentCount += food.points;
+//           // Neue Aufgabe zuweisen
+//           equationManager.assignEquationToPlayer(playerState.sessionId,
+//               snake, snake.currentEquation.type);
+//           for (let i = 0; i < 10; i++) {
+//             generateMathFood(gameState, snake.currentEquation.equation,
+//                 snake.currentEquation.result);
+//           }
+//         } else {
+//           snake.score = Math.max(0, snake.score - 50); // Abzug bei falscher Antwort
+//         }
+//       } else {
+//         playerState.score += food.points;
+//         snake.score += food.points;
+//         snake.segmentCount += food.points;
+//       }
+//
+//       // Überprüfen der Berechnungen
+//       if (playerState.score < 0) {
+//         playerState.score = 0;
+//       }
+//       if (snake.score < 0) {
+//         snake.score = 0;
+//       }
+//       if (snake.segmentCount < 0) {
+//         snake.segmentCount = 0;
+//       }
+//
+//       return false; // Entferne Nahrung
+//     }
+//     return true; // Nahrung bleibt
+//   });
+// }
 
 // // Nahrungskollisionen prüfen
 // function handleFoodCollision(playerState, gameState) {
