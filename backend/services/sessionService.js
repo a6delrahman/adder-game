@@ -12,7 +12,7 @@ const gameStates = new Map();
 const playerIndex = new Map();
 const lastSentStates = new Map();
 
-const GAMEBOUNDARIES = {width: 500, height: 500};
+const GAMEBOUNDARIES = {width: 2000, height: 2000};
 
 const ZONE_COUNT = 10; // Gittergröße 4x4
 const MIN_FOOD_PER_ZONE = 2; // Mindestens 2 Nahrungspunkte pro Zone
