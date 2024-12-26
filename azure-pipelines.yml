@@ -8,7 +8,7 @@ variables:
   # Docker image names
   frontendImageName: adder-frontend
   backendImageName: adder-backend
-  mongodbImageName: adder-mongodb
+  mongodbImageName: 'mongodb/mongodb-community-server'
   subscriptionId: 'c061fdd1-bba3-4c63-b32d-6595004a4b00'
   tenantId: '61c44f51-4973-4caf-a8de-cbde54d78efa'
   clientId: 'e12b5802-7b09-428c-900a-7fb5990597c8'
@@ -45,6 +45,11 @@ stages:
     - script: docker build -t $(acrLoginServer)/$(backendImageName):$(Build.BuildId) backend
       displayName: Build Backend Docker Image
 
+    - script: docker pull mongodb/mongodb-community-server
+      displayName: Build MongoDB Docker Image
+
+    - script: docker tag $(mongodbImageName) $(acrLoginServer)/$(frontendImageName)/$(mongodbImageName)
+  
     - script: docker login $(acrLoginServer) -u $(clientId) -p $(clientSecret)
       displayName: Login to ACR
 
@@ -52,20 +57,20 @@ stages:
       displayName: Push Frontend Docker Image
 
     - script: docker push $(acrLoginServer)/$(backendImageName):$(Build.BuildId)
-      displayName: Push Backend Docker Image    
+      displayName: Push Backend Docker Image
+
+    - script: docker push $(acrLoginServer)/$(mongodbImageName):$(Build.BuildId)
+      displayName: Push MongoDB Docker Image        
 
 - stage: Deploy
   jobs:
   - job: DeployToAzure
     displayName: Deploy to Azure
     steps:
-      - task: DockerCompose@1
+      - task: AzureWebAppContainer@1
         inputs:
-          containerregistrytype: 'Azure Container Registry'
           azureSubscription: 'deployment-sc'
-          azureContainerRegistry: '{"loginServer":"adderacr.azurecr.io", "id" : "/subscriptions/c061fdd1-bba3-4c63-b32d-6595004a4b00/resourceGroups/adder-main-rg/providers/Microsoft.ContainerRegistry/registries/adderacr"}'
-          dockerComposeFile: '**/docker-compose.yml'
-          projectName: 'adder'
-          action: 'Run a Docker Compose command'
-          dockerComposeCommand: 'up'
-          arguments: '--build'
+          appName: 'adder_webapp'
+          containers: $(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName):$(Build.BuildId)
+          multicontainerConfigFile: '**/docker-compose.yml'
+          containerCommand: 'up --build'
