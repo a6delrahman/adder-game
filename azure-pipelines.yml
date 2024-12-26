@@ -28,7 +28,7 @@ stages:
     - task: AzureCLI@2
       displayName: Azure CLI Login
       inputs:
-        azureSubscription: 'c061fdd1-bba3-4c63-b32d-6595004a4b00'
+        azureSubscription: 'deployment-sc'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
