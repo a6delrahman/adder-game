@@ -48,7 +48,7 @@ stages:
     - script: docker pull mongodb/mongodb-community-server
       displayName: Build MongoDB Docker Image
 
-    - script: docker tag $(mongodbImageName) $(acrLoginServer)/$(frontendImageName)/$(mongodbImageName)
+    - script: docker tag $(mongodbImageName) $(acrLoginServer)/$(mongodbImageName)
   
     - script: docker login $(acrLoginServer) -u $(clientId) -p $(clientSecret)
       displayName: Login to ACR
