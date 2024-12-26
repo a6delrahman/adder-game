@@ -15,7 +15,7 @@ variables:
   clientSecret: 'u2W8Q~m47HjHcvCYuf-Iyh3F22HJz8jxWIoi1azb'
 
   # ACR details
-  acrName: adderAcr
+  acrName: adderacr
   acrLoginServer: adderacr.azurecr.io
   acrUsername: $(az acr credential show --name adderacr --query "username" --output tsv)
   acrPassword: $(az acr credential show --name adderacr --query "passwords[0].value" --output tsv)
@@ -29,46 +29,45 @@ stages:
     - task: DockerInstaller@0
       displayName: Install Docker
 
-    - task: AzureCLI@2
-      displayName: Azure CLI Login
-      inputs:
-        azureSubscription: 'deployment-sc'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
-          az account set --subscription $(subscriptionId)
-
-    - script: docker build -t $(acrLoginServer)/$(frontendImageName):$(Build.BuildId) frontend
-      displayName: Build Frontend Docker Image
-
-    - script: docker build -t $(acrLoginServer)/$(backendImageName):$(Build.BuildId) backend
-      displayName: Build Backend Docker Image
-
-    - script: docker pull mongodb/mongodb-community-server
-    - script: docker tag $(mongodbImageName) $(acrLoginServer)/samples/$(mongodbImageName)
-      displayName: Build MongoDB Docker Image
-
-    - script: docker login $(acrLoginServer) -u $(clientId) -p $(clientSecret)
+    - task: Docker@2
       displayName: Login to ACR
+      inputs:
+        command: login
+        containerRegistry: acr-sc
 
-    - script: docker push $(acrLoginServer)/$(frontendImageName):$(Build.BuildId)
-      displayName: Push Frontend Docker Image
-
-    - script: docker push $(acrLoginServer)/$(backendImageName):$(Build.BuildId)
-      displayName: Push Backend Docker Image
-
-    - script: docker push $(acrLoginServer)/$(mongodbImageName):$(mongodbImageName)
-      displayName: Push MongoDB Docker Image        
+    - task: DockerCompose@1
+      inputs:
+        containerregistrytype: 'Azure Container Registry'
+        azureSubscription: 'deployment-sc'
+        azureContainerRegistry: '{"loginServer":"adderacr.azurecr.io", "id" : "/subscriptions/c061fdd1-bba3-4c63-b32d-6595004a4b00/resourceGroups/adder-main-rg/providers/Microsoft.ContainerRegistry/registries/adderacr"}'
+        dockerComposeFile: '**/docker-compose.yml'
+        dockerComposeFileArgs: |
+          MONGODB_INITDB_ROOT_USERNAME=user
+          MONGODB_INITDB_ROOT_PASSWORD=pass
+        projectName: 'adder'
+        action: 'Run a Docker Compose command'
+        dockerComposeCommand: 'up'
+        arguments: '--build'
 
 - stage: Deploy
   jobs:
   - job: DeployToAzure
     displayName: Deploy to Azure
     steps:
+      - task: AzureCLI@2
+        displayName: Azure CLI Login
+        inputs:
+          azureSubscription: 'deployment-sc'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
+            az account set --subscription $(subscriptionId)
+
       - task: AzureWebAppContainer@1
         inputs:
           azureSubscription: 'deployment-sc'
+          resourceGroupName: 'adder-main-rg'
           appName: 'adder_webapp'
           containers: $(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName)
           multicontainerConfigFile: '**/docker-compose.yml'
