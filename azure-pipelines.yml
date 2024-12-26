@@ -45,7 +45,7 @@ stages:
     - script: docker build -t $(acrLoginServer)/$(backendImageName):$(Build.BuildId) backend
       displayName: Build Backend Docker Image
 
-    - script: docker login myregistry.azurecr.io --username $(clientId) --password $(clientSecret)
+    - script: docker login myregistry.azurecr.io -u $(clientId) -p $(clientSecret)
       displayName: Login to ACR
 
     - script: docker push $(acrLoginServer)/$(frontendImageName):$(Build.BuildId)
