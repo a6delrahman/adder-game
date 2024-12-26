@@ -26,12 +26,14 @@ stages:
       displayName: Install Docker
 
     - task: AzureCLI@2
+      displayName: Azure CLI Login
       inputs:
-        azureSubscription: 'deployment-sc'
+        azureSubscription: 'c061fdd1-bba3-4c63-b32d-6595004a4b00'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          az login --username $(acrUsername) --password $(acrPassword)
+          az account get-access-token --subscription "c061fdd1-bba3-4c63-b32d-6595004a4b00"
+          az login
 
     - script: docker build -t $(acrLoginServer)/$(frontendImageName):$(Build.BuildId) frontend
       displayName: Build Frontend Docker Image
