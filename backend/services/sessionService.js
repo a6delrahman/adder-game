@@ -2,31 +2,36 @@
 const {v4: uuidv4} = require('uuid');
 const {equationManager} = require('../utils/mathEquations');
 const WebSocket = require('ws');
-const path = require('path');
 const Snake = require('../classes/Snake');
 const {saveFinalScore} = require("../models/ScoresModel");
 const {getUsernameByUserId} = require("./userService");
-const gameConfig = require('../config/gameConfig');
 // Managers
 const FoodManager = require('../managers/foodManager');
 const GameLoopManager = require('../managers/gameLoopManager');
+const GameStateManager = require('../managers/gameStateManager');
+const PlayerManager = require("../managers/playerManager");
+const WebSocketManager = require('../managers/webSocketManager');
+
+const playerManager = new PlayerManager();
+const webSocketManager = new WebSocketManager();
+const gameStateManager = new GameStateManager();
 const gameLoopManager5000ms = new GameLoopManager(5000); // Erstelle eine Instanz mit dem gewünschten Intervall
 const gameLoopManager50ms = new GameLoopManager(50);
 
+const {GAME} = require('../config/gameConfig');
+
+const {getRandomPosition, getRandomNumber, getRandomUsername} = require(
+    '../utils/helperFunctions');
+
 const sessions = new Map();
-const gameStates = new Map();
+// const gameStates = new Map();
 const playerIndex = new Map();
-const lastSentStates = new Map();
 
-const GAMEBOUNDARIES = {width: 2000, height: 2000};
-
-const ZONE_COUNT = 10; // Gittergröße 4x4
-const MIN_FOOD_PER_ZONE = 2; // Mindestens 2 Nahrungspunkte pro Zone
-const MAX_FOOD_PER_ZONE = 5; // Maximal 5 Nahrungspunkte pro Zone
+const GAMEBOUNDARIES = GAME.BOUNDARIES;
+// const ZONE_COUNT = GAME.ZONE_COUNT; // Gittergröße 4x4
 
 // Initialisiere Managers
-const foodManager = new FoodManager(GAMEBOUNDARIES, MIN_FOOD_PER_ZONE,
-    MAX_FOOD_PER_ZONE);
+const foodManager = new FoodManager();
 
 let sessionActive = false;
 
@@ -36,17 +41,21 @@ const setActiveSessions = (value) => {
   sessionActive = value;
 };
 
-function createInitialGameState() {
-  const gameState = {
-    players: {},
-    food: [],
-    boundaries: GAMEBOUNDARIES,
-  };
+// function createInitialGameState() {
+//   const gameState = {
+//     players: {},
+//     food: [],
+//     boundaries: GAMEBOUNDARIES,
+//   };
+//
+//   generateRandomFood(gameState, (GAMEBOUNDARIES.width / 100));
+//
+//   return gameState;
+// }
 
-  generateRandomFood(gameState, (GAMEBOUNDARIES.width / 100));
-
-  return gameState;
-}
+// function createInitialGameState() {
+//   return gameStateManager.createInitialGameState();
+// }
 
 async function createOrFindSession(gameType) {
   let session = Array.from(sessions.values()).find(
@@ -89,26 +98,18 @@ function generateRandomColor() {
 }
 
 async function tryToGetUsername(userId) {
-  try {
-    return await getUsernameByUserId(userId);
-  } catch (e) {
-    console.error('Error fetching user profile:', e);
+  if (!userId) {
     return getRandomUsername();
+  } else {
+    try {
+      return await getUsernameByUserId(userId);
+    } catch (e) {
+      console.error('Error fetching user profile:', e);
+    }
   }
 }
 
-function getRandomUsername() {
-  const adjectives = ['Fast', 'Furious', 'Swift', 'Speedy', 'Rapid', 'Quick',
-    'Nimble', 'Agile', 'Brisk', 'Zippy'];
-  const animals = ['Fox', 'Wolf', 'Tiger', 'Lion', 'Jaguar', 'Cheetah',
-    'Panther', 'Puma', 'Leopard', 'Cougar'];
-  const randomAdjective = adjectives[Math.floor(
-      Math.random() * adjectives.length)];
-  const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
-  return `${randomAdjective} ${randomAnimal}`;
-}
-
-async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
+async function addPlayerToSession(gameType, ws, fieldOfView, userId, clientId) {
   if (playerIndex.has(ws)) {
     await removePlayerFromSession(ws);
   }
@@ -126,19 +127,9 @@ async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
     color: color,
   });
 
-  const playerState = {
-    snakeId,
-    sessionId: session.id,
-    userId,
-    snake: playerSnake,
-    boost: false,
-    fieldOfView,
-    level: 1,
-    currentEquation: null,
-    score: 0,
-  };
+  const playerState = playerManager.createPlayer(snakeId, session.id, userId,
+      playerSnake, fieldOfView, 1, null, 0);
 
-  // assignNewMathEquation(playerState); // Neue Mathematikaufgabe zuweisen
 
   const snake = playerState.snake;
 
@@ -147,84 +138,57 @@ async function addPlayerToSession(gameType, ws, fieldOfView, userId) {
       playerState.level);
   equationManager.assignEquationToPlayer(session.id, snake, session.gameType);
 
-  // Spieler zum GameState hinzufügen
-  if (!gameStates.has(session.id)) {
-    const initialGameState = createInitialGameState();
-    gameStates.set(session.id, {...initialGameState});
-  }
-  const gameState = gameStates.get(session.id);
+
+  const gameState = gameStateManager.createOrFindGameState(session.id);
   gameState.players[snakeId] = playerState;
-  for (let i = 0; i < 10; i++) {
-    gameState.food.push(generateMathFoodOptions(gameState.boundaries,
-        snake.currentEquation.result, 50));
-  }
 
   // Spieler-Index aktualisieren
   playerIndex.set(ws, {sessionId: session.id, snakeId, userId});
+  webSocketManager.addPlayer(clientId, ws);
 
   return {
+    sessionId: session.id,
     snakeId,
     initialGameState: gameState,
   };
 }
 
-function calculateZones(boundaries, zoneCount) {
-  const zoneWidth = boundaries.width / zoneCount;
-  const zoneHeight = boundaries.height / zoneCount;
-  const zones = [];
-
-  for (let x = 0; x < zoneCount; x++) {
-    for (let y = 0; y < zoneCount; y++) {
-      zones.push({
-        x: x * zoneWidth,
-        y: y * zoneHeight,
-        width: zoneWidth,
-        height: zoneHeight,
-        foodCount: 0, // Anzahl der Nahrungspunkte in der Zone
-      });
-    }
-  }
-
-  return zones;
-}
-
-function updateZoneFoodCounts(gameState, zones) {
-  // Zähler für jede Zone zurücksetzen
-  zones.forEach((zone) => zone.foodCount = 0);
-
-  // Nahrungspunkte jeder Zone zuordnen
-  gameState.food.forEach((food) => {
-    const zone = zones.find(
-        (z) =>
-            food.x >= z.x &&
-            food.x < z.x + z.width &&
-            food.y >= z.y &&
-            food.y < z.y + z.height
-    );
-
-    if (zone) {
-      zone.foodCount++;
-    }
-  });
-}
-
-// function replenishFoodInZones(gameState, zones, minFoodPerZone,
-//     maxFoodPerZone) {
-//   zones.forEach((zone) => {
-//     if (zone.foodCount < minFoodPerZone) {
-//       const missingFood = maxFoodPerZone - zone.foodCount;
+// function calculateZones(boundaries, zoneCount) {
+//   const zoneWidth = boundaries.width / zoneCount;
+//   const zoneHeight = boundaries.height / zoneCount;
+//   const zones = [];
 //
-//       for (let i = 0; i < missingFood; i++) {
-//         const foodPosition = {
-//           x: Math.random() * zone.width + zone.x,
-//           y: Math.random() * zone.height + zone.y,
-//         };
+//   for (let x = 0; x < zoneCount; x++) {
+//     for (let y = 0; y < zoneCount; y++) {
+//       zones.push({
+//         x: x * zoneWidth,
+//         y: y * zoneHeight,
+//         width: zoneWidth,
+//         height: zoneHeight,
+//         foodCount: 0, // Anzahl der Nahrungspunkte in der Zone
+//       });
+//     }
+//   }
 //
-//         const food = generateFood(foodPosition, randomizedNumber(1, 5));
-//         if (food) {
-//           gameState.food.push(food);
-//         }
-//       }
+//   return zones;
+// }
+
+// function updateZoneFoodCounts(gameState, zones) {
+//   // Zähler für jede Zone zurücksetzen
+//   zones.forEach((zone) => zone.foodCount = 0);
+//
+//   // Nahrungspunkte jeder Zone zuordnen
+//   gameState.food.forEach((food) => {
+//     const zone = zones.find(
+//         (z) =>
+//             food.x >= z.x &&
+//             food.x < z.x + z.width &&
+//             food.y >= z.y &&
+//             food.y < z.y + z.height
+//     );
+//
+//     if (zone) {
+//       zone.foodCount++;
 //     }
 //   });
 // }
@@ -235,22 +199,25 @@ function ensureMathFoods() {
     return;
   }
 
+  const gameStates = gameStateManager.getGameStates();
+
   gameStates.forEach((gameState, sessionId) => {
     const players = gameState.players;
-    foodManager.ensureMathFoodForPlayers(gameState, players, equationManager);
+    foodManager.ensureMathFoodForPlayers(gameState, players);
     console.log(`MathFoods ensured for session: ${sessionId}`);
   });
 }
 
-function replenishFoodInZones(gameState, zones) {
-  foodManager.replenishFoodInZones(gameState, zones);
-}
+// function replenishFoodInZones(gameState, zones) {
+//   foodManager.replenishFoodInZones(gameState, zones);
+// }
 
 function getAllSessions() {
   return sessions;
 }
 
 function broadcastGameState() {
+  const gameStates = gameStateManager.getGameStates();
   gameStates.forEach((gameState) => {
     const {players, food} = gameState;
 
@@ -315,56 +282,56 @@ function getNearbyPlayers(currentPlayer, allPlayers) {
   return nearbyPlayers;
 }
 
-function broadcastGameStateWithDeltas() {
-  gameStates.forEach((gameState, sessionId) => {
-    const {players, boundaries} = gameState;
+// function broadcastGameStateWithDeltas() {
+//   gameStates.forEach((gameState, sessionId) => {
+//     const {players, boundaries} = gameState;
+//
+//     Object.values(players).forEach((player) => {
+//       const nearbyPlayers = getNearbyPlayers(player, players, boundaries);
+//
+//       // Erstelle das aktuelle Delta
+//       const currentState = nearbyPlayers.map(
+//           ({snakeId, headPosition, segments}) => ({
+//             snakeId,
+//             headPosition,
+//             segmentCount: segments.length,
+//           }));
+//
+//       const lastState = lastSentStates.get(player.snakeId) || [];
+//       const delta = calculateDelta(lastState, currentState);
+//
+//       // Speichere den aktuellen Zustand
+//       lastSentStates.set(player.snakeId, currentState);
+//
+//       // Sende nur, wenn es Änderungen gibt
+//       if (delta.length > 0 && player.ws.readyState === WebSocket.OPEN) {
+//         player.ws.send(
+//             JSON.stringify({type: 'game_state_update', updates: delta}));
+//       }
+//
+//       // Abrufen des WebSocket für den aktuellen Spieler
+//       const ws = getWebSocketBySnakeId(player.snakeId);
+//
+//       if (ws && ws.readyState === WebSocket.OPEN) {
+//         ws.send(message); // Nachricht an den Spieler senden
+//       }
+//     });
+//   });
+// }
 
-    Object.values(players).forEach((player) => {
-      const nearbyPlayers = getNearbyPlayers(player, players, boundaries);
-
-      // Erstelle das aktuelle Delta
-      const currentState = nearbyPlayers.map(
-          ({snakeId, headPosition, segments}) => ({
-            snakeId,
-            headPosition,
-            segmentCount: segments.length,
-          }));
-
-      const lastState = lastSentStates.get(player.snakeId) || [];
-      const delta = calculateDelta(lastState, currentState);
-
-      // Speichere den aktuellen Zustand
-      lastSentStates.set(player.snakeId, currentState);
-
-      // Sende nur, wenn es Änderungen gibt
-      if (delta.length > 0 && player.ws.readyState === WebSocket.OPEN) {
-        player.ws.send(
-            JSON.stringify({type: 'game_state_update', updates: delta}));
-      }
-
-      // Abrufen des WebSocket für den aktuellen Spieler
-      const ws = getWebSocketBySnakeId(player.snakeId);
-
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(message); // Nachricht an den Spieler senden
-      }
-    });
-  });
-}
-
-// Hilfsfunktion: Delta berechnen
-function calculateDelta(lastState, currentState) {
-  const delta = [];
-
-  currentState.forEach((current) => {
-    const last = lastState.find((p) => p.snakeId === current.snakeId);
-    if (!last || JSON.stringify(last) !== JSON.stringify(current)) {
-      delta.push(current);
-    }
-  });
-
-  return delta;
-}
+// // Hilfsfunktion: Delta berechnen
+// function calculateDelta(lastState, currentState) {
+//   const delta = [];
+//
+//   currentState.forEach((current) => {
+//     const last = lastState.find((p) => p.snakeId === current.snakeId);
+//     if (!last || JSON.stringify(last) !== JSON.stringify(current)) {
+//       delta.push(current);
+//     }
+//   });
+//
+//   return delta;
+// }
 
 async function updatePlayerMovement(data, ws) {
   const {targetX, targetY, boost} = data;
@@ -375,7 +342,8 @@ async function updatePlayerMovement(data, ws) {
   }
 
   const {sessionId, snakeId} = playerInfo;
-  const gameState = gameStates.get(sessionId);
+  const gameState = gameStateManager.getGameStateBySessionId(sessionId);
+  // onst gameState = gameStates.get(sessionId);
   if (!gameState) {
     throw new Error(`Game state not found for session ID: ${sessionId}`);
   }
@@ -398,62 +366,64 @@ async function updatePlayerMovement(data, ws) {
   }
 }
 
-function handleMovement(data, ws) {
-  const {targetX, targetY, boost} = data;
-
-  if (isNaN(targetX) || isNaN(targetY)) {
-    throw new Error('Invalid target coordinates');
-  }
-
-  // Spielerinformationen über den Index finden
-  const playerInfo = playerIndex.get(ws);
-  if (!playerInfo) {
-    throw new Error('Player not found for WebSocket');
-  }
-
-  const {sessionId, snakeId} = playerInfo;
-  const gameState = gameStates.get(sessionId);
-  if (!gameState) {
-    console.error(`GameState not found for sessionId: ${sessionId}`);
-    return;
-  }
-
-  const player = gameState.players[snakeId];
-  if (!player) {
-    console.error(`Player not found in GameState for snakeId: ${snakeId}`);
-    return;
-  }
-
-  // Zielposition aktualisieren
-  if (targetX !== undefined && targetY !== undefined) {
-    player.snake.updateDirection(targetX, targetY);
-  }
-
-  // Boost nur aktivieren, wenn Punkte > 0 sind
-  // Update boost state only if the player has enough score
-  if (boost && player.score > 0) {
-    player.snake.setBoost(true);
-  } else {
-    player.snake.setBoost(false);
-  }
-}
+// function handleMovement(data, ws) {
+//   const {targetX, targetY, boost} = data;
+//
+//   if (isNaN(targetX) || isNaN(targetY)) {
+//     throw new Error('Invalid target coordinates');
+//   }
+//
+//   // Spielerinformationen über den Index finden
+//   const playerInfo = playerIndex.get(ws);
+//   if (!playerInfo) {
+//     throw new Error('Player not found for WebSocket');
+//   }
+//
+//   const {sessionId, snakeId} = playerInfo;
+//   const gameState = gameStateManager.getGameStateBySessionId(sessionId);
+//   // const gameState = gameStates.get(sessionId);
+//   if (!gameState) {
+//     console.error(`GameState not found for sessionId: ${sessionId}`);
+//     return;
+//   }
+//
+//   const player = gameState.players[snakeId];
+//   if (!player) {
+//     console.error(`Player not found in GameState for snakeId: ${snakeId}`);
+//     return;
+//   }
+//
+//   // Zielposition aktualisieren
+//   if (targetX !== undefined && targetY !== undefined) {
+//     player.snake.updateDirection(targetX, targetY);
+//   }
+//
+//   // Boost nur aktivieren, wenn Punkte > 0 sind
+//   // Update boost state only if the player has enough score
+//   if (boost && player.score > 0) {
+//     player.snake.setBoost(true);
+//   } else {
+//     player.snake.setBoost(false);
+//   }
+// }
 
 function movePlayers() {
+  const gameStates = gameStateManager.getGameStates();
   gameStates.forEach((gameState, sessionId) => {
     const {players, boundaries} = gameState;
 
-    // Zonen berechnen und Nahrung zählen
-    const zones = calculateZones(boundaries, ZONE_COUNT);
-    updateZoneFoodCounts(gameState, zones);
+    // ensureMathFoods();
 
-    // Nahrung in unterversorgten Zonen ergänzen
-    replenishFoodInZones(gameState, zones, MIN_FOOD_PER_ZONE,
-        MAX_FOOD_PER_ZONE);
+    // // Zonen berechnen und Nahrung zählen
+    // const zones = calculateZones(boundaries, ZONE_COUNT);
+    // updateZoneFoodCounts(gameState, zones);
+    //
+    // // Nahrung in unterversorgten Zonen ergänzen
+    // replenishFoodInZones(gameState, zones);
 
     // Bewegung und Nahrungskollisionen für alle Spieler verarbeiten
     Object.values(players).forEach((playerState) => {
       movePlayer(playerState, boundaries);
-      //todo: handleFoodCollision fügt keine nahrung hinzu!
       handleFoodCollision(playerState, gameState);
       handleBoostPenalty(playerState, gameState);
     });
@@ -518,179 +488,18 @@ function handleBoostPenalty(playerState, gameState) {
   }
 }
 
-// function handleFoodCollision(playerState, gameState) {
-//   const { snake } = playerState;
-//
-//   // Temporary array to hold newly generated food items
-//   const newFoods = [];
-//
-//   // Process collision for all current food items
-//   gameState.food = gameState.food.filter(food => {
-//     if (snake.checkCollisionWithFood(food)) {
-//       handleFoodConsumption(playerState, snake, gameState, food, newFoods);
-//       return false; // Remove the consumed food
-//     }
-//     return true; // Keep the food in the array
-//   });
-//
-//   // Append all newly generated foods to the game state
-//   gameState.food = [...gameState.food, ...newFoods];
-//
-//   // Debugging new state
-//   console.log("Updated food state after collision: ", gameState.food);
-// }
-
 function handleFoodCollision(playerState, gameState) {
   foodManager.handleFoodCollision(playerState, gameState, equationManager);
 }
 
-// function handleFoodConsumption(playerState, snake, gameState, food, newFoods) {
-//   if (food.meta?.result !== undefined) {
-//     handleMathFoodCollision(playerState, snake, gameState, food, newFoods);
-//   } else {
-//     updateScoresAndSegments(playerState, snake, food.points);
-//   }
+// function generateMathFoodOptions(boundaries, result, points = 50) {
+//   // Generiere Nahrung für die korrekte Antwort
+//   return generateFood(
+//       getRandomPosition(boundaries),
+//       50, // Punktewert
+//       {result: result}
+//   );
 // }
-
-// function handleMathFoodCollision(playerState, snake, gameState, food, newFoods) {
-//   const correctResult = snake.currentEquation?.result;
-//   if (food.meta?.result === correctResult) {
-//     updateScoresAndSegments(playerState, snake, food.points);
-//
-//     // Assign a new equation
-//     equationManager.assignEquationToPlayer(
-//         playerState.sessionId,
-//         snake,
-//         snake.currentEquation.type
-//     );
-//
-//     // Generate new math food and collect in the `newFoods` array
-//     newFoods.push(...generateMultipleMathFoods(gameState.boundaries, snake.currentEquation));
-//   } else {
-//     // Penalty for incorrect answer
-//     snake.score = Math.max(0, snake.score - 50);
-//   }
-// }
-
-// function updateScoresAndSegments(playerState, snake, points) {
-//   playerState.score = Math.max(0, playerState.score + points);
-//   snake.score = Math.max(0, snake.score + points);
-//   snake.segmentCount = Math.max(0, snake.segmentCount + points);
-// }
-
-function generateMultipleMathFoods(boundaries, equation) {
-  const newFoods = [];
-  for (let i = 0; i < 3; i++) {
-    const food = {
-      x: Math.random() * boundaries.width,
-      y: Math.random() * boundaries.height,
-      meta: {result: equation.result},
-      points: 10,
-    };
-    newFoods.push(food);
-  }
-
-  // Debugging: Log newly generated foods
-  console.log("Generated math foods: ", newFoods);
-
-  return newFoods; // Return instead of directly modifying gameState.food
-}
-
-// function handleFoodCollision(playerState, gameState) {
-//   const {snake} = playerState;
-//
-//   gameState.food = gameState.food.filter(food => {
-//     if (snake.checkCollisionWithFood(food)) {
-//       if (food.meta?.result !== undefined) {
-//         const correctResult = snake.currentEquation?.result;
-//         if (food.meta.result === correctResult) {
-//           playerState.score += food.points;
-//           snake.score += food.points;
-//           snake.segmentCount += food.points;
-//           // Neue Aufgabe zuweisen
-//           equationManager.assignEquationToPlayer(playerState.sessionId,
-//               snake, snake.currentEquation.type);
-//           for (let i = 0; i < 10; i++) {
-//             generateMathFood(gameState, snake.currentEquation.equation,
-//                 snake.currentEquation.result);
-//           }
-//         } else {
-//           snake.score = Math.max(0, snake.score - 50); // Abzug bei falscher Antwort
-//         }
-//       } else {
-//         playerState.score += food.points;
-//         snake.score += food.points;
-//         snake.segmentCount += food.points;
-//       }
-//
-//       // Überprüfen der Berechnungen
-//       if (playerState.score < 0) {
-//         playerState.score = 0;
-//       }
-//       if (snake.score < 0) {
-//         snake.score = 0;
-//       }
-//       if (snake.segmentCount < 0) {
-//         snake.segmentCount = 0;
-//       }
-//
-//       return false; // Entferne Nahrung
-//     }
-//     return true; // Nahrung bleibt
-//   });
-// }
-
-// // Nahrungskollisionen prüfen
-// function handleFoodCollision(playerState, gameState) {
-//     let playerSolvedEquationCorrectly = false;
-//     const {snake} = playerState;
-//     gameState.food = gameState.food.filter((food) => {
-//         const dx = food.x - snake.headPosition.x;
-//         const dy = food.y - snake.headPosition.y;
-//         const distanceSquared = dx * dx + dy * dy;
-//
-//         if (distanceSquared < 100) { // Abstand < 10px
-//             if (food.meta?.result !== undefined) {
-//                 const correctResult = snake.currentEquation?.result;
-//                 if (food.meta.result === correctResult) {
-//                     snake.score += food.points; // Punkte für korrekte Antwort
-//                     snake.segmentCount += food.points;
-//                     // assignNewMathEquation(playerState); // Neue Aufgabe zuweisen
-//                     playerSolvedEquationCorrectly = true;
-//                 } else {
-//                     snake.score = Math.max(0, snake.score - 50); // Abzug bei falscher Antwort
-//                 }
-//             } else {
-//                 snake.score += food.points; // Normale Nahrung
-//                 snake.segmentCount += food.points;
-//             }
-//             return false; // Nahrung entfernen
-//         }
-//         return true; // Nahrung bleibt
-//     });
-//     if (playerSolvedEquationCorrectly) {
-//         equationManager.assignEquationToPlayer(playerState.sessionId, playerState, snake.currentEquation.type);
-//         const newFood = generateMathFoodOptions(gameState.boundaries, playerState);
-//         if (newFood) gameState.food.push(newFood); // Neue Optionen generieren// Neue Optionen generieren
-//         const message = JSON.stringify({
-//             type: 'update_equation',
-//             currentEquation: playerState.currentEquation, // Sende die aktuelle Aufgabe mit
-//         });
-//         const ws = getWebSocketBySnakeId(playerState.snakeId);
-//         if (ws && ws.readyState === WebSocket.OPEN) {
-//             ws.send(message); // Nachricht an den Spieler send
-//         }
-//     }
-// }
-
-function generateMathFoodOptions(boundaries, result, points = 50) {
-  // Generiere Nahrung für die korrekte Antwort
-  return generateFood(
-      getRandomPosition(boundaries),
-      50, // Punktewert
-      {result: result}
-  );
-}
 
 function generateFood(position, points, meta = null) {
   if (!position || points < 1 || isNaN(position.x) || isNaN(position.y)
@@ -707,87 +516,47 @@ function generateFood(position, points, meta = null) {
 }
 
 // function generateRandomFood(gameState, count = 5) {
-//   for (let i = 0; i < count; i++) {
-//     const position = getRandomPosition(gameState.boundaries);
-//     const points = randomizedNumber(1, 5);
-//     const food = generateFood(position, points);
-//     if (food) {
-//       gameState.food.push(food);
-//     }
+//   const newFood = foodManager.generateRandomFood(count);
+//   gameState.food.push(...newFood);
+// }
+
+// function generateMathFood(gameState, equation, result, spread = 50) {
+//   const position = {
+//     x: Math.random() * gameState.boundaries.width,
+//     y: Math.random() * gameState.boundaries.height,
+//   };
+//   const food = generateFood(position, 50, {equation, result}); // Speichert Aufgabe und Lösung im meta-Feld
+//   if (food) {
+//     gameState.food.push(food);
 //   }
 // }
 
-function generateRandomFood(gameState, count = 5) {
-  const newFood = foodManager.generateRandomFood(count);
-  gameState.food.push(...newFood);
-}
-
-function generateMathFood(gameState, equation, result, spread = 50) {
-  const position = {
-    x: Math.random() * gameState.boundaries.width,
-    y: Math.random() * gameState.boundaries.height,
-  };
-  const food = generateFood(position, 50, {equation, result}); // Speichert Aufgabe und Lösung im meta-Feld
-  if (food) {
-    gameState.food.push(food);
-  }
-}
-
-function generateMathEquation() {
-  const num1 = randomizedNumber(1, 10);
-  const num2 = randomizedNumber(1, 10);
-  const operators = ['+', '-', '*'];
-  const operator = operators[Math.floor(Math.random() * operators.length)];
-
-  let equation = `${num1} ${operator} ${num2}`;
-  let result;
-
-  switch (operator) {
-    case '+':
-      result = num1 + num2;
-      break;
-    case '-':
-      result = num1 - num2;
-      break;
-    case '*':
-      result = num1 * num2;
-      break;
-  }
-
-  return {equation, result};
-}
-
-function assignNewMathEquation(playerState) {
-  const {equation, result} = generateMathEquation();
-  playerState.currentEquation = {equation, result};
-}
-
-function randomizedNumber(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
+// function generateMathEquation() {
+//   const num1 = getRandomNumber(1, 10);
+//   const num2 = getRandomNumber(1, 10);
+//   const operators = ['+', '-', '*'];
+//   const operator = operators[Math.floor(Math.random() * operators.length)];
+//
+//   let equation = `${num1} ${operator} ${num2}`;
+//   let result;
+//
+//   switch (operator) {
+//     case '+':
+//       result = num1 + num2;
+//       break;
+//     case '-':
+//       result = num1 - num2;
+//       break;
+//     case '*':
+//       result = num1 * num2;
+//       break;
+//   }
+//
+//   return {equation, result};
+// }
 
 function dropSpecialFood(playerSnakeSegments, gameState) {
-  if (!playerSnakeSegments || !gameState) {
-    return;
-  }
-  const SPECIAL_FOOD_SPREAD = 10;
-
-  playerSnakeSegments.forEach((segment, index) => {
-    if (index % 9 === 0) {
-      const randomOffsetX = Math.random() * SPECIAL_FOOD_SPREAD * 2
-          - SPECIAL_FOOD_SPREAD;
-      const randomOffsetY = Math.random() * SPECIAL_FOOD_SPREAD * 2
-          - SPECIAL_FOOD_SPREAD;
-
-      const food = generateFood(
-          {x: segment.x + randomOffsetX, y: segment.y + randomOffsetY},
-          9 // Fester Punktwert
-      );
-      if (food) {
-        gameState.food.push(food);
-      }
-    }
-  });
+  foodManager.dropSpecialFood(playerSnakeSegments, gameState);
 }
 
 function checkPlayerCollisions(currentPlayer, players) {
@@ -803,7 +572,8 @@ function checkPlayerCollisions(currentPlayer, players) {
 // Kollisionsverarbeitung
 function handlePlayerCollision(playerState) {
   const sessionId = playerState.sessionId;
-  const gameState = gameStates.get(sessionId);
+  const gameState = gameStateManager.getGameStateBySessionId(sessionId);
+  // const gameState = gameStates.get(sessionId);
   const playerSnakeSegments = playerState.snake.segments;
 
   if (playerSnakeSegments && gameState) {
@@ -832,7 +602,8 @@ async function removePlayerFromSession(ws) {
   }
 
   const {sessionId, snakeId, userId} = playerInfo;
-  const gameState = gameStates.get(sessionId);
+  const gameState = gameStateManager.getGameStateBySessionId(sessionId);
+  // const gameState = gameStates.get(sessionId);
   const gameType = sessions.get(sessionId).gameType;
   const score = gameState.players[snakeId].score;
 
@@ -867,21 +638,15 @@ async function removePlayerFromSession(ws) {
 }
 
 function removeSession(sessionId) {
-  gameStates.delete(sessionId);
+  gameStateManager.removeGameState(sessionId);
+  // gameStates.delete(sessionId);
   sessions.delete(sessionId);
   gameLoopManager50ms.removeLoop(`gameLoop-${sessionId}`);
   gameLoopManager5000ms.removeLoop(`mathFoods-${sessionId}`);
+  const gameStates = gameStateManager.getGameStates();
   if (gameStates.size === 0) {
     setActiveSessions(false);
   }
-}
-
-// Funktion: Zufällige Position im Spielfeld generieren
-function getRandomPosition(boundaries) {
-  return {
-    x: Math.floor(Math.random() * boundaries.width),
-    y: Math.floor(Math.random() * boundaries.height),
-  };
 }
 
 process.on('SIGINT', () => {
@@ -893,13 +658,9 @@ process.on('SIGINT', () => {
 
 module.exports = {
   isSessionActive,
-  createOrFindSession,
   addPlayerToSession,
   getAllSessions,
   broadcastGameState,
   updatePlayerMovement,
-  handleMovement,
-  movePlayers,
-  gameStates,
   removePlayerFromSession,
 };

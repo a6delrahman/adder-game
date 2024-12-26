@@ -1,12 +1,13 @@
 // managers/foodManager.js
-
-const { getRandomPosition } = require('../utils/positionHelper');
+const { GAME } = require('../config/gameConfig');
+const { getRandomPosition } = require('../utils/helperFunctions');
 
 class FoodManager {
-  constructor(boundaries, minFoodPerZone, maxFoodPerZone) {
-    this.boundaries = boundaries;
-    this.minFoodPerZone = minFoodPerZone;
-    this.maxFoodPerZone = maxFoodPerZone;
+  constructor() {
+    this.boundaries = GAME.BOUNDARIES;
+    this.minFoodPerZone = GAME.MIN_FOOD_PER_ZONE;
+    this.maxFoodPerZone = GAME.MAX_FOOD_PER_ZONE;
+    this.specialFoodSpread = GAME.SPECIAL_FOOD_SPREAD
   }
 
   generateFood(position, points, meta = null) {
@@ -20,6 +21,33 @@ class FoodManager {
       points,
       meta, // Optional: Zusätzliche Informationen (z. B. Mathematikaufgabe)
     };
+  }
+
+  generateInitialFood() {
+    const food = [];
+    const zones = this.calculateZones(this.boundaries);
+    const totalFoodCount = Math.floor((this.boundaries.width * this.boundaries.height) / 5_000);
+    const mathFoodCount = Math.floor(totalFoodCount / 2);
+    const normalFoodCount = totalFoodCount - mathFoodCount;
+
+    // Generate normal food
+    food.push(...this.generateRandomFood(normalFoodCount));
+
+    // Generate math food with results 1-20
+    for (let i = 1; i <= mathFoodCount; i++) {
+      const zone = zones[i % zones.length];
+      const result = i % 20 + 1;
+      const foodPosition = {
+        x: Math.random() * zone.width + zone.x,
+        y: Math.random() * zone.height + zone.y,
+      };
+      const mathFood = this.generateFood(foodPosition, 50, { result: result });
+      if (mathFood) {
+        food.push(mathFood);
+      }
+    }
+
+    return food;
   }
 
   generateRandomFood(count) {
@@ -52,8 +80,8 @@ class FoodManager {
     }
   }
 
-  ensureMathFoodForPlayers(gameState, players, equationManager) {
-    const zones = this.calculateZones(this.boundaries, 10); // Beispiel: 10 Zonen
+  ensureMathFoodForPlayers(gameState, players) {
+    const zones = this.calculateZones(this.boundaries); // Beispiel: 10 Zonen
 
     const playerEquations = Object.values(players).reduce((acc, player) => {
       if (player.snake.currentEquation) {
@@ -85,7 +113,8 @@ class FoodManager {
     });
   }
 
-  calculateZones(boundaries, zoneCount) {
+  calculateZones(boundaries) {
+    const zoneCount = Math.floor(boundaries.width / 300);
     const zoneWidth = boundaries.width / zoneCount;
     const zoneHeight = boundaries.height / zoneCount;
     const zones = [];
@@ -113,6 +142,27 @@ class FoodManager {
     );
   }
 
+  dropSpecialFood(playerSnakeSegments, gameState) {
+    if (!playerSnakeSegments || !gameState) {
+      return;
+    }
+
+    playerSnakeSegments.forEach((segment, index) => {
+      if (index % 18 === 0) {
+        const randomOffsetX = Math.random() * this.specialFoodSpread * 2 - this.specialFoodSpread;
+        const randomOffsetY = Math.random() * this.specialFoodSpread * 2 - this.specialFoodSpread;
+
+        const food = this.generateFood(
+            { x: segment.x + randomOffsetX, y: segment.y + randomOffsetY },
+            9 // Fester Punktwert
+        );
+        if (food) {
+          gameState.food.push(food);
+        }
+      }
+    });
+  }
+
   handleFoodCollision(playerState, gameState, equationManager) {
     const { snake } = playerState;
 
@@ -136,19 +186,19 @@ class FoodManager {
   handleMathFoodCollision(playerState, snake, food, equationManager) {
     const correctResult = snake.currentEquation?.result;
     if (food.meta.result === correctResult) {
-      this.updateScoresAndSegments(playerState, snake, food.points)
+      this.updateScoresAndSegments(playerState, snake, food.points);
       equationManager.assignEquationToPlayer(
           playerState.sessionId,
           snake,
           snake.currentEquation.type
       );
     } else {
-      this.updateScoresAndSegments(playerState, snake, food.points)
+      this.updateScoresAndSegments(playerState, snake, -food.points);
     }
   }
 
   handleNormalFoodCollision(playerState, snake, food) {
-    this.updateScoresAndSegments(playerState, snake, food.points)
+    this.updateScoresAndSegments(playerState, snake, food.points);
   }
 
   updateScoresAndSegments(playerState, snake, points) {

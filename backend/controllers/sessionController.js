@@ -1,6 +1,5 @@
 // controllers/sessionController.js
 const sessionService = require('../services/sessionService');
-const {validate} = require("uuid");
 
 /**
  * Handle player movement.
@@ -30,9 +29,9 @@ async function handleMovement(data, ws) {
  * @returns {Promise<Object>} - { snakeId, initialGameState }
  */
 async function joinSession(data, ws) {
-    const { gameType, fieldOfView, userId } = data;
+    const { gameType, fieldOfView, userId, clientId } = data;
 
-    if (!gameType || typeof fieldOfView !== 'number') {
+    if (!gameType || typeof fieldOfView !== 'number' || !clientId) {
         throw new Error('Invalid or missing required fields: gameType or fieldOfView');
     }
 
@@ -69,10 +68,20 @@ exports.handleGameSessionBroadcast = async () => {
 async function leaveSession(ws) {
     try {
         await sessionService.removePlayerFromSession(ws);
+        console.log('Player left session');
     } catch (err) {
         console.error('Error leaving session:', err);
         throw new Error('Failed to leave session');
     }
 }
 
-module.exports = { joinSession, leaveSession, handleMovement};
+async function isClientInSession(clientId) {
+    try {
+        return await sessionService.isClientInSession(clientId);
+    } catch (err) {
+        console.error('Error checking if client is in session:', err);
+        throw new Error('Failed to check if client is in session');
+    }
+}
+
+module.exports = { joinSession, leaveSession, handleMovement, isClientInSession};

@@ -88,10 +88,6 @@ class Snake {
 
 
     moveSnake(boundaries) {
-        // // Normiere die Richtung, falls sie nicht normalisiert ist
-        // const magnitude = Math.sqrt(this.direction.x * this.direction.x + this.direction.y * this.direction.y);
-        // const normalizedDirectionX = magnitude > 0 ? this.direction.x / magnitude : 0;
-        // const normalizedDirectionY = magnitude > 0 ? this.direction.y / magnitude : 0;
 
 
         // Berechne die Geschwindigkeit
@@ -107,9 +103,9 @@ class Snake {
 
         // Füge ein neues Segment für die neue Kopfposition hinzu
         this.segments.unshift({...this.headPosition});
-
+        // todo: fix the bug in which wrong answers dont remove segments
         // Entferne ältere Segmente, wenn die maximale Länge überschritten wird
-        const maxSegments = this.segmentCount;
+        const maxSegments = Math.max(this.segmentCount, this.SNAKE_INITIAL_LENGTH);
         if (this.segments.length > maxSegments) {
             this.segments.pop();
         }

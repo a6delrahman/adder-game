@@ -34,15 +34,20 @@ function handleConnection(ws) {
 
     // Handle connection close
     ws.on('close', () => {
-        sessionController.leaveSession(ws)
-            .then(() => {
-                delete clients[clientId];
-                console.log(`Client ${clientId} disconnected`)
-            })
-            .catch((error) => {
-                console.error('Error leaving session:', error);
-                sendMessage(ws, 'error', {message: 'Failed to leave session'});
-            });
+        if (clients[clientId].session) {
+            sessionController.leaveSession(ws)
+                .then(() => {
+                    delete clients[clientId];
+                    console.log(`Client ${clientId} disconnected`)
+                })
+                .catch((error) => {
+                    console.error('Error leaving session:', error);
+                    sendMessage(ws, 'error', {message: 'Failed to leave session'});
+                });
+        } else {
+            delete clients[clientId];
+            console.log(`Client ${clientId} disconnected`);
+        }
     });
 }
 
@@ -57,9 +62,11 @@ function messageHandler(data, ws, clientId) {
             break;
 
         case 'join_session':
+            data.clientId = clientId;
             sessionController.joinSession(data, ws)
                 .then((response) => {
                     sendMessage(ws, 'session_joined', response);
+                    clients[clientId].session = response.sessionId;
                 })
                 .catch((error) => {
                     console.error('Error joining session:', error);
