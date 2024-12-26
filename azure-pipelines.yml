@@ -39,11 +39,11 @@ stages:
       inputs:
         containerregistrytype: 'Azure Container Registry'
         azureSubscription: 'deployment-sc'
-        projectName: 'adder'
         azureContainerRegistry: '{"loginServer":"adderacr.azurecr.io", "id" : "/subscriptions/c061fdd1-bba3-4c63-b32d-6595004a4b00/resourceGroups/adder-main-rg/providers/Microsoft.ContainerRegistry/registries/adderacr"}'
-        dockerComposeFile: '$(System.DefaultWorkingDirectory)/docker-compose.yml'
+        dockerComposeFile: '**/docker-compose.yml'
+        projectName: 'adder'
         action: 'Build services'
-        includeLatestTag: true
+        arguments: '--build'
 
 - stage: Deploy
   jobs:
