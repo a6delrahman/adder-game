@@ -1,21 +1,58 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  # Docker image names
+  frontendImageName: adder-frontend
+  backendImageName: adder-backend
+  mongodbImageName: adder-mongodb
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  # ACR details
+  acrName: adderAcr
+  acrLoginServer: adderacr.azurecr.io
+  acrUsername: $(az acr credential show --name adderacr --query "username" --output tsv)
+  acrPassword: $(az acr credential show --name adderacr --query "passwords[0].value" --output tsv)
 
-  
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAndPushImages
+    displayName: Build and Push Docker Images
+    steps:
+    - task: DockerInstaller@0
+      displayName: Install Docker
+
+    - script: docker build -t $(acrLoginServer)/$(frontendImageName):$(Build.BuildId) frontend
+      displayName: Build Frontend Docker Image
+
+    - script: docker build -t $(acrLoginServer)/$(backendImageName):$(Build.BuildId) backend
+      displayName: Build Backend Docker Image
+
+    - script: docker login $(acrLoginServer) -u $(acrUsername) -p $(acrPassword)
+      displayName: Login to ACR
+
+    - script: docker push $(acrLoginServer)/$(frontendImageName):$(Build.BuildId)
+      displayName: Push Frontend Docker Image
+
+    - script: docker push $(acrLoginServer)/$(backendImageName):$(Build.BuildId)
+      displayName: Push Backend Docker Image
+
+    - script: docker push $(acrLoginServer)/$(mongodbImageName):$(Build.BuildId)
+      displayName: Push MongoDB Docker Image      
+
+- stage: Deploy
+  jobs:
+  - job: DeployToAzure
+    displayName: Deploy to Azure
+    steps:
+      - task: DockerCompose@1
+        inputs:
+          containerregistrytype: 'Azure Container Registry'
+          azureContainerRegistry: $(acrName)
+          dockerComposeFile: '**/docker-compose.yml'
+          action: 'Run a Docker Compose command'
+          dockerComposeCommand: 'up --build'
+          detached: true
