@@ -1,19 +1,13 @@
 // server.js
 const express = require('express');
 const http = require('http');
-const mongoose = require('mongoose');
 const WebSocket = require('ws');
 const cors = require('cors');
-const gameRoutes = require('./routes/gameRoutes');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const { handleConnection} = require('./controllers/webSocketController');
-const playerService = require('./services/playerService');
-const websocketService = require('./services/webSocketService');
-const sessionController = require('./controllers/sessionController');
-const sessionService = require('./services/sessionService');
 const {connectMongoDBWithRetry} = require("./utils/mongoDB/mongoDB");
 
 
@@ -28,8 +22,7 @@ app.use(cors());
 // Statische Dateien aus dem Public-Verzeichnis bereitstellen
 app.use(express.static('public'));
 
-// Verbindung zur MongoDB
-connectMongoDBWithRetry();
+
 
 // API-Routen
 // app.use('/api/game', gameRoutes);
@@ -43,19 +36,13 @@ app.use('/api/admin', require('./routes/sessionRoutes'));
 app.get('/admin', (req, res) => {
     res.sendFile(__dirname + '/public/admin.html'); // Die HTML-Seite wird bereitgestellt
 });
-
+// Verbindung zur MongoDB
+connectMongoDBWithRetry();
 // WebSocket-Server erstellen und Verbindung verwalten
 const wss = new WebSocket.Server({ server });
 wss.on('connection', (ws) => handleConnection(ws));
 
-setInterval(() => {
-    if (sessionService.isSessionActive()) {
-        sessionService.movePlayers();
-        sessionService.broadcastGameState();
-        // sessionService.broadcastGameStateWithDeltas();
-    }
-}, 50);
-
 // Server starten
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(process.env.PORT || 5000, () =>
+    console.log(`Server running on port ${process.env.PORT || 5000}`)
+);

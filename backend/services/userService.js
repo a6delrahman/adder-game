@@ -42,22 +42,79 @@ async function updateUsername(userId, newUsername) {
 
 // Benutzer löschen
 async function deleteUser(userId) {
-    const user = await User.findByIdAndDelete(userId);
-    if (!user) throw new Error('User not found');
-    return 'User deleted successfully';
+    // if (!db.connected) throw new Error('Database connection error');
+    try {
+        const user = await User.findByIdAndDelete(userId);
+        return 'User deleted successfully';
+    } catch (error) {
+        if (error.message.includes('failed to connect')) {
+            throw new Error('Database connection error');
+        }
+        throw error;
+    }
 }
 
 async function getUserProfile(userId) {
-    // Findet den Benutzer anhand der ID und gibt nur die Felder `username` und `email` zurück
-    const user = await User.findById(userId).select('username email');
-    if (!user) throw new Error('User not found');
-    return user;
+    // if (!db.connected) throw new Error('Database connection error');
+    try {
+        return await User.findById(userId).select('username email');
+    } catch (error) {
+        if (error.message.includes('failed to connect')) {
+            throw new Error('Database connection error');
+        }
+        throw error;
+    }
 }
 
+
 async function getUsernameByUserId(userId) {
-    const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
-    return user.username;
+    if (!userId || typeof userId !== 'string') {
+        throw new Error('Invalid userId');
+    }
+
+    // if (!db?.connected) {
+    //     throw new Error('Database connection error');
+    // }
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        return user.username;
+    } catch (error) {
+        if (error.message.includes('failed to connect')) {
+            throw new Error('Database connection error');
+        }
+        console.error('Unexpected error in getUsernameByUserId:', error);
+        throw new Error('An unexpected error occurred');
+    }
+}
+
+async function getUserByUsername(username){
+    // if (!db.connected) throw new Error('Database connection error');
+    try {
+        return await User.findById(username);
+    } catch (error) {
+        if (error.message.includes('failed to connect')) {
+            throw new Error('Database connection error');
+        }
+        throw error;
+    }
+}
+
+async function getUserByEmail(email){
+    // if (!db.connected) throw new Error('Database connection error');
+    try {
+        return await User.findById(email);
+    } catch (error) {
+        if (error.message.includes('failed to connect')) {
+            throw new Error('Database connection error');
+        }
+        throw error;
+    }
 }
 
 module.exports = {
@@ -66,5 +123,7 @@ module.exports = {
     updateUsername,
     deleteUser,
     getUserProfile,
-    getUsernameByUserId
+    getUsernameByUserId,
+    getUserByUsername,
+    getUserByEmail
 };

@@ -20,7 +20,7 @@ const LoginLogoutButton = () => {
     return (
         <button onClick={handleClick} className="snake-button login-logout-button">
             <div>
-            {isAuthenticated ? 'Logout' : 'Login'}
+            {isAuthenticated ? 'Logout' : 'Login / Register'}
             </div>
         </button>
     );

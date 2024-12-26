@@ -1,6 +1,9 @@
 // backend/controllers/webSocketController.js
-const sessionController = require('./sessionController');
+// const sessionController = require('./sessionController');
+const gameController = require('./gameController');
 const {v4: uuidv4} = require('uuid');
+const WebSocketManager = require('../managers/webSocketManager');
+const webSocketManager = new WebSocketManager();
 const clients = {};
 
 function sendMessage(ws, type, payload = null) {
@@ -19,6 +22,8 @@ function handleConnection(ws) {
 
     // Send back the client connection message
     sendMessage(ws, 'connect', {clientId});
+    // webSocketManager.addClient(clientId, ws);
+    // webSocketManager.sendMessageToPlayerByClientId(clientId, 'connect', {clientId});
     console.log(`Client ${clientId} connected`);
 
     // Handle incoming messages
@@ -34,22 +39,27 @@ function handleConnection(ws) {
 
     // Handle connection close
     ws.on('close', () => {
-        sessionController.leaveSession(ws)
-            .then(() => {
-                delete clients[clientId];
-                console.log(`Client ${clientId} disconnected`)
-            })
-            .catch((error) => {
-                console.error('Error leaving session:', error);
-                sendMessage(ws, 'error', {message: 'Failed to leave session'});
-            });
+        if (clients[clientId].session) {
+            gameController.leaveSession(clientId)
+                .then(() => {
+                    delete clients[clientId];
+                    console.log(`Client ${clientId} disconnected`)
+                })
+                .catch((error) => {
+                    console.error('Error leaving session:', error);
+                    sendMessage(ws, 'error', {message: 'Failed to leave session'});
+                });
+        } else {
+            delete clients[clientId];
+            console.log(`Client ${clientId} disconnected`);
+        }
     });
 }
 
 function messageHandler(data, ws, clientId) {
     switch (data.type) {
         case 'change_direction':
-            sessionController.handleMovement(data.payload, ws)
+            gameController.handleMovement(data.payload, ws)
                 .catch((error) => {
                     console.error('Error handling movement:', error);
                     sendMessage(ws, 'error', {message: 'Failed to handle movement'});
@@ -57,9 +67,11 @@ function messageHandler(data, ws, clientId) {
             break;
 
         case 'join_session':
-            sessionController.joinSession(data, ws)
+            data.clientId = clientId;
+            gameController.joinSession(data, ws)
                 .then((response) => {
                     sendMessage(ws, 'session_joined', response);
+                    clients[clientId].session = response.sessionId;
                 })
                 .catch((error) => {
                     console.error('Error joining session:', error);
@@ -68,7 +80,7 @@ function messageHandler(data, ws, clientId) {
             break;
 
         case 'leave_session':
-            sessionController.leaveSession(ws)
+            gameController.leaveSession(clientId)
                 .then(() => sendMessage(ws, 'session_left'))
                 .catch((error) => {
                     console.error('Error leaving session:', error);

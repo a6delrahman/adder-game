@@ -15,6 +15,7 @@ const HomePage = () => {
                 <Button text="Register" style= "snake-button cobra" onClick={() => handleClick("/register")} />
                 <Button text="Login" style= "snake-button python" onClick={() => handleClick("/login")} />
             </div>
+          <Button text="or just Play :)" style= "snake-button cobra" onClick={() => handleClick("/gameSessionPage")} />
         </div>
     );
 };
