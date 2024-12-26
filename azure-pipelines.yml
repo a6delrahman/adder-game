@@ -1,5 +1,5 @@
 trigger:
-- main
+- docker_feature_abdi
 
 pool:
   vmImage: ubuntu-latest
@@ -79,4 +79,4 @@ stages:
         appName: 'adder-webapp'
         containers: '$(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName):latest'
         multicontainerConfigFile: '**/docker-compose.yml'
-        containerCommand: 'build'
+        containerCommand: 'up --build'
