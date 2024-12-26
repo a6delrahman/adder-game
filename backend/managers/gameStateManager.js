@@ -1,11 +1,11 @@
 // const { calculateZones, updateZoneFoodCounts } = require('../utils/helperFunctions');
 const {GAME} = require('../config/gameConfig');
 const FoodManager = require('../managers/foodManager');
+const {equationManager} = require("../utils/mathEquations");
 
 class GameStateManager {
   constructor() {
     this.boundaries = GAME.BOUNDARIES;
-    this.zoneCount = GAME.ZONE_COUNT;
     this.foodManager = new FoodManager();
     this.gameStates = new Map();
   }

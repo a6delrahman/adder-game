@@ -21,8 +21,16 @@ function getRandomUsername() {
   return `${randomAdjective} ${randomAnimal}`;
 }
 
+function getRandomColor() {
+  // Zufällige Zahl zwischen 0 und 16777215 (0xFFFFFF) generieren
+  const randomColor = Math.floor(Math.random() * 16777216);
+  // Zahl in eine hexadezimale Zeichenfolge umwandeln und mit führenden Nullen auffüllen
+  return `#${randomColor.toString(16).padStart(6, '0')}`;
+}
+
 module.exports = {
   getRandomPosition,
   getRandomNumber,
   getRandomUsername,
+  getRandomColor,
 };

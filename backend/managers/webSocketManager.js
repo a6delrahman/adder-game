@@ -3,13 +3,14 @@ class WebSocketManager {
     this.webSocketIndex = new Map();
   }
 
-  addPlayer(clientId, ws) {
+  addClient(clientId, ws) {
     this.webSocketIndex.set(clientId, ws);
   }
 
   sendGameStateToPlayers(gameState) {
     Object.values(gameState.players).forEach(player => {
-      const ws = this.getWebSocketByPlayer(player.snakeId);
+
+      const ws = this.getWebSocketByClientId(player.clientId);
       if (ws && ws.readyState === WebSocket.OPEN) {
         const message = this.createGameStateMessage(gameState, player);
         ws.send(JSON.stringify(message));
@@ -21,32 +22,53 @@ class WebSocketManager {
     const nearbyPlayers = this.getNearbyPlayers(player, gameState.players);
     return {
       type: 'session_broadcast',
-      players: nearbyPlayers.map(({ snakeId, headPosition, segments, score }) => ({
-        snakeId,
-        headPosition,
-        segments,
-        score,
-      })),
+      players: nearbyPlayers.map(
+          ({snakeId, headPosition, segments, currentEquation, score}) => ({
+            snakeId,
+            headPosition,
+            segments,
+            currentEquation,
+            score,
+          })),
       food: gameState.food,
     };
   }
 
-  getWebSocketByPlayer(snakeId) {
-    for (const [ws, playerInfo] of this.playerIndex.entries()) {
-      if (playerInfo.snakeId === snakeId) {
-        return ws;
-      }
-    }
-    return null;
+  getWebSocketByClientId(clientId) {
+    return this.webSocketIndex.get(clientId);
   }
 
   getNearbyPlayers(currentPlayer, allPlayers) {
-    return Object.values(allPlayers).filter(otherPlayer => {
-      if (otherPlayer.snakeId === currentPlayer.snakeId) return true;
-      const dx = otherPlayer.snake.headPosition.x - currentPlayer.snake.headPosition.x;
-      const dy = otherPlayer.snake.headPosition.y - currentPlayer.snake.headPosition.y;
-      return Math.sqrt(dx * dx + dy * dy) <= currentPlayer.fieldOfView;
+    const nearbyPlayers = [];
+
+    Object.values(allPlayers).forEach((player) => {
+      if (player.snakeId === currentPlayer.snakeId) {
+        player.currentEquation = currentPlayer.currentEquation; // Übertrage die aktuelle Aufgabe
+        nearbyPlayers.push(player.snake); // Füge den aktuellen Spieler hinzu
+      } else {
+        const dx = player.snake.headPosition.x
+            - currentPlayer.snake.headPosition.x;
+        const dy = player.snake.headPosition.y
+            - currentPlayer.snake.headPosition.y;
+
+        // Prüfe, ob der Spieler innerhalb des Bereichs liegt
+        if (Math.sqrt(dx * dx + dy * dy) <= currentPlayer.fieldOfView) {
+          nearbyPlayers.push(player.snake);
+        }
+      }
     });
+
+    return nearbyPlayers;
+  }
+
+  sendMessageToPlayerByClientId(clientId, type, payload) {
+    const message = {type, payload};
+    const ws = this.getWebSocketByClientId(clientId);
+    try {
+      ws.send(JSON.stringify(message));
+    } catch (error) {
+      console.error(`Failed to send message of type "${type}":`, error);
+    }
   }
 }
 

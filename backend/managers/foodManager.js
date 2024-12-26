@@ -204,7 +204,7 @@ class FoodManager {
   updateScoresAndSegments(playerState, snake, points) {
     playerState.score = Math.max(0, playerState.score + points);
     snake.score = Math.max(0, snake.score + points);
-    snake.segmentCount = Math.max(0, snake.segmentCount + points);
+    snake.segmentCount = Math.max(snake.SNAKE_INITIAL_LENGTH, snake.segmentCount + points);
   }
 }
 

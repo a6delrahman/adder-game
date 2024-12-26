@@ -1,6 +1,9 @@
 // backend/controllers/webSocketController.js
-const sessionController = require('./sessionController');
+// const sessionController = require('./sessionController');
+const gameController = require('./gameController');
 const {v4: uuidv4} = require('uuid');
+const WebSocketManager = require('../managers/webSocketManager');
+const webSocketManager = new WebSocketManager();
 const clients = {};
 
 function sendMessage(ws, type, payload = null) {
@@ -19,6 +22,8 @@ function handleConnection(ws) {
 
     // Send back the client connection message
     sendMessage(ws, 'connect', {clientId});
+    // webSocketManager.addClient(clientId, ws);
+    // webSocketManager.sendMessageToPlayerByClientId(clientId, 'connect', {clientId});
     console.log(`Client ${clientId} connected`);
 
     // Handle incoming messages
@@ -35,7 +40,7 @@ function handleConnection(ws) {
     // Handle connection close
     ws.on('close', () => {
         if (clients[clientId].session) {
-            sessionController.leaveSession(ws)
+            gameController.leaveSession(clientId)
                 .then(() => {
                     delete clients[clientId];
                     console.log(`Client ${clientId} disconnected`)
@@ -54,7 +59,7 @@ function handleConnection(ws) {
 function messageHandler(data, ws, clientId) {
     switch (data.type) {
         case 'change_direction':
-            sessionController.handleMovement(data.payload, ws)
+            gameController.handleMovement(data.payload, ws)
                 .catch((error) => {
                     console.error('Error handling movement:', error);
                     sendMessage(ws, 'error', {message: 'Failed to handle movement'});
@@ -63,7 +68,7 @@ function messageHandler(data, ws, clientId) {
 
         case 'join_session':
             data.clientId = clientId;
-            sessionController.joinSession(data, ws)
+            gameController.joinSession(data, ws)
                 .then((response) => {
                     sendMessage(ws, 'session_joined', response);
                     clients[clientId].session = response.sessionId;
@@ -75,7 +80,7 @@ function messageHandler(data, ws, clientId) {
             break;
 
         case 'leave_session':
-            sessionController.leaveSession(ws)
+            gameController.leaveSession(clientId)
                 .then(() => sendMessage(ws, 'session_left'))
                 .catch((error) => {
                     console.error('Error leaving session:', error);
