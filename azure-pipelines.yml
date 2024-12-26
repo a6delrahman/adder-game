@@ -47,8 +47,6 @@ stages:
 
     - script: docker pull mongodb/mongodb-community-server
       displayName: Build MongoDB Docker Image
-
-    - script: docker tag $(mongodbImageName) $(acrLoginServer)/$(mongodbImageName)
   
     - script: docker login $(acrLoginServer) -u $(clientId) -p $(clientSecret)
       displayName: Login to ACR
@@ -59,7 +57,7 @@ stages:
     - script: docker push $(acrLoginServer)/$(backendImageName):$(Build.BuildId)
       displayName: Push Backend Docker Image
 
-    - script: docker push $(acrLoginServer)/$(mongodbImageName):$(Build.BuildId)
+    - script: docker push $(acrLoginServer)/$(mongodbImageName)
       displayName: Push MongoDB Docker Image        
 
 - stage: Deploy
@@ -71,6 +69,6 @@ stages:
         inputs:
           azureSubscription: 'deployment-sc'
           appName: 'adder_webapp'
-          containers: $(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName):$(Build.BuildId)
+          containers: $(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName)
           multicontainerConfigFile: '**/docker-compose.yml'
           containerCommand: 'up --build'
