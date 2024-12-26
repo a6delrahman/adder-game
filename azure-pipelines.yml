@@ -43,7 +43,7 @@ stages:
         dockerComposeFile: '**/docker-compose.yml'
         projectName: 'adder'
         action: 'Build services'
-        arguments: '--build'
+        arguments: 'compose build'
 
 - stage: Deploy
   jobs:
