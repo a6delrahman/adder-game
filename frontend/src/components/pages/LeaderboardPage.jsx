@@ -1,34 +1,39 @@
+// filepath: frontend/src/components/LeaderboardPage.jsx
 import React from 'react';
+import { useScores } from '../../context/ScoreContext.jsx';
 
 const LeaderboardPage = () => {
-    const leaderboard = [
-        { rank: 1, name: 'Player1', score: 500 },
-        { rank: 2, name: 'Player2', score: 450 },
-        { rank: 3, name: 'Player3', score: 400 }
-    ];
+    const { scores, loading, error } = useScores();
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
 
     return (
+
         <div className="leaderboard-page">
             <h1>Leaderboard</h1>
             <table>
                 <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Name</th>
-                    <th>Score</th>
-                </tr>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Score</th>
+                        <th>Date</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {leaderboard.map((entry) => (
-                    <tr key={entry.rank}>
-                        <td>{entry.rank}</td>
-                        <td>{entry.name}</td>
-                        <td>{entry.score}</td>
-                    </tr>
-                ))}
+                    {scores.map((entry, index) => (
+                        <tr key={entry._id}>
+                            <td>{index + 1}</td>
+                            <td>{entry.userId.username}</td>
+                            <td>{entry.score}</td>
+                            <td>{new Date(entry.playedAt).toLocaleDateString()}</td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>
+        
     );
 };
 
