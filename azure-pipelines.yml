@@ -43,28 +43,3 @@ stages:
         dockerComposeFile: '**/docker-compose.yml'
         projectName: 'adder'
         action: 'Build services'
-        arguments: 'compose build'
-
-- stage: Deploy
-  jobs:
-  - job: DeployToAzure
-    displayName: Deploy to Azure
-    steps:
-      - task: AzureCLI@2
-        displayName: Azure CLI Login
-        inputs:
-          azureSubscription: 'deployment-sc'
-          scriptType: 'bash'
-          scriptLocation: 'inlineScript'
-          inlineScript: |
-            az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
-            az account set --subscription $(subscriptionId)
-
-      - task: AzureWebAppContainer@1
-        inputs:
-          azureSubscription: 'deployment-sc'
-          resourceGroupName: 'adder-main-rg'
-          appName: 'adder_webapp'
-          containers: $(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName)
-          multicontainerConfigFile: '**/docker-compose.yml'
-          containerCommand: 'up --build'
