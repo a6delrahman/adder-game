@@ -76,6 +76,7 @@ stages:
       - task: AzureWebAppContainer@1
         inputs:
           azureSubscription: 'deployment-sc'
+          resourceGroupName: 'adder-main-rg'
           appName: 'adder_webapp'
           containers: '$(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName)'
           multicontainerConfigFile: '**/docker-compose.yml'
