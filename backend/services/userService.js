@@ -42,7 +42,7 @@ async function updateUsername(userId, newUsername) {
 
 // Benutzer löschen
 async function deleteUser(userId) {
-    if (!db.connected) throw new Error('Database connection error');
+    // if (!db.connected) throw new Error('Database connection error');
     try {
         const user = await User.findByIdAndDelete(userId);
         return 'User deleted successfully';
@@ -55,7 +55,7 @@ async function deleteUser(userId) {
 }
 
 async function getUserProfile(userId) {
-    if (!db.connected) throw new Error('Database connection error');
+    // if (!db.connected) throw new Error('Database connection error');
     try {
         return await User.findById(userId).select('username email');
     } catch (error) {
@@ -94,7 +94,7 @@ async function getUsernameByUserId(userId) {
 }
 
 async function getUserByUsername(username){
-    if (!db.connected) throw new Error('Database connection error');
+    // if (!db.connected) throw new Error('Database connection error');
     try {
         return await User.findById(username);
     } catch (error) {
@@ -106,7 +106,7 @@ async function getUserByUsername(username){
 }
 
 async function getUserByEmail(email){
-    if (!db.connected) throw new Error('Database connection error');
+    // if (!db.connected) throw new Error('Database connection error');
     try {
         return await User.findById(email);
     } catch (error) {
