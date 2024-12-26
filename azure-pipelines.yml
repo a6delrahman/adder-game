@@ -45,7 +45,6 @@ stages:
         action: 'Build services'
         includeLatestTag: true
 
-
 - stage: Deploy
   jobs:
   - job: DeployToAzure
