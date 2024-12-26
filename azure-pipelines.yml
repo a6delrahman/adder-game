@@ -25,11 +25,22 @@ stages:
     - task: DockerInstaller@0
       displayName: Install Docker
 
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'deployment-sc'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az login --username $(acrUsername) --password $(acrPassword)
+
     - script: docker build -t $(acrLoginServer)/$(frontendImageName):$(Build.BuildId) frontend
       displayName: Build Frontend Docker Image
 
     - script: docker build -t $(acrLoginServer)/$(backendImageName):$(Build.BuildId) backend
       displayName: Build Backend Docker Image
+        
+    - script: docker build -t $(acrLoginServer)/$(mongodbImageName):$(Build.BuildId) mongodb
+      displayName: Build MongoDB Docker Image
 
     - script: docker login $(acrLoginServer) -u $(acrUsername) -p $(acrPassword)
       displayName: Login to ACR
