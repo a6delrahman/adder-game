@@ -55,8 +55,8 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
           docker pull mongodb/mongodb-community-server
-          docker tag docker tag mongodb/mongodb-community-server adderacr.azurecr.io/samples/mongodb-community-server:latest
-          docker push adderacr.azurecr.io/samples/mongodb-community-server:latest
+          docker tag docker tag mongodb/mongodb-community-server adderacr.azurecr.io/mongodb/mongodb-community-server:latest
+          docker push adderacr.azurecr.io/mongodb/mongodb-community-server:latest
 
     - task: AzureCLI@2
       displayName: Azure CLI Login
