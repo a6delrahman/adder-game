@@ -46,8 +46,9 @@ stages:
       displayName: Build Backend Docker Image
 
     - script: docker pull mongodb/mongodb-community-server
+    - script: docker tag $(mongodbImageName) $(acrLoginServer)/samples/$(mongodbImageName)
       displayName: Build MongoDB Docker Image
-  
+
     - script: docker login $(acrLoginServer) -u $(clientId) -p $(clientSecret)
       displayName: Login to ACR
 
@@ -57,7 +58,7 @@ stages:
     - script: docker push $(acrLoginServer)/$(backendImageName):$(Build.BuildId)
       displayName: Push Backend Docker Image
 
-    - script: docker push $(acrLoginServer)/$(mongodbImageName)
+    - script: docker push $(acrLoginServer)/$(mongodbImageName):$(mongodbImageName)
       displayName: Push MongoDB Docker Image        
 
 - stage: Deploy
