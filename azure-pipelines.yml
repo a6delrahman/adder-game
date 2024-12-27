@@ -1,5 +1,5 @@
 trigger:
-- docker_feature_abdi
+- main
 
 pool:
   vmImage: ubuntu-latest
