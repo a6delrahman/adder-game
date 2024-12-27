@@ -1,6 +1,7 @@
 // services/userService.js
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const {getRandomUsername} = require("../utils/helperFunctions");
 
 // E-Mail aktualisieren
 async function updateEmail(userId, newEmail) {
@@ -66,6 +67,18 @@ async function getUserProfile(userId) {
     }
 }
 
+async function tryToGetUsername(userId) {
+    if (!userId) {
+        return getRandomUsername();
+    } else {
+        try {
+            return await getUsernameByUserId(userId);
+        } catch (e) {
+            console.error('Error fetching user profile:', e);
+        }
+    }
+}
+
 
 async function getUsernameByUserId(userId) {
     if (!userId || typeof userId !== 'string') {
@@ -106,7 +119,6 @@ async function getUserByUsername(username){
 }
 
 async function getUserByEmail(email){
-    // if (!db.connected) throw new Error('Database connection error');
     try {
         return await User.findById(email);
     } catch (error) {
@@ -123,6 +135,7 @@ module.exports = {
     updateUsername,
     deleteUser,
     getUserProfile,
+    tryToGetUsername,
     getUsernameByUserId,
     getUserByUsername,
     getUserByEmail

@@ -16,6 +16,9 @@ class Snake {
       this.boost = snakeData.boost || false;
       this.currentEquation = snakeData.currentEquation || '';
       this.score = snakeData.score || 0;
+      this.eatenFood = snakeData.eatenFood || 0;
+      this.correctAnswers = snakeData.correctAnswers || 0;
+      this.wrongAnswers = snakeData.wrongAnswers || 0;
     } else {
       const [snakeId, headPosition, targetPosition, options = {}] = arguments;
       this.snakeId = snakeId;
@@ -32,6 +35,9 @@ class Snake {
       this.boost = false;
       this.currentEquation = {};
       this.score = 0;
+      this.eatenFood = 0;
+      this.correctAnswers = 0;
+      this.wrongAnswers = 0;
 
       // // Initialize segments
       // for (let i = 0; i < this.segmentCount; i++) {
@@ -45,6 +51,18 @@ class Snake {
     //     this.texture.src = '/public/images/texture.png'; // Relativer Pfad zur Textur
     // }
 
+  }
+
+  correctAnswer() {
+    this.correctAnswers++;
+  }
+
+  wrongAnswer() {
+    this.wrongAnswers++;
+  }
+
+  foodEaten() {
+    this.eatenFood++;
   }
 
   updatePosition(targetX, targetY) {

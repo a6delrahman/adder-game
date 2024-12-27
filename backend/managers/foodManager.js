@@ -168,6 +168,7 @@ class FoodManager {
 
     gameState.food = gameState.food.filter(food => {
       if (snake.checkCollisionWithFood(food)) {
+        snake.foodEaten();
         this.processFoodCollision(playerState, snake, gameState, food, equationManager);
         return false; // Entferne konsumierte Nahrung
       }
@@ -187,12 +188,14 @@ class FoodManager {
     const correctResult = snake.currentEquation?.result;
     if (food.meta.result === correctResult) {
       this.updateScoresAndSegments(playerState, snake, food.points);
+      snake.correctAnswer();
       equationManager.assignEquationToPlayer(
           playerState.sessionId,
           snake,
           snake.currentEquation.type
       );
     } else {
+      snake.wrongAnswer();
       this.updateScoresAndSegments(playerState, snake, -food.points);
     }
   }
