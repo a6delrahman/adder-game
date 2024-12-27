@@ -107,6 +107,10 @@ async function addPlayerToSession(clientId, gameType, ws, fieldOfView, userId) {
   };
 }
 
+function sendMessageToPlayerByClientId(clientId, type, payload) {
+  webSocketManager.sendMessageToPlayerByClientId(clientId, type, payload);
+}
+
 function ensureMathFoods() {
   if (!sessionManager.isSessionActive()) {
     console.log('No active sessions. Skipping MathFoods check.');
@@ -205,7 +209,7 @@ function movePlayers() {
     // Bewegung und Nahrungskollisionen für alle Spieler verarbeiten
     Object.values(players).forEach((playerState) => {
       playerManager.movePlayer(playerState, boundaries);
-      foodManager.handleFoodCollision(playerState, gameState, equationManager);
+      foodManager.handleFoodCollision(playerState, gameState, equationManager, sendMessageToPlayerByClientId);
       handleBoostPenalty(playerState, gameState);
     });
 

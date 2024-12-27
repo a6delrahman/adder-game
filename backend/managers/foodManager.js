@@ -159,32 +159,33 @@ class FoodManager {
     });
   }
 
-  handleFoodCollision(playerState, gameState, equationManager) {
+  handleFoodCollision(playerState, gameState, equationManager, sendMessageToPlayerByClientId) {
     const { snake } = playerState;
 
     gameState.food = gameState.food.filter(food => {
       if (snake.checkCollisionWithFood(food)) {
         snake.foodEaten();
-        this.processFoodCollision(playerState, snake, gameState, food, equationManager);
+        this.processFoodCollision(playerState, snake, gameState, food, equationManager, sendMessageToPlayerByClientId);
         return false; // Entferne konsumierte Nahrung
       }
       return true; // Nahrung bleibt bestehen
     });
   }
 
-  processFoodCollision(playerState, snake, gameState, food, equationManager) {
+  processFoodCollision(playerState, snake, gameState, food, equationManager, sendMessageToPlayerByClientId) {
     if (food.meta?.result !== undefined) {
-      this.handleMathFoodCollision(playerState, snake, food, equationManager);
+      this.handleMathFoodCollision(playerState, snake, food, equationManager, sendMessageToPlayerByClientId);
     } else {
-      this.handleNormalFoodCollision(playerState, snake, food);
+      this.handleNormalFoodCollision(playerState, snake, food, sendMessageToPlayerByClientId);
     }
   }
 
-  handleMathFoodCollision(playerState, snake, food, equationManager) {
+  handleMathFoodCollision(playerState, snake, food, equationManager, sendMessageToPlayerByClientId) {
     const correctResult = snake.currentEquation?.result;
     if (food.meta.result === correctResult) {
       this.updateScoresAndSegments(playerState, snake, food.points);
       snake.correctAnswer();
+      sendMessageToPlayerByClientId(playerState.clientId, 'correct_answer', {});
       equationManager.assignEquationToPlayer(
           playerState.sessionId,
           snake,
@@ -196,7 +197,8 @@ class FoodManager {
     }
   }
 
-  handleNormalFoodCollision(playerState, snake, food) {
+  handleNormalFoodCollision(playerState, snake, food, sendMessageToPlayerByClientId) {
+    sendMessageToPlayerByClientId(playerState.clientId, 'play_collect', {});
     this.updateScoresAndSegments(playerState, snake, food.points);
   }
 
