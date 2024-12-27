@@ -11,22 +11,24 @@ const ScoresSchema = new mongoose.Schema({
 });
 
 const Scores = mongoose.model('Score', ScoresSchema);
-async function saveFinalScore(userId, gameType, finalStats) {
-    if (!userId || !gameType || !finalStats) {
+async function saveFinalScore(finalStats) {
+    const {userId, gameType, score, eatenFood, correctAnswers, wrongAnswers} = finalStats;
+    if (!userId || !gameType) {
         throw new Error('Missing required fields for saving final score');
     }
     try {
         const scoreEntry = new Scores({
             userId,
             gameType,
-            score: finalStats.score,
-            eatenFood: finalStats.eatenFood,
-            correctAnswers: finalStats.correctAnswers,
-            wrongAnswers: finalStats.wrongAnswers,
+            score,
+            eatenFood,
+            correctAnswers,
+            wrongAnswers,
             playedAt: Date.now()
         });
 
         await scoreEntry.save();
+        console.log('Final score saved successfully');
     } catch (error) {
         console.error('Error saving final score:', error);
         throw new Error('Failed to save final score');

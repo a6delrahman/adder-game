@@ -3,6 +3,7 @@
 const gameController = require('./gameController');
 const {v4: uuidv4} = require('uuid');
 const WebSocketManager = require('../managers/webSocketManager');
+const {saveFinalScore} = require("../models/ScoresModel");
 const webSocketManager = new WebSocketManager();
 const clients = {};
 
@@ -40,6 +41,7 @@ function handleConnection(ws) {
     // Handle connection close
     ws.on('close', () => {
         if (clients[clientId].session) {
+            gameController.saveFinalStats(clientId).catch(e => console.error(e));
             gameController.leaveSession(clientId)
                 .then(() => {
                     delete clients[clientId];
@@ -49,6 +51,7 @@ function handleConnection(ws) {
                     console.error('Error leaving session:', error);
                     sendMessage(ws, 'error', {message: 'Failed to leave session'});
                 });
+
         } else {
             delete clients[clientId];
             console.log(`Client ${clientId} disconnected`);
@@ -59,7 +62,7 @@ function handleConnection(ws) {
 function messageHandler(data, ws, clientId) {
     switch (data.type) {
         case 'change_direction':
-            gameController.handleMovement(data.payload, ws)
+            gameController.handleMovement(data.payload)
                 .catch((error) => {
                     console.error('Error handling movement:', error);
                     sendMessage(ws, 'error', {message: 'Failed to handle movement'});
@@ -79,14 +82,15 @@ function messageHandler(data, ws, clientId) {
                 });
             break;
 
-        case 'leave_session':
-            gameController.leaveSession(clientId)
-                .then(() => sendMessage(ws, 'session_left'))
-                .catch((error) => {
-                    console.error('Error leaving session:', error);
-                    sendMessage(ws, 'error', {message: 'Failed to leave session'});
-                });
-            break;
+        // case 'leave_session':
+        //     gameController.leaveSession(clientId)
+        //         .then(() => sendMessage(ws, 'session_left'))
+        //         .catch((error) => {
+        //             console.error('Error leaving session:', error);
+        //             sendMessage(ws, 'error', {message: 'Failed to leave session'});
+        //         });
+        //     saveFinalScore(finalStats).then(r => console.log(r)).catch(e => console.error(e));
+        //     break;
 
         default:
             console.warn(`Unknown message type: ${data.type}`);

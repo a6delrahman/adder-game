@@ -11,16 +11,12 @@ class FoodManager {
   }
 
   generateFood(position, points, meta = null) {
-    if (!position || points < 1 || isNaN(position.x) || isNaN(position.y) || isNaN(points)) {
+    if (!position || points < 1) {
+      console.warn('Invalid food generation parameters:', position, points);
       return null;
     }
 
-    return {
-      x: position.x,
-      y: position.y,
-      points,
-      meta, // Optional: Zusätzliche Informationen (z. B. Mathematikaufgabe)
-    };
+    return { ...position, points, meta };
   }
 
   generateInitialFood() {

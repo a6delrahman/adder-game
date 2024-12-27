@@ -26,12 +26,13 @@ class GameStateManager {
   createOrFindGameState(sessionId) {
     if (!this.gameStates.has(sessionId)) {
       this.gameStates.set(sessionId, this.createInitialGameState());
+      // this.gameStates.get(sessionId).sessionId = sessionId;
     }
     return this.gameStates.get(sessionId);
   }
 
   getGameStates() {
-    return Array.from(this.gameStates.values());
+    return this.gameStates;
   }
 
   removeGameState(sessionId) {

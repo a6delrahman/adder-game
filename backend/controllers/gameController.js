@@ -1,6 +1,7 @@
 // controllers/gameController.js
-// const sessionService = require('../services/sessionService');
 const sessionController = require('./sessionController');
+const {saveFinalScore} = require("../models/ScoresModel");
+const safeExecute = require('../middleware/safeExecute');
 
 /**
  * Handle player movement.
@@ -8,7 +9,7 @@ const sessionController = require('./sessionController');
  * @param {Object} ws - WebSocket reference
  * @returns {Promise<void>}
  */
-async function handleMovement(data, ws) {
+async function handleMovement(data) {
   const { snakeId, targetX, targetY, boost } = data;
 
   if (!snakeId || typeof targetX !== 'number' || typeof targetY !== 'number' || typeof boost !== 'boolean') {
@@ -44,31 +45,14 @@ async function joinSession(data, ws) {
   }
 }
 
-exports.getSessions = async (ws) => {
-  try {
-    return await sessionController.getAllSessions();
-  } catch (err) {
-    console.error('Error getting sessions:', err);
-    ws.send(JSON.stringify({ type: 'error', message: 'Failed to get sessions' }));
-  }
-}
-
-exports.handleGameSessionBroadcast = async () => {
-  try {
-    sessionController.broadcastGameState();
-  } catch (err) {
-    console.error('Error broadcasting game sessions:', err);
-  }
-}
-
 /**
  * Remove a player from a session.
- * @param {Object} ws - WebSocket reference
+ * @param {Object} clientId - Client ID
  * @returns {Promise<void>}
  */
-async function leaveSession(ws) {
+async function leaveSession(clientId) {
   try {
-    await sessionController.removePlayerFromSession(ws);
+    await sessionController.removePlayerFromSession(clientId);
     console.log('Player left session');
   } catch (err) {
     console.error('Error leaving session:', err);
@@ -76,13 +60,18 @@ async function leaveSession(ws) {
   }
 }
 
-async function isClientInSession(clientId) {
+/**
+ * Save the final stats for a player.
+ * @param {Object} clientId - Client ID
+ * @returns {Promise<void>}
+ */
+async function saveFinalStats(clientId) {
   try {
-    return await sessionController.isClientInSession(clientId);
+    await sessionController.saveFinalStats(clientId);
   } catch (err) {
-    console.error('Error checking if client is in session:', err);
-    throw new Error('Failed to check if client is in session');
+    throw new Error('Failed to save final stats');
   }
 }
 
-module.exports = { joinSession, leaveSession, handleMovement, isClientInSession};
+
+module.exports = { joinSession, leaveSession, handleMovement, saveFinalStats};
