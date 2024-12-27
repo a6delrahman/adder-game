@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const { handleConnection} = require('./controllers/webSocketController');
 const {connectMongoDBWithRetry} = require("./utils/mongoDB/mongoDB");
@@ -28,6 +29,7 @@ app.use(express.static('public'));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/session', sessionRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', require('./routes/sessionRoutes'));
 
 // Neue Route für die Admin-Seite

@@ -12,7 +12,7 @@ function Button(props) {
     return (
         <div>
             <button className="back-button" role="button" onClick={() => window.history.back()}>
-                    Back
+                    Dashboard
             </button>
         </div>
     );

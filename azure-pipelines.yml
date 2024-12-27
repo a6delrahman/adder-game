@@ -1,21 +1,82 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  # Docker image names
+  frontendImageName: adder-frontend
+  backendImageName: adder-backend
+  mongodbImageName: 'mongodb/mongodb-community-server'
+  subscriptionId: 'c061fdd1-bba3-4c63-b32d-6595004a4b00'
+  tenantId: '61c44f51-4973-4caf-a8de-cbde54d78efa'
+  clientId: 'e12b5802-7b09-428c-900a-7fb5990597c8'
+  clientSecret: 'u2W8Q~m47HjHcvCYuf-Iyh3F22HJz8jxWIoi1azb'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  # ACR details
+  acrName: adderacr
+  acrLoginServer: adderacr.azurecr.io
+  acrUsername: $(az acr credential show --name adderacr --query "username" --output tsv)
+  acrPassword: $(az acr credential show --name adderacr --query "passwords[0].value" --output tsv)
 
-  
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAndPushImages
+    displayName: Build and Push Docker Images
+    steps:
+    - task: DockerInstaller@0
+      displayName: Install Docker
+
+    - task: Docker@2
+      displayName: Login to ACR
+      inputs:
+        command: login
+        containerRegistry: acr-sc
+
+    - task: Docker@2
+      displayName: Build and Push Backend Image
+      inputs:
+        command: buildAndPush
+        repository: adder-backend
+        Dockerfile: $(Build.SourcesDirectory)/backend/Dockerfile
+    - task: Docker@2
+      displayName: Build and Push Frontend Image
+      inputs:
+        command: buildAndPush
+        repository: adder-frontend
+        Dockerfile: $(Build.SourcesDirectory)/frontend/Dockerfile
+    - task: AzureCLI@2
+      displayName: Pull and push MongoDB image
+      inputs:
+        azureSubscription: 'deployment-sc'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          docker pull mongodb/mongodb-community-server
+          docker tag mongodb/mongodb-community-server adderacr.azurecr.io/mongodb/mongodb-community-server:latest
+          docker push adderacr.azurecr.io/mongodb/mongodb-community-server:latest
+
+    - task: AzureCLI@2
+      displayName: Azure CLI Login
+      inputs:
+        azureSubscription: 'deployment-sc'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
+          az account set --subscription $(subscriptionId)
+
+- stage: Deploy
+  jobs:
+  - job: DeployToAzure
+    displayName: Deploy to Azure
+    steps:
+    - task: AzureWebAppContainer@1
+      inputs:
+        azureSubscription: 'deployment-sc'
+        appName: 'adder-webapp'
+        containers: '$(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName):latest'
+        multicontainerConfigFile: '**/docker-compose.yml'
+        containerCommand: 'docker-compose up --build'

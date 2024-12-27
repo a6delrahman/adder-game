@@ -1,7 +1,7 @@
 // PageWrapper.jsx
 
 import React, {useContext} from 'react';
-import {Route, Routes} from 'react-router-dom';
+import {Route, Routes, useLocation} from 'react-router-dom';
 import HomePage from './HomePage';
 import RegisterPage from './RegisterPage';
 import LoginPage from "./LoginPage";
@@ -17,10 +17,15 @@ import GameTypeSelectionPage from "./GameTypeSelectionPage.jsx";
 import GameCanvas from "./GameCanvas.jsx";
 import logo from "../../assets/logo.png";
 import {WebSocketProvider} from "../../context/WebSocketContext.jsx";
+import BackButton from "../../components/utility/buttons/BackButton";
+import {ScoreProvider} from "../../context/ScoreContext.jsx";
 
 function PageWrapper() {
     const {isAuthenticated} = useContext(AuthContext);
-
+    const location = useLocation();
+    // Define the routes where the Back button should appear
+    const routesWithBackButton = ["/register", "/login", "/instructions","/leaderboard", "/profile"];
+    const showBackButton = routesWithBackButton.includes(location.pathname);
 
     return (
         <div className="app-wrapper">
@@ -28,6 +33,8 @@ function PageWrapper() {
                 src={logo}
                 alt="App Logo"
                 style={{width: "300px", margin: "10px auto", display: "block"}}/>
+
+            {showBackButton && <BackButton/>}                
             <Routes>
                 <Route path="/" element={
                     isAuthenticated ? (
@@ -50,11 +57,17 @@ function PageWrapper() {
                     </WebSocketProvider>
                 }/>
                 <Route path="/game-over" element={<GameOverPage/>}/>
-                <Route path="/leaderboard" element={<LeaderboardPage/>}/>
+                <Route path="/leaderboard" element={
+                    <ScoreProvider>
+                        <LeaderboardPage />
+                    </ScoreProvider>
+                } />
                 <Route path="/profile"
                        element={<ProtectedRoute isAuthenticated={isAuthenticated}><ProfilePage/></ProtectedRoute>}/>
             </Routes>
+
         </div>
+        
     );
 }
 

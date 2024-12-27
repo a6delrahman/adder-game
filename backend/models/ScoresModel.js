@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const ScoresSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Referenz zur User ID
+
     gameType: { type: String, required: true },
     score: { type: Number, default: 0 },
     eatenFood: { type: Number, default: 0 },
@@ -11,6 +12,7 @@ const ScoresSchema = new mongoose.Schema({
 });
 
 const Scores = mongoose.model('Score', ScoresSchema);
+
 async function saveFinalScore(userId, gameType, finalStats) {
     if (!userId || !gameType || !finalStats) {
         throw new Error('Missing required fields for saving final score');
@@ -33,12 +35,24 @@ async function saveFinalScore(userId, gameType, finalStats) {
     }
 }
 
-async function getTopScores(gameType, limit = 10) {
+async function getTopScores(gameType = null, username = null, limit = 10) {
     try {
-        // Begrenze auf die Top-N-Ergebnisse
-        return await Scores.find({gameType})
-        .sort({score: -1}) // Sortiere nach Punktzahl absteigend
-        .limit(limit);
+        const query = {};
+        if (gameType) query.gameType = gameType;
+        if (username) {
+            const user = await mongoose.model('User').findOne({ username }).select('_id');
+            if (user) {
+                query.userId = user._id;
+            } else {
+                return []; // No user found with the given username
+            }
+        }
+
+        return await Scores.find(query)
+            .populate('userId', 'username')
+            .sort({ score: -1 })
+            .limit(limit)
+            .lean();
     } catch (error) {
         console.error('Error fetching top scores:', error);
         return [];
