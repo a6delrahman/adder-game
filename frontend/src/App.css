@@ -454,3 +454,53 @@ h1 {
   margin: 20px;
   font-size: 26px;
 }
+
+/* Leaderboard Page Styles */
+.leaderboard-page {
+  text-align: center;
+  color: #00ff9d; /* Bright green for headings */
+  font-family: Arial, sans-serif;
+}
+
+.leaderboard-page h1 {
+  font-size: 2rem;
+  color: #00ff9d; /* Matching bright green title */
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+/* Leaderboard Table Styles */
+.leaderboard-page table {
+  width: 80%;
+  margin: 0 auto;
+  border-collapse: collapse;
+  text-align: center;
+  color: #00ff9d; /* Bright green for text */
+  font-size: 1rem;
+}
+
+.leaderboard-page table th,
+.leaderboard-page table td {
+  padding: 10px;
+  border: 1px solid #00ff9d; /* Green border for table cells */
+}
+
+.leaderboard-page table th {
+  background-color: #222; /* Dark header background */
+  color: #00ff9d; /* Bright green text */
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.leaderboard-page table tbody tr:nth-child(odd) {
+  background-color: #111; /* Darker rows */
+}
+
+.leaderboard-page table tbody tr:nth-child(even) {
+  background-color: #333; /* Lighter rows */
+}
+
+.leaderboard-page table tbody tr:hover {
+  background-color: #444; /* Highlight on hover */
+  color: #ffffff; /* White text on hover */
+}
