@@ -8,9 +8,9 @@ export const ScoreProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchLeaderboard = async () => {
+    const fetchLeaderboard = async (gameType = '', username = '') => {
         try {
-            const response = await fetch(`/api/leaderboard`);
+            const response = await fetch(`/api/leaderboard?gameType=${gameType}&username=${username}`);
             if (!response.ok) throw new Error('Failed to fetch leaderboard');
             const data = await response.json();
             setScores(data);
@@ -26,7 +26,7 @@ export const ScoreProvider = ({ children }) => {
     }, []);
 
     return (
-        <ScoreContext.Provider value={{ scores, loading, error }}>
+        <ScoreContext.Provider value={{ scores, loading, error, fetchLeaderboard }}>
             {children}
         </ScoreContext.Provider>
     );

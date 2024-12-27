@@ -12,6 +12,7 @@ const ScoresSchema = new mongoose.Schema({
 });
 
 const Scores = mongoose.model('Score', ScoresSchema);
+
 async function saveFinalScore(userId, gameType, finalStats) {
     if (!userId || !gameType || !finalStats) {
         throw new Error('Missing required fields for saving final score');
@@ -34,11 +35,14 @@ async function saveFinalScore(userId, gameType, finalStats) {
     }
 }
 
-async function getTopScores(gameType = null, limit = 10) {
+async function getTopScores(gameType = null, username = null, limit = 10) {
     try {
-        const query = gameType ? { gameType } : {};
+        const query = {};
+        if (gameType) query.gameType = gameType;
+        if (username) query['userId.username'] = username;
+
         return await Scores.find(query)
-            .populate('userId', 'username', 'correctAnswers', 'wrongAnswers')
+            .populate('userId', 'username')
             .sort({ score: -1 })
             .limit(limit)
             .lean();
