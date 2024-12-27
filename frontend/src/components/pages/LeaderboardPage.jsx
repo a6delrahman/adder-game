@@ -16,8 +16,11 @@ const LeaderboardPage = () => {
                 <thead>
                     <tr>
                         <th>Rank</th>
-                        <th>Name</th>
+                        <th>Username</th>
                         <th>Score</th>
+                        <th>Game Type</th>
+                        <th>Correct</th>
+                        <th>Wrong</th>
                         <th>Date</th>
                     </tr>
                 </thead>
@@ -27,6 +30,9 @@ const LeaderboardPage = () => {
                             <td>{index + 1}</td>
                             <td>{entry.userId.username}</td>
                             <td>{entry.score}</td>
+                            <td>{entry.gameType}</td>
+                            <td>{entry.correctAnswers}</td>
+                            <td>{entry.wrongAnswers}</td>
                             <td>{new Date(entry.playedAt).toLocaleDateString()}</td>
                         </tr>
                     ))}

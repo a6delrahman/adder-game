@@ -8,10 +8,9 @@ export const ScoreProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchLeaderboard = async (gameType) => {
+    const fetchLeaderboard = async () => {
         try {
-            const response = await fetch(`/api/leaderboard/${gameType}`);
-            console.log(response);
+            const response = await fetch(`/api/leaderboard`);
             if (!response.ok) throw new Error('Failed to fetch leaderboard');
             const data = await response.json();
             setScores(data);
@@ -23,7 +22,7 @@ export const ScoreProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        fetchLeaderboard('addition');
+        fetchLeaderboard();
     }, []);
 
     return (

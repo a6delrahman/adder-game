@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const ScoresSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Referenz zur User ID
+
     gameType: { type: String, required: true },
     score: { type: Number, default: 0 },
     eatenFood: { type: Number, default: 0 },
@@ -30,12 +31,14 @@ async function saveFinalScore(userId, gameType, finalStats) {
     }
 }
 
-async function getTopScores(gameType, limit = 10) {
+async function getTopScores(gameType = null, limit = 10) {
     try {
-        // Begrenze auf die Top-N-Ergebnisse
-        return await Scores.find({gameType})
-        .sort({score: -1}) // Sortiere nach Punktzahl absteigend
-        .limit(limit);
+        const query = gameType ? { gameType } : {};
+        return await Scores.find(query)
+            .populate('userId', 'username', 'correctAnswers', 'wrongAnswers')
+            .sort({ score: -1 })
+            .limit(limit)
+            .lean();
     } catch (error) {
         console.error('Error fetching top scores:', error);
         return [];
