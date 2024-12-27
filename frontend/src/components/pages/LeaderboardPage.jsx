@@ -1,4 +1,3 @@
-// filepath: frontend/src/components/LeaderboardPage.jsx
 import React, { useState } from 'react';
 import { useScores } from '../../context/ScoreContext.jsx';
 

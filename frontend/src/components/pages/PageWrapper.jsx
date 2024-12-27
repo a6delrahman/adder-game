@@ -24,7 +24,7 @@ function PageWrapper() {
     const {isAuthenticated} = useContext(AuthContext);
     const location = useLocation();
     // Define the routes where the Back button should appear
-    const routesWithBackButton = ["/register", "/instructions", "/login","/leaderboard", "/profile"," /leaderboard"];
+    const routesWithBackButton = ["/register", "/login", "/instructions","/leaderboard", "/profile"];
     const showBackButton = routesWithBackButton.includes(location.pathname);
 
     return (

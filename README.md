@@ -3,7 +3,8 @@
 <p>
    <img src="./docs/images/logo.png" alt="Adder Logo" width="500"/>
 </p>
-Inspired by the original slither.io, Adder is a multiplayer game built with Node.js and React in which the main goal is to solve math challenges with your snake. Get ready to slither around in a vibrant and adventurous setting. 
+Inspired by the original slither.io, Adder is a multiplayer game built with Node.js and React in which the main goal is to solve math challenges with a slithering snake. Get ready to slither around in a vibrant and adventurous setting.
+
 ---
 
 ## Getting Started 🚀
@@ -13,9 +14,10 @@ Here’s how you can set up and launch your own instance of Adder. This web appl
 
 Before you start, make sure to have the following items installed and set up:
 - **Docker Desktop** v4.37.1
-   - https://docs.docker.com/desktop/setup/install/windows-install/
-   - https://docs.docker.com/desktop/setup/install/mac-install/
-   - https://docs.docker.com/desktop/setup/install/linux/
+   - Windows: https://docs.docker.com/desktop/setup/install/windows-install/
+   - MacOS: https://docs.docker.com/desktop/setup/install/mac-install/
+   - Linux: https://docs.docker.com/desktop/setup/install/linux/
+   
 - **npm** v.11.0.0
 - **Node.js** v.22.9.0
 - **MongoDB** v.7.0.16
