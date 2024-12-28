@@ -20,6 +20,8 @@ const GameTypeSelectionPage = () => {
 
     return (
         <div>
+            <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
+
             <h1>Choose Game Type</h1>
             <div className="skill-buttons">
             <button className="skill-btn skill-add-btn" onClick={() => handleJoinSession('addition')}>
@@ -32,7 +34,6 @@ const GameTypeSelectionPage = () => {
                     Multiplication
                 </button>
             </div>
-            <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
         </div>
     );
 };

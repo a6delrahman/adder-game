@@ -35,7 +35,7 @@ function PageWrapper() {
                 alt="App Logo"
                 />
 
-            {/* {showBackButton && <BackButton/>}                 */}
+            {/* {showBackButton && <BackButton/>} */}
             <Routes>
                 <Route path="/" element={
                     isAuthenticated ? (

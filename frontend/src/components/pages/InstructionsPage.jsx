@@ -9,7 +9,11 @@ const InstructionsPage = () => {
         navigate(page);
     }
     return (
+ 
+
         <div className="instructions-page">
+             <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
+
             <h1>Instructions</h1>
             <p>
                 The game <b>Adder</b> is a multiplayer snake game where the objective is to grow your snake as large as possible by collecting the correct solutions to various math problems, while avoiding collisions with other players.
@@ -40,9 +44,7 @@ const InstructionsPage = () => {
                     <b>Climb the Leaderboard:</b> Grow the largest snake and aim to be at the top!
                 </li>
             </ol>
-            <div>
-                <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
-            </div>
+
         </div>
 
   

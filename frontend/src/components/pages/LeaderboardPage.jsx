@@ -33,6 +33,7 @@ const LeaderboardPage = () => {
     return (
 
         <div className="leaderboard-page">
+                <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
 
             <h1>Leaderboard</h1>
             <div className='leaderboard-filters'>
@@ -82,7 +83,6 @@ const LeaderboardPage = () => {
                 </tbody>
             </table>
             <div className='dashboard-btn-leaderboard'>
-                <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
             </div>
 
         </div>
