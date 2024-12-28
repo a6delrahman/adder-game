@@ -9,7 +9,7 @@ import {
 } from 'react';
 import PropTypes from 'prop-types';
 import Snake from '../classes/Snake';
-import sounds from "../components/utility/sounds/soundEffects.js";
+// import sounds from "../components/utility/sounds/soundEffects.js";
 
 export const WebSocketContext = createContext(null);
 
@@ -60,13 +60,17 @@ export const WebSocketProvider = ({children}) => {
       // setPlayerSnake({ snakeId: data.snakeId, sessionId }); // Neu: Bezieht sessionId
     },
 
-    play_collect: (data) => {
-      sounds.collectPoint.play(undefined, false);
-    },
-
-    correct_answer: (data) => {
-      sounds.correctAnswer.play(undefined, false);
-    },
+    // play_collect: (data) => {
+    //   sounds.collectPoint.play(undefined, false);
+    // },
+    //
+    // correct_answer: (data) => {
+    //   sounds.correctAnswer.play(undefined, false);
+    // },
+    //
+    // wrong_answer: (data) => {
+    //   sounds.wrongAnswer.play(undefined, false);
+    // },
 
     session_broadcast: (data) => {
       // otherSnakes.current = data.players; // Speichert alle Schlangen

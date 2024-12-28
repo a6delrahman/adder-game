@@ -175,6 +175,7 @@ class FoodManager {
   }
 
   processFoodCollision(playerState, snake, gameState, food, equationManager) {
+    webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'play_collect', {});
     if (food.meta?.result !== undefined) {
       this.handleMathFoodCollision(playerState, snake, food, equationManager);
     } else {
@@ -194,13 +195,13 @@ class FoodManager {
           snake.currentEquation.type
       );
     } else {
-      snake.wrongAnswer();
       this.updateScoresAndSegments(playerState, snake, -food.points);
+      snake.wrongAnswer();
+      webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'wrong_answer', {});
     }
   }
 
   handleNormalFoodCollision(playerState, snake, food) {
-    webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'play_collect', {});
     this.updateScoresAndSegments(playerState, snake, food.points);
   }
 

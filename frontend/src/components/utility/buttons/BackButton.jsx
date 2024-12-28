@@ -11,6 +11,7 @@ function Button(props) {
 
     return (
         <div>
+          {/*<Button text="Dashboard" style= "back-button" onClick={() => handleClick("/dashboard")} />*/}
             <button className="back-button" role="button" onClick={() => window.history.back()}>
                     Dashboard
             </button>
