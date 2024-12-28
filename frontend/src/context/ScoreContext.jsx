@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useMemo
 } from 'react';
-
+import PropTypes from 'prop-types';
 export const ScoreContext = createContext();
 
 export const ScoreProvider = ({children}) => {
@@ -42,6 +42,10 @@ export const ScoreProvider = ({children}) => {
         {children}
       </ScoreContext.Provider>
   );
+};
+
+ScoreProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export const useScores = () => useContext(ScoreContext);
