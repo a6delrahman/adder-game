@@ -24,6 +24,11 @@
     margin: 10px;
     width: 100%;
 }
+
+.just-play button{
+    animation: glitch 5s infinite; 
+}
+
 /*------------------------------------------------------------------------------*/
 .skill-buttons {
     display: flex;
@@ -39,6 +44,60 @@
 }
 
 /*------------------------------------------------------------------------------*/
+
+/* Shared Button Styles */
+button{
+    --b: 3px;
+    --s: 0.45em;
+    --_p: var(--s);
+    --color:  #b6fb61;;
+    padding: calc(0.5em + var(--s)) calc(0.9em + var(--s));
+    outline: var(--b) solid #0000;
+    outline-offset: 0.1rem;
+    font-size: 24px;
+    color: var(--color, #b6fb61);
+    cursor: pointer;
+    border: 0;
+    user-select: none;
+    transition: 0.3s linear, color 0s, background-color 0s;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    background: conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color, #b6fb61) 0 ) var(--_p) var(--_p) / calc(100% - var(--b) - 2 * var(--_p)) calc(100% - var(--b) - 2 * var(--_p));
+    
+  }
+  
+  button:hover,
+  button:focus-visible {
+    --_p: 0px;
+    outline-color: var(#30ef93);
+    outline-offset: 0.05em;
+  }
+  
+  button:active {
+    background: var(#30ef93);
+    color: #fff;
+  }
+
+/*------------------------------------------------------------------------------*/
+  
+  /* Login Page Styles*/
+  .login-page form {
+    padding: 20px;
+  }
+  
+  .login-page input{
+    display: flex;
+    flex-direction: column;
+    height: 60px;
+    width: 100%;
+    font-size: 20px;
+    border-radius: 20px;
+    padding-left: 15px;
+    margin: 0 auto 20px auto;
+  }
+  
+/*------------------------------------------------------------------------------*/
+  
 
 .snake-button{
     color: #b6fb61;

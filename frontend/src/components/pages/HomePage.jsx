@@ -11,11 +11,9 @@ const HomePage = () => {
     return (
         <div className="homepage">
           
-            <div className='homepage-title'>
-                <div class="glitch" data-text="ADDER">ADDER</div>
-                <div class="glow">ADDER</div>
-                <div class="scanlines"></div>
-            </div>
+
+            <div className='homepage-wrapper'>
+
             <div className="homepage-buttons">
                 <Button text="Register" style= "snake-button python" onClick={() => handleClick("/register")} />
                 <Button text="Login" style= "snake-button python" onClick={() => handleClick("/login")} />
@@ -23,6 +21,8 @@ const HomePage = () => {
             <div className='just-play'>
                 <Button text="or just Play 🎮" style= "snake-button cobra" onClick={() => handleClick("/gameSessionPage")} />
             </div>
+            </div>
+
 
         </div>
     );

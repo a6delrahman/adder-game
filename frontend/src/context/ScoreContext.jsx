@@ -13,6 +13,10 @@ export const ScoreProvider = ({ children }) => {
             const response = await fetch(`/api/leaderboard?gameType=${gameType}&username=${username}`);
             if (!response.ok) throw new Error('Failed to fetch leaderboard');
             const data = await response.json();
+            if (data.error === 'User not found') {
+                username = 'deleted user'
+                throw new Error('User not found');
+            }
             setScores(data);
         } catch (err) {
             setError(err.message);

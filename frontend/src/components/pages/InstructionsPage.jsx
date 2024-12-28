@@ -1,6 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import Button from "../utility/buttons/Button.jsx";
+
 
 const InstructionsPage = () => {
+    const navigate = useNavigate();
+    function handleClick(page) {
+        navigate(page);
+    }
     return (
         <div className="instructions-page">
             <h1>Instructions</h1>
@@ -33,7 +40,13 @@ const InstructionsPage = () => {
                     <b>Climb the Leaderboard:</b> Grow the largest snake and aim to be at the top!
                 </li>
             </ol>
+            <div>
+                <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
+            </div>
         </div>
+
+  
+        
         
     );
 };

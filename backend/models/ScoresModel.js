@@ -43,8 +43,9 @@ async function getTopScores(gameType = null, username = null, limit = 10) {
             const user = await mongoose.model('User').findOne({ username }).select('_id');
             if (user) {
                 query.userId = user._id;
+                query.userId.username = user.username;
             } else {
-                return []; // No user found with the given username
+                throw new Error('User not found');  // No user found with the given username
             }
         }
 

@@ -10,6 +10,7 @@ body {
   text-align: center;
   color: #43a047;
   background-color: #1e1e1e;
+  overflow-y: scroll;
 }
 
 #root {
@@ -25,12 +26,23 @@ h1{
   color: rgb(48, 239, 147);
 }
 
+/*------------------------------------------------------------------------------*/
+
+.homepage-wrapper{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .homepage-title{
 
   position: absolute;
   transform: translate(-50%, -50%);
   top: 20%;
-  left: 50%;
+  left: 55%;
+  background: transparent;
+  padding-bottom: 50px;
 
 }
 
@@ -75,6 +87,9 @@ h1{
 .scanlines {
   overflow: hidden;
   mix-blend-mode: difference;
+  color: #b6fb61;
+  margin-bottom: 80px;
+
 }
 
 .scanlines::before {
@@ -84,14 +99,6 @@ h1{
   height: 100%;
   top: 0;
   left: 0;
-
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255, 255, 255, 0.05) .5%,
-    transparent 1%
-  );
-
   animation: fudge 7s ease-in-out alternate infinite;
 }
 
@@ -112,6 +119,7 @@ h1{
   position: absolute;
   top: 0;
 }
+/*------------------------------------------------------------------------------*/
 
  /*Main wrapper styles*/
 .app-wrapper {
@@ -128,7 +136,6 @@ h1{
 
 .app-logo{
   /* animation: glitch 0.8s infinite; */
-  padding-left: 100px;
 
 }
 
@@ -145,59 +152,6 @@ h1{
 
 /*------------------------------------------------------------------------------*/
 
-/* Shared Button Styles */
-button{
-  --b: 3px;
-  --s: 0.45em;
-  --_p: var(--s);
-  --color:  #b6fb61;;
-  padding: calc(0.5em + var(--s)) calc(0.9em + var(--s));
-  outline: var(--b) solid #0000;
-  outline-offset: 0.1rem;
-  font-size: 24px;
-  color: var(--color, #b6fb61);
-  cursor: pointer;
-  border: 0;
-  user-select: none;
-  transition: 0.3s linear, color 0s, background-color 0s;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  background: conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color, #b6fb61) 0 ) var(--_p) var(--_p) / calc(100% - var(--b) - 2 * var(--_p)) calc(100% - var(--b) - 2 * var(--_p));
-  
-}
-
-button:hover,
-button:focus-visible {
-  --_p: 0px;
-  outline-color: var(#30ef93);
-  outline-offset: 0.05em;
-}
-
-button:active {
-  background: var(#30ef93);
-  color: #fff;
-}
-/*------------------------------------------------------------------------------*/
-
-/* Login Page Styles*/
-.login-page form {
-  padding: 20px;
-}
-
-.login-page input{
-  display: flex;
-  flex-direction: column;
-  height: 60px;
-  width: 100%;
-  font-size: 20px;
-  border-radius: 20px;
-  padding-left: 15px;
-  margin: 0 auto 20px auto;
-}
-
-/*------------------------------------------------------------------------------*/
-
-/* Profile Page Styles*/
 /* Profile Page Styles */
 .profile-page {
   display: grid;
@@ -347,9 +301,7 @@ button:active {
   width: 60%;
   height: 60px;
   font-size: 14px;
- 
 }
-
 
 /*------------------------------------------------------------------------------*/
 
@@ -369,8 +321,6 @@ button:active {
 
 /*------------------------------------------------------------------------------*/
 
-
-
 /* Instruction Page Styles*/
 
 .instructions-page {
@@ -378,17 +328,25 @@ button:active {
   text-align: left;
   background: linear-gradient(135deg, #1e1e2f, #16f0f7);
   color: #f5f5f5;
-  padding: 20px;
-  margin: 20px auto 120px auto;
-  max-width: 800px;
+  margin: 400px auto 220px auto;
+  max-width: 100vh;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+}
+
+.instructions-page div{
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 .instructions-page h1{
   font-size: 1.5rem;
   text-align: center;
-  margin-bottom: 20px;
+
   color: #30ef93;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -405,6 +363,7 @@ button:active {
   font-size: 1.25rem;
   margin-bottom: 20px;
   line-height: 1.6;
+  padding: 30px;
 }
 
 .instructions-page ol {
@@ -428,20 +387,37 @@ button:active {
   text-align: center;
   color: #00ff9d; /* Bright green for text */
   font-family: Arial, sans-serif;
+  margin-top: 150px;
+}
+
+
+.dashboard-btn-leaderboard button{
+  width: 20%;
+  font-size: 20px;
+  align-items: center;
 }
 
 .leaderboard-page h1 {
-  font-size: 2rem;
+  font-size: 2.5rem;
   color: #00ff9d; /* Bright green title */
   text-transform: uppercase;
   margin-bottom: 20px;
+  padding-top: 50px;
+
+}
+
+.leaderboard-filters{
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  font-size: 22px;
 }
 
 /* Filter Section Styles */
 .leaderboard-page div {
-  margin: 20px auto;
-  font-size: 1rem;
-  color: #00ff9d; /* Bright green text */
+  justify-content: center;
+  align-items: center;
+  color: #16f0f7; /* Bright green text */
 }
 
 .leaderboard-page label {
@@ -467,11 +443,13 @@ button:active {
 
 .leaderboard-page input {
   margin-left: 5px;
+  font-size: 18px;
 }
+
 
 /* Leaderboard Table Styles */
 .leaderboard-page table {
-  width: 80%;
+  width: 90%;
   margin: 20px auto;
   border-collapse: collapse;
   text-align: center;
@@ -482,12 +460,13 @@ button:active {
 .leaderboard-page table th,
 .leaderboard-page table td {
   padding: 10px;
+  font-size: 22px;
   border: 1px solid #00ff9d; /* Green border for table cells */
 }
 
 .leaderboard-page table th {
   background-color: #222; /* Dark header background */
-  color: #00ff9d; /* Bright green text */
+  color: #16f0f7; /* Bright green text */
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -505,6 +484,7 @@ button:active {
   color: #ffffff; /* White text on hover */
 }
 
+/*------------------------------------------------------------------------------*/
 
 @keyframes glitch {
   0% {
