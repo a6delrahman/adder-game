@@ -1,10 +1,22 @@
 class WebSocketManager {
   constructor() {
-    this.webSocketIndex = new Map();
+    if (!WebSocketManager.instance) {
+      this.clients = new Map(); // clientId -> WebSocket
+      this.sessions = new Map(); // sessionId -> Set<clientId>
+      WebSocketManager.instance = this;
+    }
+    // return WebSocketManager.instance;
+  }
+
+  static getInstance() {
+    if (!WebSocketManager.instance) {
+      WebSocketManager.instance = new WebSocketManager();
+    }
+    return WebSocketManager.instance;
   }
 
   addClient(clientId, ws) {
-    this.webSocketIndex.set(clientId, ws);
+    this.clients.set(clientId, ws);
   }
 
   sendGameStateToPlayers(gameState) {
@@ -35,7 +47,7 @@ class WebSocketManager {
   }
 
   getWebSocketByClientId(clientId) {
-    return this.webSocketIndex.get(clientId);
+    return this.clients.get(clientId);
   }
 
   getNearbyPlayers(currentPlayer, allPlayers) {
@@ -70,6 +82,53 @@ class WebSocketManager {
       console.error(`Failed to send message of type "${type}":`, error);
     }
   }
+
+  addClientToSession(sessionId, clientId) {
+    if (!this.sessions.has(sessionId)) {
+      this.sessions.set(sessionId, new Set());
+    }
+    this.sessions.get(sessionId).add(clientId);
+  }
+
+  broadcastToSession(sessionId, message) {
+    const clientIds = this.sessions.get(sessionId) || new Set();
+    clientIds.forEach((clientId) => {
+      const ws = this.clients.get(clientId);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(message));
+      }
+    });
+  }
+
+  removeClient(clientId) {
+    this.clients.delete(clientId);
+  }
+
+  removeClientFromAllSessions(clientId) {
+    for (const session of this.sessions.values()) {
+      session.delete(clientId);
+    }
+  }
+
+  removeClientFromSession(sessionId, clientId) {
+    const session = this.sessions.get(sessionId);
+    if (session) {
+      session.delete(clientId);
+      if (session.size === 0) {
+        this.sessions.delete(sessionId);
+      }
+    }
+  }
+
+  isClientInSession(sessionId, clientId) {
+    const session = this.sessions.get(sessionId);
+    return session?.has(clientId);
+  }
+
+  isClientInAnySession(clientId) {
+    return Array.from(this.sessions.values()).some(session => session.has(clientId));
+  }
+
 }
 
 module.exports = WebSocketManager;

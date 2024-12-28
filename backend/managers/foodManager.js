@@ -1,6 +1,8 @@
 // managers/foodManager.js
 const { GAME } = require('../config/gameConfig');
 const { getRandomPosition } = require('../utils/helperFunctions');
+const WebSocketManager = require('./webSocketManager');
+const webSocketManager = WebSocketManager.getInstance();
 
 class FoodManager {
   constructor() {
@@ -11,16 +13,12 @@ class FoodManager {
   }
 
   generateFood(position, points, meta = null) {
-    if (!position || points < 1 || isNaN(position.x) || isNaN(position.y) || isNaN(points)) {
+    if (!position || points < 1) {
+      console.warn('Invalid food generation parameters:', position, points);
       return null;
     }
 
-    return {
-      x: position.x,
-      y: position.y,
-      points,
-      meta, // Optional: Zusätzliche Informationen (z. B. Mathematikaufgabe)
-    };
+    return { ...position, points, meta };
   }
 
   generateInitialFood() {
@@ -189,6 +187,7 @@ class FoodManager {
     if (food.meta.result === correctResult) {
       this.updateScoresAndSegments(playerState, snake, food.points);
       snake.correctAnswer();
+      webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'correct_answer', {});
       equationManager.assignEquationToPlayer(
           playerState.sessionId,
           snake,
@@ -201,6 +200,7 @@ class FoodManager {
   }
 
   handleNormalFoodCollision(playerState, snake, food) {
+    webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'play_collect', {});
     this.updateScoresAndSegments(playerState, snake, food.points);
   }
 

@@ -6,6 +6,7 @@ const {saveFinalScore} = require("../models/ScoresModel");
 const {tryToGetUsername} = require("../services/userService");
 // Utils
 const {getRandomPosition, getRandomColor} = require('../utils/helperFunctions');
+const safeExecute = require('../middleware/safeExecute');
 
 // Managers
 const FoodManager = require('../managers/foodManager');
@@ -21,7 +22,7 @@ const gameLoopManager5000ms = new GameLoopManager(5000); // Erstelle eine Instan
 const gameLoopManager50ms = new GameLoopManager(50);
 const gameStateManager = new GameStateManager();
 const playerManager = new PlayerManager();
-const webSocketManager = new WebSocketManager();
+const webSocketManager = WebSocketManager.getInstance();
 const sessionManager = new SessionManager();
 
 // Config
@@ -39,15 +40,11 @@ function createSession(gameType) {
 
   // Starte MathFood-Loop
   gameLoopManager5000ms.addLoop(`mathFoods-${sessionId}`, () => {
-    if (sessionManager.isSessionActive()) {
-      ensureMathFoods();
-    }
+    ensureMathFoods();
   });
   gameLoopManager50ms.addLoop(`gameLoop-${sessionId}`, () => {
-    if (sessionManager.isSessionActive()) {
-      movePlayers();
-      broadcastGameState();
-    }
+    movePlayers();
+    broadcastGameState();
   });
 
   sessionManager.setActiveSessions(true);
@@ -63,7 +60,6 @@ async function createOrFindSession(gameType) {
   }
   return session;
 }
-
 
 async function addPlayerToSession(clientId, gameType, ws, fieldOfView, userId) {
   const player = playerManager.getPlayerByClientId(clientId);
@@ -101,13 +97,18 @@ async function addPlayerToSession(clientId, gameType, ws, fieldOfView, userId) {
 
   // Spieler-Index aktualisieren
   playerManager.addPlayer(clientId, playerState);
-  webSocketManager.addClient(clientId, ws);
+  // webSocketManager.addClient(clientId, ws);
+  // webSocketManager.addClientToSession(sessionId, clientId);
 
   return {
     sessionId,
     snakeId,
     initialGameState: gameState,
   };
+}
+
+function sendMessageToPlayerByClientId(clientId, type, payload) {
+  webSocketManager.sendMessageToPlayerByClientId(clientId, type, payload);
 }
 
 function ensureMathFoods() {
@@ -129,10 +130,37 @@ function getAllSessions() {
   return sessionManager.getAllSessions();
 }
 
+// function broadcastGameState() {
+//   const gameStates = gameStateManager.getGameStates();
+//   gameStates.forEach((gameState) => {
+//     webSocketManager.sendGameStateToPlayers(gameState);
+//   });
+// }
+
 function broadcastGameState() {
   const gameStates = gameStateManager.getGameStates();
-  gameStates.forEach((gameState) => {
-    webSocketManager.sendGameStateToPlayers(gameState);
+
+  gameStates.forEach((gameState, sessionId) => {
+    const batchUpdate = {
+      type: 'session_broadcast',
+      players: [],
+      food: gameState.food,
+      timestamp: Date.now()
+    };
+
+    // Spielstatus aller Spieler sammeln
+    Object.values(gameState.players).forEach((playerState) => {
+      batchUpdate.players.push({
+        snakeId: playerState.snake.snakeId,
+        headPosition: playerState.snake.headPosition,
+        segments: playerState.snake.segments,
+        currentEquation: playerState.snake.currentEquation,
+        score: playerState.snake.score,
+      });
+    });
+
+    // Sende das Batch-Update an alle Clients in der Session
+    webSocketManager.broadcastToSession(sessionId, batchUpdate);
   });
 }
 
@@ -181,7 +209,7 @@ function movePlayers() {
     // Bewegung und Nahrungskollisionen für alle Spieler verarbeiten
     Object.values(players).forEach((playerState) => {
       playerManager.movePlayer(playerState, boundaries);
-      foodManager.handleFoodCollision(playerState, gameState, equationManager);
+      foodManager.handleFoodCollision(playerState, gameState, equationManager, sendMessageToPlayerByClientId);
       handleBoostPenalty(playerState, gameState);
     });
 
@@ -191,7 +219,6 @@ function movePlayers() {
     });
   });
 }
-
 
 function handleBoostPenalty(playerState, gameState) {
   const {snake} = playerState;
@@ -217,7 +244,7 @@ function handleBoostPenalty(playerState, gameState) {
       const randomOffsetY = Math.random() * Boost_TAIL_DROP_SPREAD * 2
           - Boost_TAIL_DROP_SPREAD;
 
-      const food = generateFood(
+      const food = foodManager.generateFood(
           {x: tailSegment.x + randomOffsetX, y: tailSegment.y + randomOffsetY},
           POINT_LOSS
       );
@@ -226,20 +253,6 @@ function handleBoostPenalty(playerState, gameState) {
       }
     }
   }
-}
-
-function generateFood(position, points, meta = null) {
-  if (!position || points < 1 || isNaN(position.x) || isNaN(position.y)
-      || isNaN(points)) {
-    return null;
-  }
-
-  return {
-    x: position.x,
-    y: position.y,
-    points,
-    meta, // Optional: Zusätzliche Informationen (z. B. Mathematikaufgabe)
-  };
 }
 
 function checkPlayerCollisions(currentPlayer, players) {
@@ -256,31 +269,10 @@ function checkPlayerCollisions(currentPlayer, players) {
 async function removePlayerFromSession(clientId) {
   const playerInfo = playerManager.getPlayerByClientId(clientId)
   if (!playerInfo) {
-    throw new Error('Player not found for WebSocket');
+    throw new Error('Player not found for clientIdv');
   }
-
-  const {sessionId, snakeId, userId} = playerInfo;
+  const {sessionId, snakeId} = playerInfo;
   const gameState = gameStateManager.getGameStateBySessionId(sessionId);
-  const snake = gameState.players[snakeId].snake;
-  const session = sessionManager.getSessionById(sessionId);
-  const gameType = session.gameType;
-  const score = snake.score;
-
-  const finalStats = {
-    userId,
-    gameType,
-    score: score,
-    eatenFood: snake.eatenFood,
-    correctAnswers: snake.correctAnswers,
-    wrongAnswers: snake.wrongAnswers,
-    playedAt: Date.now()
-  }
-
-  saveFinalScore(userId, gameType, finalStats).then(r => {
-    console.log('Final score saved successfully')
-  }).catch(e => {
-    console.error('Error saving final score:', e);
-  });
 
   if (gameState) {
     const playerState = gameState.players[snakeId];
@@ -296,13 +288,36 @@ async function removePlayerFromSession(clientId) {
   playerManager.removePlayerByClientId(clientId);
 }
 
-async function saveScore(userId, gameType, stats) {
-    try {
-        await saveFinalScore(userId, gameType, stats);
-        console.log('Final score saved successfully');
-    } catch (error) {
-        console.error('Error saving final score:', error);
-    }
+async function getFinalStats(clientId) {
+  const playerInfo = playerManager.getPlayerByClientId(clientId)
+  if (!playerInfo) {
+    throw new Error('Player not found for clientId');
+  }
+  const {sessionId, snakeId, userId} = playerInfo;
+  const gameState = gameStateManager.getGameStateBySessionId(sessionId);
+  const gameType = sessionManager.getSessionById(sessionId).gameType;
+  const snake = gameState.players[snakeId].snake;
+
+  return {
+    userId,
+    gameType,
+    score: snake.score,
+    eatenFood: snake.eatenFood,
+    correctAnswers: snake.correctAnswers,
+    wrongAnswers: snake.wrongAnswers,
+    playedAt: Date.now()
+  }
+}
+
+async function saveFinalStats(clientId) {
+  const player = playerManager.getPlayerByClientId(clientId);
+  if (!player.userId) {
+    console.log('unregistered Playerstats are not saved');
+    return;
+  }
+  const finalStats = await getFinalStats(clientId);
+
+  await safeExecute(saveFinalScore, finalStats);
 }
 
 function removeSession(sessionId) {
@@ -329,4 +344,5 @@ module.exports = {
   broadcastGameState,
   updatePlayerMovement,
   removePlayerFromSession,
+  saveFinalStats,
 };
