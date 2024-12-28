@@ -84,6 +84,7 @@ const ProfilePage = () => {
     return (
         <div className="profile-page">
             <h1>User Profile</h1>
+            <p>Here, you can update your personal information by clicking Change, Update Email or change password to make changes. If you ever wish to deactivate your account, use the Delete Account option at the bottom. Be cautious, as this action is permanent.</p>
             {message && <p>{message}</p>}
             {user ? (
                 <div className='profileFields'>

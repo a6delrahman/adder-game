@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { useScores } from '../../context/ScoreContext.jsx';
+import Button from "../utility/buttons/Button.jsx";
+import {useNavigate} from "react-router-dom";
+
+
 
 const LeaderboardPage = () => {
     const { scores, loading, error, fetchLeaderboard } = useScores();
@@ -18,13 +22,21 @@ const LeaderboardPage = () => {
         fetchLeaderboard(selectedGameType, username);
     };
 
+    const navigate = useNavigate();
+    function handleClick(page) {
+        navigate(page);
+    }
+
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
     return (
 
         <div className="leaderboard-page">
+                <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
+
             <h1>Leaderboard</h1>
+            <div className='leaderboard-filters'>
             <div>
                 <label htmlFor="gameType">Filter by Game Type: </label>
                 <select id="gameType" value={selectedGameType} onChange={handleGameTypeChange}>
@@ -35,7 +47,7 @@ const LeaderboardPage = () => {
                 </select>
             </div>
             <div>
-                <label htmlFor="username">Filter by Username: </label>
+                <label htmlFor="username">Filter by Player: </label>
                 <input
                     type="text"
                     id="username"
@@ -43,11 +55,12 @@ const LeaderboardPage = () => {
                     onChange={handleUsernameChange}
                 />
             </div>
+            </div>            
             <table>
                 <thead>
                     <tr>
                         <th>Rank</th>
-                        <th>Username</th>
+                        <th>Player</th>
                         <th>Score</th>
                         <th>Game Type</th>
                         <th>Correct</th>
@@ -59,7 +72,7 @@ const LeaderboardPage = () => {
                     {scores.map((entry, index) => (
                         <tr key={entry._id}>
                             <td>{index + 1}</td>
-                            <td>{entry.userId.username}</td>
+                            <td>{entry.userId ? entry.userId.username : 'Deleted User'}</td>
                             <td>{entry.score}</td>
                             <td>{entry.gameType}</td>
                             <td>{entry.correctAnswers}</td>
@@ -69,6 +82,9 @@ const LeaderboardPage = () => {
                     ))}
                 </tbody>
             </table>
+            <div className='dashboard-btn-leaderboard'>
+            </div>
+
         </div>
         
     );
