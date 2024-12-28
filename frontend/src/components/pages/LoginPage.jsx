@@ -3,6 +3,7 @@
 import React, { useState, useContext } from 'react';
 import axiosInstance from '../../axiosInstance';
 import { useNavigate } from 'react-router-dom';
+import Button from "../utility/buttons/Button.jsx";
 import { setAuthToken, setRefreshToken, setUserId } from '../utility/auth/auth.js'; // Importiere Funktionen
 import { AuthContext } from "../../context/AuthContext.jsx";
 
@@ -11,6 +12,9 @@ const LoginPage = () => {
     const [message, setMessage] = useState('');
     const { setIsAuthenticated } = useContext(AuthContext);
     const navigate = useNavigate();
+    function handleClick(page) {
+        navigate(page);
+    }
 
     const handleChange = (e) => {
         setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -62,7 +66,10 @@ const LoginPage = () => {
                     required
                 />
                 <button type="submit">Login</button>
+
             </form>
+            <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
+
             {message && <p>{message}</p>}
         </div>
     );

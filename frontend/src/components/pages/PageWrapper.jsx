@@ -24,17 +24,18 @@ function PageWrapper() {
     const {isAuthenticated} = useContext(AuthContext);
     const location = useLocation();
     // Define the routes where the Back button should appear
-    const routesWithBackButton = ["/register", "/login", "/instructions","/leaderboard", "/profile"];
-    const showBackButton = routesWithBackButton.includes(location.pathname);
+    // const routesWithBackButton = ["/register", "/instructions","/leaderboard", "/profile"];
+    // const showBackButton = routesWithBackButton.includes(location.pathname);
 
     return (
         <div className="app-wrapper">
             <img
+                className='app-logo'
                 src={logo}
                 alt="App Logo"
-                style={{width: "300px", margin: "10px auto", display: "block"}}/>
+                />
 
-            {showBackButton && <BackButton/>}                
+            {/* {showBackButton && <BackButton/>} */}
             <Routes>
                 <Route path="/" element={
                     isAuthenticated ? (

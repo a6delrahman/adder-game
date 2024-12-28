@@ -7,6 +7,9 @@ import {
     setUserId
 } from '../utility/auth/auth.js'; // Importiere die Funktionen
 import { AuthContext } from '../../context/AuthContext.jsx';
+import Button from "../utility/buttons/Button.jsx";
+
+
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({ username: '', email: '', password: '' });
@@ -41,9 +44,16 @@ const RegisterPage = () => {
         }
     };
 
+        function handleClick(page) {
+            navigate(page);
+        }
+
     return (
         <div className="register-page">
+            <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
+
             <h1>Register</h1>
+            <h3>Fill-up the form to register an account.</h3>
             {message && <p>{message}</p>}
             <form onSubmit={handleSubmit}>
                 <input
