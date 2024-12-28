@@ -7,7 +7,7 @@ const InstructionsPage = () => {
             <p>
                 The game <b>Adder</b> is a multiplayer snake game where the objective is to grow your snake as large as possible by collecting the correct solutions to various math problems, while avoiding collisions with other players.
             </p>
-   
+
             <ol>
                 <h2>How to play</h2>
                 <li>
@@ -34,6 +34,7 @@ const InstructionsPage = () => {
                 </li>
             </ol>
         </div>
+        
     );
 };
 

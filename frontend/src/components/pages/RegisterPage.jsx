@@ -44,6 +44,7 @@ const RegisterPage = () => {
     return (
         <div className="register-page">
             <h1>Register</h1>
+            <h3>Fill-up the form to register an account.</h3>
             {message && <p>{message}</p>}
             <form onSubmit={handleSubmit}>
                 <input

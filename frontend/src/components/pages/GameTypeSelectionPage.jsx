@@ -22,17 +22,17 @@ const GameTypeSelectionPage = () => {
         <div>
             <h1>Choose Game Type</h1>
             <div className="skill-buttons">
-                <button className="button-51" onClick={() => handleJoinSession('addition')}>
+            <button className="skill-btn skill-add-btn" onClick={() => handleJoinSession('addition')}>
                     Addition
                 </button>
-                <button className="button-52" onClick={() => handleJoinSession('subtraction')}>
+                <button className="skill-btn skill-subtract-btn" onClick={() => handleJoinSession('subtraction')}>
                     Subtraction
                 </button>
-                <button className="button-53" onClick={() => handleJoinSession('multiplication')}>
+                <button className="skill-btn skill-multiply-btn" onClick={() => handleJoinSession('multiplication')}>
                     Multiplication
                 </button>
             </div>
-            <Button text="Dashboard" style= "snake-button cobra" onClick={() => handleClick("/dashboard")} />
+            <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
         </div>
     );
 };

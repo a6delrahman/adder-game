@@ -1,32 +1,55 @@
-/* Styles für die Schlangen-Buttons */
-
+/* Button Styles */
 .dashboard-buttons{
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    /*width: 50%;*/
-    /*margin: auto;*/
-
+    justify-content: center;  
 }
 
+.homepage-buttons{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 30px;
+    margin: 20px;
+    font-size: 26px;
+    width: 100%;
+  }
+  
+
+.homepage-buttons button{
+    display: flex;
+    flex-direction: row;
+    padding: 30px;
+    margin: 10px;
+    width: 100%;
+}
+/*------------------------------------------------------------------------------*/
+.skill-buttons {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+    margin: auto;    
+    
+}
+
+.skill-buttons button {
+    background: none;
+}
+
+/*------------------------------------------------------------------------------*/
 
 .snake-button{
-    --b: 3px; /* border thickness */
-    --s: .45em; /* size of the corner */
-    --color: #b6fb61;
-    width: 200px;
-    padding: calc(.5em + var(--s)) calc(.9em + var(--s));
+    color: #b6fb61;
     color: var(--color);
     margin-top: 35px;
-    --_p: var(--s);
-    background: conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color) 0) var(--_p) var(--_p)/calc(100% - var(--b) - 2 * var(--_p)) calc(100% - var(--b) - 2 * var(--_p));
     transition: .3s linear, color 0s, background-color 0s;
     outline: var(--b) solid #0000;
     outline-offset: .6em;
-    font-size: 18px;
+    font-size: 22px;
+    border: none;
     font-weight: bold;
-    border: 0;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
@@ -45,19 +68,22 @@
       color: #fff;
   }
 
-
-
 .snake-button:hover {
     transform: scale(1.1);
     box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
 }
 
 .snake-button.cobra {
-    color: #16f0f7;
+    color: #e9066c;
+    padding: 25px;
     border-radius: 5%;
 }
 
 .snake-button.python {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
     color: #16f0f7;
     border-radius: 5%;
 }
@@ -68,415 +94,142 @@
 }
 
 .snake-button.login-logout-button {
-    color: #f71616;
+    color: #ec1b5d;
     border-radius: 5%;
 }
 
-/*!* Animation für Schlängeln *!*/
-/*.snake-button::before {*/
-/*  content: '';*/
-/*  position: absolute;*/
-/*  top: -5px;*/
-/*  left: -5px;*/
-/*  width: 100%;*/
-/*  height: 100%;*/
-/*  !*border-radius: 25px 50px;*!*/
-/*  border: 2px dashed #fff;*/
-/*  animation: slither 1.5s infinite;*/
-/*}*/
-
-/*.snake-button.cobra::before {*/
-/*  border-radius: 50%;*/
-/*}*/
-
-/*.snake-button.python::before {*/
-/*  border-radius: 25px 50px 50px 25px;*/
-/*}*/
-
-/*.snake-button.rattlesnake::before {*/
-/*  border-radius: 25px 50px;*/
-/*}*/
-
-/*@keyframes slither {*/
-/*  0% {*/
-/*    transform: translateX(-10px);*/
-/*  }*/
-/*  50% {*/
-/*    transform: translateX(10px);*/
-/*  }*/
-/*  100% {*/
-/*    transform: translateX(-10px);*/
-/*  }*/
-/*}*/
-
-
-/*!* 2. Styles für die Schlangen-Buttons *!*/
-
-/*a{*/
-/*  position: absolute;*/
-/*  top: 50%;*/
-/*  left: 50%;*/
-/*  transform: translate(-50%,-50%);*/
-/*  text-transform: uppercase;*/
-/*  color: #1670f0;*/
-/*  padding: 30px 60px;*/
-/*  font-size: 30px;*/
-/*  letter-spacing: 2px;*/
-/*  text-decoration: none;*/
-/*  box-shadow: 0 20px 50px rgba(255,255,255,0.05);*/
-/*  overflow: hidden;*/
-
-/*}*/
-
-/*a:before{*/
-/*  position: absolute;*/
-/*  top: 2px;*/
-/*  left: 2px;*/
-/*  bottom: 2px;*/
-/*  content: '';*/
-/*  width: 50%;*/
-/*  background: rgba(255,255,255,0.05);*/
-/*}*/
-
-/*a span:nth-child(1){*/
-/*  position: absolute;*/
-/*  top: 0;*/
-/*  left: 0;*/
-/*  width: 100%;*/
-/*  height: 2px;*/
-/*  background: linear-gradient(to right, #0c002b, #1779ff);*/
-/*  animation: animate1 2s linear infinite;*/
-/*}*/
-
-/*@keyframes animate1{*/
-/*  0%{*/
-/*    transform: translateX(-100%);*/
-/*  }*/
-
-/*  100%{*/
-/*    transform: translateX(100%);*/
-/*  }*/
-/*}*/
-
-/*a span:nth-child(2){*/
-/*  position: absolute;*/
-/*  top: 0;*/
-/*  right: 0;*/
-/*  width: 2px;*/
-/*  height: 100%;*/
-/*  background: linear-gradient(to bottom, #0c002b, #1779ff);*/
-/*  animation: animate2 2s linear infinite;*/
-/*  animation-delay: 1s;*/
-/*}*/
-
-/*@keyframes animate2{*/
-/*  0%{*/
-/*    transform: translateY(-100%);*/
-/*  }*/
-
-/*  100%{*/
-/*    transform: translateY(100%);*/
-/*  }*/
-/*}*/
-
-/*a span:nth-child(3){*/
-/*  position: absolute;*/
-/*  bottom: 0;*/
-/*  left: 0;*/
-/*  width: 100%;*/
-/*  height: 2px;*/
-/*  background: linear-gradient(to left, #0c002b, #1779ff);*/
-/*  animation: animate3 2s linear infinite;*/
-/*}*/
-
-/*@keyframes animate3{*/
-/*  0%{*/
-/*    transform: translateX(100%);*/
-/*  }*/
-
-/*  100%{*/
-/*    transform: translateX(-100%);*/
-/*  }*/
-/*}*/
-
-/*a span:nth-child(4){*/
-/*  position: absolute;*/
-/*  top: 0;*/
-/*  left: 0;*/
-/*  width: 2px;*/
-/*  height: 100%;*/
-/*  background: linear-gradient(to top, #0c002b, #1779ff);*/
-/*  animation: animate4 2s linear infinite;*/
-/*  animation-delay: 1s;*/
-/*}*/
-
-/*@keyframes animate4{*/
-/*  0%{*/
-/*    transform: translateY(100%);*/
-/*  }*/
-
-/*  100%{*/
-/*    transform: translateY(-100%);*/
-/*  }*/
-/*}*/
-
-
-/* button-89*/
-.button-89 {
-    --b: 3px; /* border thickness */
-    --s: .45em; /* size of the corner */
-    --color: #b6fb61;
-
-    padding: calc(.5em + var(--s)) calc(.9em + var(--s));
-    color: var(--color);
-    --_p: var(--s);
-    background: conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color) 0) var(--_p) var(--_p)/calc(100% - var(--b) - 2 * var(--_p)) calc(100% - var(--b) - 2 * var(--_p));
-    transition: .3s linear, color 0s, background-color 0s;
-    outline: var(--b) solid #0000;
-    outline-offset: .6em;
-    font-size: 16px;
-    text-underline: none;
-
-    border: 0;
-
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-}
-
-.button-89:hover,
-.button-89:focus-visible {
-    --_p: 0px;
-    outline-color: var(--color);
-    outline-offset: .05em;
-}
-
-.button-89:active {
-    background: var(--color);
-    color: #fff;
-}
-
-/*button-49*/
-.button-49,
-.button-49:after {
-    width: 150px;
-    height: 76px;
-    line-height: 78px;
-    font-size: 20px;
-    font-family: 'Bebas Neue', sans-serif;
-    background: linear-gradient(45deg, transparent 5%, #FF013C 5%);
-    border: 0;
-    color: #fff;
-    letter-spacing: 3px;
-    box-shadow: 6px 0px 0px #00E6F6;
-    outline: transparent;
+/* Common styles for skill buttons */
+.skill-btn {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 13px 20px 13px;
+    outline: 0;
+    border: 3px solid rgb(255, 255, 255);
+    cursor: pointer;
     position: relative;
+    background-color: rgba(255, 255, 255, 0.42);
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
+    color: #000000;
+    transition: 0.2s;
 }
 
-.button-49:after {
-    --slice-0: inset(50% 50% 50% 50%);
-    --slice-1: inset(80% -6px 0 0);
-    --slice-2: inset(50% -6px 30% 0);
-    --slice-3: inset(10% -6px 85% 0);
-    --slice-4: inset(40% -6px 43% 0);
-    --slice-5: inset(80% -6px 5% 0);
-
-    content: 'ALTERNATE TEXT';
-    display: block;
+.skill-btn:after {
+    content: "";
+    width: 100%;
+    z-index: -1;
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent 3%, #00E6F6 3%, #00E6F6 5%, #FF013C 5%);
-    text-shadow: -3px -3px 0px #F8F005, 3px 3px 0px #00E6F6;
-    clip-path: var(--slice-0);
+    height: 100%;
+    top: 7px;
+    left: 7px;
+    transition: 0.2s;
 }
 
-.button-49:hover:after {
-    animation: 1s glitch;
-    animation-timing-function: steps(2, end);
+.skill-btn:hover:after {
+    top: 0px;
+    left: 0px;
 }
+
+
+
+/* Specific styles for each button */
+.skill-add-btn {
+    transform: rotate(-1deg);
+    margin-bottom: 30px;
+    animation: glitch 6s infinite; 
+}
+
+.skill-add-btn:after {
+    background-color: #20d138;
+}
+
+.skill-subtract-btn {
+    transform: rotate(1deg);
+    animation: glitch 5s infinite; 
+}
+
+.skill-subtract-btn:after {
+    background-color: #ffff4c;
+}
+
+.skill-multiply-btn {
+    transform: rotate(-1deg);
+    margin-top: 30px;
+    animation: glitch 4s infinite; 
+}
+
+.skill-multiply-btn:after {
+    background-color: #5cfffa;
+}
+
+.glitch {
+    animation: glitch 1s infinite;
+}
+
+/*---------------------------------------------GLITCH---------------------------------*/
 
 @keyframes glitch {
     0% {
         clip-path: var(--slice-1);
-        transform: translate(-20px, -10px);
+        transform: translate(-10px, -5px);
+        filter: contrast(1) brightness(1);
     }
     10% {
         clip-path: var(--slice-3);
-        transform: translate(10px, 10px);
+        transform: translate(5px, 5px);
+        filter: contrast(1.5) brightness(1.5);
     }
     20% {
         clip-path: var(--slice-1);
-        transform: translate(-10px, 10px);
+        transform: translate(-5px, 5px);
+        filter: contrast(2) brightness(0.5);
     }
     30% {
         clip-path: var(--slice-3);
-        transform: translate(0px, 5px);
+        transform: translate(0px, 2.5px);
+        filter: contrast(0.5) brightness(2);
     }
     40% {
         clip-path: var(--slice-2);
-        transform: translate(-5px, 0px);
+        transform: translate(-2.5px, 0px);
+        filter: grayscale(80%);
     }
     50% {
         clip-path: var(--slice-3);
-        transform: translate(5px, 0px);
+        transform: translate(2.5px, 0px);
+        filter: grayscale(100%);
     }
     60% {
         clip-path: var(--slice-4);
-        transform: translate(5px, 10px);
+        transform: translate(2.5px, 5px);
+        filter: hue-rotate(60deg);
     }
     70% {
         clip-path: var(--slice-2);
-        transform: translate(-10px, 10px);
+        transform: translate(-5px, 5px);
+        filter: grayscale(60%);
     }
     80% {
         clip-path: var(--slice-5);
-        transform: translate(20px, -10px);
+        transform: translate(10px, -5px);
+        filter: grayscale(40%);
     }
     90% {
         clip-path: var(--slice-1);
-        transform: translate(-10px, 0px);
+        transform: translate(-5px, 0px);
+        filter: grayscale(20%);
     }
     100% {
         clip-path: var(--slice-1);
         transform: translate(0);
+        filter: grayscale(0%);
     }
 }
 
 @media (min-width: 768px) {
-    .button-49,
-    .button-49:after {
-        width: 200px;
-        height: 86px;
-        line-height: 88px;
-    }
-}
-
-/*button-51*/
-.button-51 {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    padding: 13px 20px 13px;
-    outline: 0;
-    border: 1px solid rgb(255, 255, 255);
-    cursor: pointer;
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.42);
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-    transform: rotate(-1deg);
-    margin-bottom: 30px;
-}
-
-.button-51:after {
-    content: "";
-    background-color: #20d138;
-    width: 100%;
-    z-index: -1;
-    position: absolute;
-    height: 100%;
-    top: 7px;
-    left: 7px;
-    transition: 0.2s;
-}
-
-.button-51:hover:after {
-    top: 0px;
-    left: 0px;
-}
-
-@media (min-width: 768px) {
-    .button-51 {
-        padding: 13px 50px 13px;
-    }
-
-}
-
-
-/*button-52*/
-.button-52 {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    padding: 13px 20px 13px;
-    outline: 0;
-    border: 1px solid rgb(255, 255, 255);
-    cursor: pointer;
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.42);
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-    transform: rotate(1deg);
-}
-
-.button-52:after {
-    content: "";
-    background-color: #ffff4c;
-    width: 100%;
-    z-index: -1;
-    position: absolute;
-    height: 100%;
-    top: 7px;
-    left: 7px;
-    transition: 0.2s;
-}
-
-.button-52:hover:after {
-    top: 0px;
-    left: 0px;
-}
-
-@media (min-width: 768px) {
-    .button-52 {
-        padding: 13px 50px 13px;
-    }
-}
-
-/*button-53*/
-.button-53 {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    padding: 13px 20px 13px;
-    outline: 0;
-    border: 1px solid rgb(255, 255, 255);
-    cursor: pointer;
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.42);
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-    transform: rotate(-1deg);
-    margin-top: 30px;
-}
-
-.button-53:after {
-    content: "";
-    background-color: #5cfffa;
-    width: 100%;
-    z-index: -1;
-    position: absolute;
-    height: 100%;
-    top: 7px;
-    left: 7px;
-    transition: 0.2s;
-}
-
-.button-53:hover:after {
-    top: 0px;
-    left: 0px;
-}
-
-@media (min-width: 768px) {
-    .button-52 {
+    .skill-btn {
         padding: 13px 50px 13px;
     }
 }
