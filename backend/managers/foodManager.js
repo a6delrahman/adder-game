@@ -1,6 +1,8 @@
 // managers/foodManager.js
 const { GAME } = require('../config/gameConfig');
 const { getRandomPosition } = require('../utils/helperFunctions');
+const WebSocketManager = require('./webSocketManager');
+const webSocketManager = WebSocketManager.getInstance();
 
 class FoodManager {
   constructor() {
@@ -159,33 +161,33 @@ class FoodManager {
     });
   }
 
-  handleFoodCollision(playerState, gameState, equationManager, sendMessageToPlayerByClientId) {
+  handleFoodCollision(playerState, gameState, equationManager) {
     const { snake } = playerState;
 
     gameState.food = gameState.food.filter(food => {
       if (snake.checkCollisionWithFood(food)) {
         snake.foodEaten();
-        this.processFoodCollision(playerState, snake, gameState, food, equationManager, sendMessageToPlayerByClientId);
+        this.processFoodCollision(playerState, snake, gameState, food, equationManager);
         return false; // Entferne konsumierte Nahrung
       }
       return true; // Nahrung bleibt bestehen
     });
   }
 
-  processFoodCollision(playerState, snake, gameState, food, equationManager, sendMessageToPlayerByClientId) {
+  processFoodCollision(playerState, snake, gameState, food, equationManager) {
     if (food.meta?.result !== undefined) {
-      this.handleMathFoodCollision(playerState, snake, food, equationManager, sendMessageToPlayerByClientId);
+      this.handleMathFoodCollision(playerState, snake, food, equationManager);
     } else {
-      this.handleNormalFoodCollision(playerState, snake, food, sendMessageToPlayerByClientId);
+      this.handleNormalFoodCollision(playerState, snake, food);
     }
   }
 
-  handleMathFoodCollision(playerState, snake, food, equationManager, sendMessageToPlayerByClientId) {
+  handleMathFoodCollision(playerState, snake, food, equationManager) {
     const correctResult = snake.currentEquation?.result;
     if (food.meta.result === correctResult) {
       this.updateScoresAndSegments(playerState, snake, food.points);
       snake.correctAnswer();
-      sendMessageToPlayerByClientId(playerState.clientId, 'correct_answer', {});
+      webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'correct_answer', {});
       equationManager.assignEquationToPlayer(
           playerState.sessionId,
           snake,
@@ -197,8 +199,8 @@ class FoodManager {
     }
   }
 
-  handleNormalFoodCollision(playerState, snake, food, sendMessageToPlayerByClientId) {
-    sendMessageToPlayerByClientId(playerState.clientId, 'play_collect', {});
+  handleNormalFoodCollision(playerState, snake, food) {
+    webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'play_collect', {});
     this.updateScoresAndSegments(playerState, snake, food.points);
   }
 

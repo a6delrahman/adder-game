@@ -3,9 +3,9 @@
 const gameController = require('./gameController');
 const {v4: uuidv4} = require('uuid');
 const WebSocketManager = require('../managers/webSocketManager');
-const {saveFinalScore} = require("../models/ScoresModel");
-const webSocketManager = new WebSocketManager();
-const clients = {};
+// const {saveFinalScore} = require("../models/ScoresModel");
+const webSocketManager = WebSocketManager.getInstance();
+// const clients = {};
 
 function sendMessage(ws, type, payload = null) {
     const message = {type, payload};
@@ -19,10 +19,12 @@ function sendMessage(ws, type, payload = null) {
 function handleConnection(ws) {
     // Generate a new clientId
     const clientId = uuidv4();
-    clients[clientId] = {ws};
+    // clients[clientId] = {ws};
+    webSocketManager.addClient(clientId, ws);
 
     // Send back the client connection message
-    sendMessage(ws, 'connect', {clientId});
+    webSocketManager.sendMessageToPlayerByClientId(clientId, 'connect', {clientId});
+    // sendMessage(ws, 'connect', {clientId});
     // webSocketManager.addClient(clientId, ws);
     // webSocketManager.sendMessageToPlayerByClientId(clientId, 'connect', {clientId});
     console.log(`Client ${clientId} connected`);
@@ -40,11 +42,13 @@ function handleConnection(ws) {
 
     // Handle connection close
     ws.on('close', () => {
-        if (clients[clientId].session) {
+        if (webSocketManager.isClientInAnySession(clientId)) {
             gameController.saveFinalStats(clientId).catch(e => console.error(e));
             gameController.leaveSession(clientId)
                 .then(() => {
-                    delete clients[clientId];
+                    webSocketManager.removeClientFromAllSessions(clientId);
+                    webSocketManager.removeClient(clientId);
+                    // delete clients[clientId];
                     console.log(`Client ${clientId} disconnected`)
                 })
                 .catch((error) => {
@@ -53,7 +57,8 @@ function handleConnection(ws) {
                 });
 
         } else {
-            delete clients[clientId];
+            webSocketManager.removeClient(clientId);
+            // delete clients[clientId];
             console.log(`Client ${clientId} disconnected`);
         }
     });
@@ -74,7 +79,8 @@ function messageHandler(data, ws, clientId) {
             gameController.joinSession(data, ws)
                 .then((response) => {
                     sendMessage(ws, 'session_joined', response);
-                    clients[clientId].session = response.sessionId;
+                    // clients[clientId].session = response.sessionId;
+                    webSocketManager.addClientToSession(response.sessionId, clientId);
                 })
                 .catch((error) => {
                     console.error('Error joining session:', error);

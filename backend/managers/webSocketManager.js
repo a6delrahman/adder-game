@@ -1,7 +1,18 @@
 class WebSocketManager {
   constructor() {
-    this.clients = new Map(); // clientId -> WebSocket
-    this.sessions = new Map(); // sessionId -> Set<clientId>
+    if (!WebSocketManager.instance) {
+      this.clients = new Map(); // clientId -> WebSocket
+      this.sessions = new Map(); // sessionId -> Set<clientId>
+      WebSocketManager.instance = this;
+    }
+    // return WebSocketManager.instance;
+  }
+
+  static getInstance() {
+    if (!WebSocketManager.instance) {
+      WebSocketManager.instance = new WebSocketManager();
+    }
+    return WebSocketManager.instance;
   }
 
   addClient(clientId, ws) {
@@ -88,6 +99,36 @@ class WebSocketManager {
       }
     });
   }
+
+  removeClient(clientId) {
+    this.clients.delete(clientId);
+  }
+
+  removeClientFromAllSessions(clientId) {
+    for (const session of this.sessions.values()) {
+      session.delete(clientId);
+    }
+  }
+
+  removeClientFromSession(sessionId, clientId) {
+    const session = this.sessions.get(sessionId);
+    if (session) {
+      session.delete(clientId);
+      if (session.size === 0) {
+        this.sessions.delete(sessionId);
+      }
+    }
+  }
+
+  isClientInSession(sessionId, clientId) {
+    const session = this.sessions.get(sessionId);
+    return session?.has(clientId);
+  }
+
+  isClientInAnySession(clientId) {
+    return Array.from(this.sessions.values()).some(session => session.has(clientId));
+  }
+
 }
 
 module.exports = WebSocketManager;

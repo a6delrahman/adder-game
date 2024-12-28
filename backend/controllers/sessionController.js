@@ -22,7 +22,7 @@ const gameLoopManager5000ms = new GameLoopManager(5000); // Erstelle eine Instan
 const gameLoopManager50ms = new GameLoopManager(50);
 const gameStateManager = new GameStateManager();
 const playerManager = new PlayerManager();
-const webSocketManager = new WebSocketManager();
+const webSocketManager = WebSocketManager.getInstance();
 const sessionManager = new SessionManager();
 
 // Config
@@ -97,8 +97,8 @@ async function addPlayerToSession(clientId, gameType, ws, fieldOfView, userId) {
 
   // Spieler-Index aktualisieren
   playerManager.addPlayer(clientId, playerState);
-  webSocketManager.addClient(clientId, ws);
-  webSocketManager.addClientToSession(sessionId, clientId);
+  // webSocketManager.addClient(clientId, ws);
+  // webSocketManager.addClientToSession(sessionId, clientId);
 
   return {
     sessionId,
