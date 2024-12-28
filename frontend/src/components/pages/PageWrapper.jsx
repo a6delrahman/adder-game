@@ -33,7 +33,7 @@ function PageWrapper() {
                 className='app-logo'
                 src={logo}
                 alt="App Logo"
-                style={{width: "300px", margin: "10px auto", display: "block"}}/>
+                />
 
             {/* {showBackButton && <BackButton/>}                 */}
             <Routes>

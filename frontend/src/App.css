@@ -35,6 +35,14 @@ h1{
   align-items: center;
 }
 
+.app-logo{
+
+  width: 300px;
+  margin: "10px auto";
+  display: "block"
+
+}
+
 .homepage-title{
 
   position: absolute;
@@ -516,4 +524,147 @@ h1{
       -0.04em -0.025em 0 #fffc00;
   }
 }
+/*---------------------------------------------------------------------------------*/
 
+/* Tablets (portrait and landscape) */
+@media (min-width: 601px) and (max-width: 1024px) {
+
+  .app-wrapper {
+    flex-direction: column;
+  }
+
+  .homepage-title{
+    top: 30%;
+    left: 50%;
+
+  }
+
+  .homepage-title .glitch {
+    font-size: 50px;
+  }
+  .app-wrapper .homepage-buttons{
+      margin-top: 20px;
+      margin-bottom: 0;
+      padding-bottom: 0;
+  }
+  .app-logo{
+      width: 120px;
+      margin-top: 80px;
+
+    }
+
+  .game-session-page h1{
+      font-size: 30px;
+    }
+
+  .app-wrapper .homepage-buttons{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 0;
+
+  }
+
+  .app-wrapper .just-play .snake-button{
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+
+  .snake-button {
+    font-size: 20px;
+    padding: 12px;
+  }
+
+  .app-wrapper .register-page {
+    flex-direction: column;
+  }
+  .register-page h1{
+    font-size: 24px;
+    margin-top: 20px;
+  }
+
+  .register-page h3{
+    font-size: 14px;
+  }
+
+  .register-page button{
+    font-size: 14px;
+  }
+
+  .register-page.img {
+    margin-top: 200px;
+  }
+
+  .app-wrapper .login-page h1{
+    font-size: 20px;
+  }
+  .app-wrapper .login-page input{
+    font-size: 14px;
+    height: 40px;
+  }
+
+  .app-wrapper .login-page button{
+    font-size: 14px;
+  }
+
+  .app-wrapper .snake-button.python{
+    font-size: 18px;
+    padding: 20px;
+  }
+
+  .app-wrapper .snake-button.login-logout-button{
+    font-size: 18px;
+    padding: 20px;
+  }
+
+  .app-wrapper .game-session-page .skill-buttons button{
+    font-size: 14px;
+    padding: 12px;
+    width: 60%;
+    margin: 20px auto 10px auto;
+  }
+
+
+  .app-wrapper .snake-button.cobra{
+    font-size: 14px;
+    padding: 20px;
+  }
+
+  .profile-page {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .profile-page h1 {
+    font-size: 1.8em;
+  }
+
+  .profile-page p {
+    font-size: 1.1em;
+  }
+
+  .profile-page form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .profile-field-username,
+  .profile-field-email {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .profile-field-username button,
+  .profile-field-email button {
+    margin-left: 10px;
+  }
+
+  .leaderboard-page table {
+    font-size: 0.9rem;
+  }
+
+  .leaderboard-page table th,
+  .leaderboard-page table td {
+    padding: 8px;
+  }
+}
