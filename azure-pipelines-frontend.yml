@@ -23,7 +23,6 @@ stages:
     - script: |
         cd frontend
         npm install
-        npm run build
       displayName: 'npm install'
     
     - task: ArchiveFiles@2
