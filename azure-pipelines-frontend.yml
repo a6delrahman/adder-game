@@ -58,6 +58,6 @@ stages:
               azureSubscription: 'deployment-sc'
               appType: 'webAppLinux'
               WebAppName: 'adder-webapp'
-              packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              packageForLinux: '$(System.DefaultWorkingDirectory)/$(Build.BuildId)/*.zip'
               RuntimeStack: 'NODE|18-lts'
               StartupCommand: 'npm run dev'
