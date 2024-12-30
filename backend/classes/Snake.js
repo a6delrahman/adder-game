@@ -93,14 +93,18 @@ class Snake {
     this.currentEquation = equation
   }
 
-  updateDirection(targetX, targetY) {
-    const dx = targetX - this.headPosition.x;
-    const dy = targetY - this.headPosition.y;
+  // updateDirection(targetX, targetY) {
+  //   const dx = targetX - this.headPosition.x;
+  //   const dy = targetY - this.headPosition.y;
+  //
+  //   const magnitude = Math.sqrt(dx * dx + dy * dy);
+  //
+  //   this.direction.x = magnitude > 0 ? dx / magnitude : 0;
+  //   this.direction.y = magnitude > 0 ? dy / magnitude : 0;
+  // }
 
-    const magnitude = Math.sqrt(dx * dx + dy * dy);
-
-    this.direction.x = magnitude > 0 ? dx / magnitude : 0;
-    this.direction.y = magnitude > 0 ? dy / magnitude : 0;
+  updateDirection(direction) {
+    this.direction = direction;
   }
 
   moveSnake(boundaries) {

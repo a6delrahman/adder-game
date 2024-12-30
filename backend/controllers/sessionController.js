@@ -164,7 +164,7 @@ function broadcastGameState() {
   });
 }
 
-async function updatePlayerMovement(snakeId, targetX, targetY, boost) {
+async function updatePlayerMovement(snakeId, direction, boost) {
 
   const playerInfo = playerManager.getPlayerBySnakeId(snakeId);
   if (!playerInfo) {
@@ -189,8 +189,8 @@ async function updatePlayerMovement(snakeId, targetX, targetY, boost) {
   }
 
   // Update player movement
-  if (targetX !== undefined && targetY !== undefined) {
-    snake.updateDirection(targetX, targetY);
+  if (direction !== undefined) {
+    snake.updateDirection(direction);
   }
 
   // Update boost state only if the player has enough score

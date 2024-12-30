@@ -5,19 +5,18 @@ const safeExecute = require('../middleware/safeExecute');
 
 /**
  * Handle player movement.
- * @param {Object} data - { targetX, targetY, boost }
- * @param {Object} ws - WebSocket reference
+ * @param {Object} data - { snakeId, direction, boost }
  * @returns {Promise<void>}
  */
 async function handleMovement(data) {
-  const { snakeId, targetX, targetY, boost } = data;
+  const { snakeId, direction, boost } = data;
 
-  if (!snakeId || typeof targetX !== 'number' || typeof targetY !== 'number' || typeof boost !== 'boolean') {
+  if (!snakeId || typeof direction.x !== 'number' || typeof direction.y !== 'number' || typeof boost !== 'boolean') {
     throw new Error('Invalid data format for movement');
   }
 
   try {
-    await sessionController.updatePlayerMovement(snakeId, targetX, targetY, boost);
+    await sessionController.updatePlayerMovement(snakeId, direction, boost);
   } catch (err) {
     console.error('Error handling movement:', err);
     throw new Error('Failed to handle movement');

@@ -1,13 +1,13 @@
 // GameCanvas.jsx
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {memo, useEffect, useRef, useState} from 'react';
 import {useWebSocket} from '../../context/WebSocketContext';
-import useRenderBackground from "../hooks/useRenderBackground.jsx";
 import useRenderSnakes from "../hooks/useRenderSnakes.jsx";
 import useRenderFood from "../hooks/useRenderFood.jsx";
 import useRenderScores from "../hooks/useRenderScores.jsx";
 import useRenderMathEquations from "../hooks/useRenderMathEquations.jsx";
 import useCamera from "../hooks/useCamera.jsx";
+import {createBackgroundCanvas} from "../utility/createBackgroundCanvas.js";
 
 const GameCanvas = () => {
   const canvasRef = useRef(null); // Canvas-Referenz
@@ -21,16 +21,15 @@ const GameCanvas = () => {
     food,
     currentEquation
   } = useWebSocket(); // Zugriff auf den zentralisierten Zustand
-  const backgroundImageRef = useRef(null); // Referenz für das Hintergrundbild
   const zoomLevel = useRef(3); // Start-Zoomlevel (1.5 = 150%)
 
   // Custom Hooks
-  const renderBackground = useRenderBackground('/src/assets/cosmos.jpg');
   const renderSnakes = useRenderSnakes(playerSnakeId, otherSnakes);
   const renderFood = useRenderFood(food);
   const renderScores = useRenderScores(otherSnakes);
   const renderMathEquations = useRenderMathEquations(currentEquation.equation);
   const getCameraPosition = useCamera();
+  // const handleMouseMove = useMouseMovement(canvasRef, boundaries, playerSnakeId, sendMovementData, zoomLevel);
 
   const [showScores, setShowScores] = useState(true); // Zustand für Scores-Anzeige
 
@@ -62,47 +61,27 @@ const GameCanvas = () => {
     };
   }, []);
 
-// // Overlay zeichnen (Scores + MathEquations)
-//     const renderOverlay = () => {
-//         const overlayCanvas = overlayCanvasRef.current;
-//         const ctx = overlayCanvas.getContext('2d');
-//
-//         ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); // Nur das Overlay löschen
-//
-//         // MathEquations (oben zentriert)
-//         if (currentEquation) {
-//             ctx.font = '24px Arial';
-//             ctx.fillStyle = '#fff';
-//             ctx.textAlign = 'center';
-//             ctx.fillText(currentEquation.equation, overlayCanvas.width / 2, 50);
-//         }
-//
-//         // Scores (unten links)
-//         if (showScores) {
-//             ctx.font = '16px Arial';
-//             ctx.fillStyle = '#fff';
-//             let yPosition = overlayCanvas.height - 100; // Start 100px über dem unteren Rand
-//             Object.values(otherSnakes).forEach((snake) => {
-//                 ctx.fillText(`Player ${snake.snakeId}: ${snake.score || 0} points`, 20, yPosition);
-//                 yPosition += 20;
-//             });
-//         }
-//     };
-//
-//
-//     useEffect(() => {
-//         const overlayLoop = () => {
-//             renderOverlay();
-//             requestAnimationFrame(overlayLoop);
-//         };
-//         overlayLoop();
-//     }, [showScores, otherSnakes, currentEquation]);
 
+  // Hintergrund vorbereiten
   useEffect(() => {
-    backgroundCanvasRef.current = document.createElement('canvas');
-  }, []);
-  // backgroundCanvasRef.current = document.createElement('canvas');
-  // const backgroundCtx = backgroundCanvas.getContext('2d');
+    const prepareBackground = async () => {
+      backgroundCanvasRef.current = await createBackgroundCanvas(
+          "/src/assets/cosmos.jpg",
+          boundaries.current
+      ); // Speichere das vorbereitete Canvas
+    };
+
+    prepareBackground();
+  }, [boundaries]);
+
+
+  const calculateVector = (start, end) => {
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const magnitude = Math.sqrt(dx * dx + dy * dy);
+    return {x: magnitude > 0 ? dx / magnitude : 0, y: magnitude > 0 ? dy / magnitude : 0};
+  }
+
 
   // Sendet die Bewegung an den Server
   const sendMovementData = (mouseX, mouseY) => {
@@ -124,18 +103,11 @@ const GameCanvas = () => {
     const targetX = targetX_ + camera.x;
     const targetY = targetY_ + camera.y;
 
-    // console.log('targetX:', targetX, 'targetY:', targetY, 'mouseX:', mouseX, 'mouseY:', mouseY, 'camera:', camera);
 
-    // playerSnakeRef.current.updatePositionLocal(targetX, targetY);
-    // playerSnakeRef.current.moveSnake(targetX, targetY);
-
-    // ownSnake.updateDirection(targetX, targetY);
-
-    // playerSnake.current.updateDirection(targetX, targetY);
+    const direction = calculateVector(ownSnake.headPosition, {x: targetX, y: targetY});
     const payload = {
       snakeId: playerSnakeId,
-      targetX,
-      targetY,
+      direction,
       boost: boost.current,
     }
     sendMessage({
@@ -144,113 +116,6 @@ const GameCanvas = () => {
     });
   };
 
-  useEffect(() => {
-    const image = new Image();
-    image.src = '/src/assets/cosmos.jpg';
-    backgroundImageRef.current = image;
-
-    image.onload = () => {
-      // Hintergrund einmal auf das Offscreen-Canvas zeichnen
-      const backgroundCanvas = backgroundCanvasRef.current;
-      const backgroundCtx = backgroundCanvas.getContext('2d');
-      const boundariesWidth = boundaries.current.width;
-      const boundariesHeight = boundaries.current.height;
-
-      // Passe das Offscreen-Canvas an die Spielfeldgröße an
-      backgroundCanvas.width = boundariesWidth;
-      backgroundCanvas.height = boundariesHeight;
-
-      // Hintergrund zeichnen
-      backgroundCtx.drawImage(image, 0, 0, boundariesWidth, boundariesHeight);
-
-      // Hexagon-Muster (optional)
-      drawHexagonPattern(backgroundCtx, boundariesWidth, boundariesHeight);
-
-    };
-  }, [boundaries]);
-
-  const drawHexagonPattern = (ctx, width, height) => {
-    const hexSize = 30;
-    const hexWidth = Math.sqrt(3) * hexSize;
-    const hexHeight = 2 * hexSize;
-    const offset = 0.5 * hexWidth;
-
-    // Hexagon-Muster über die gesamte Spielfeldgröße zeichnen
-    const startX = -hexWidth; // Start vor der linken Grenze
-    const endX = width + hexWidth; // Bis nach der rechten Grenze
-    const startY = -hexHeight; // Start vor der oberen Grenze
-    const endY = height + hexHeight; // Bis nach der unteren Grenze
-
-    for (let y = startY; y < endY; y += hexHeight * 0.75) {
-      for (let x = startX; x < endX; x += hexWidth) {
-        const xOffset = (Math.floor(y / (hexHeight * 0.75)) % 2 === 0) ? 0
-            : offset;
-        drawHexagon(ctx, x + xOffset, y, hexSize, 2);
-      }
-    }
-
-  };
-
-  const drawHexagon = (ctx, x, y, size, gap) => {
-    const side = size - gap;
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 3) * i;
-      const xPos = x + side * Math.cos(angle);
-      const yPos = y + side * Math.sin(angle);
-      if (i === 0) {
-        ctx.moveTo(xPos, yPos);
-      } else {
-        ctx.lineTo(xPos, yPos);
-      }
-    }
-    ctx.closePath();
-    ctx.fillStyle = '#2a2f3c';
-    ctx.fill();
-    ctx.strokeStyle = '#101318';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  };
-
-  // // Bild vorab laden
-  // useEffect(() => {
-  //     const image = new Image();
-  //     image.src = '/src/assets/cosmos.jpg' // Bild-URL
-  //     backgroundImageRef.current = image;
-  // }, []);
-
-  // useEffect(() => {
-  //     let animationFrameId; // Speichert die ID des aktuellen Frames
-  //
-  //     const renderLoop = (timestamp) => {
-  //         // Hier kann der timestamp verwendet werden, um Animationen zu steuern
-  //         console.log(`Current timestamp: ${timestamp}`);
-  //         render(); // Starte das Zeichnen
-  //         animationFrameId = requestAnimationFrame(renderLoop); // Plan den nächsten Frame
-  //     };
-  //
-  //     renderLoop(); // Starte die Schleife
-  //
-  //     return () => cancelAnimationFrame(animationFrameId); // Stoppe die Schleife beim Unmount
-  // }, []);
-
-  // // Haupt-Rendering-Schleife
-  // const render = () => {
-  //     const canvas = canvasRef.current;
-  //     const ctx = canvas.getContext('2d');
-  //
-  //
-  //     drawBackground(ctx); // Hintergrund zeichnen
-  //     renderSnakes(ctx); // Schlangen zeichnen
-  //     renderScores(ctx); // Punktzahlen zeichnen
-  //     renderFood(ctx); // Essen zeichnen
-  //
-  //     if (otherSnakes[playerSnakeId]?.currentEquation) {
-  //         renderMathEquations(ctx, otherSnakes[playerSnakeId].currentEquation.equation);
-  //     }
-  //
-  //     // requestAnimationFrame(render); // Nächsten Frame planen
-  // };
 
   const isInView = (position, camera, viewportWidth, viewportHeight) => {
     return (
@@ -295,22 +160,6 @@ const GameCanvas = () => {
     renderSnakes(ctx); // Draw snakes
     renderFood(ctx); // Draw food
 
-    // // Bereiche außerhalb der Boundary rot einfärben
-    // ctx.fillStyle = 'rgba(200, 0, 0, 0.3)'; // Halbtransparentes Rot
-    // // Links
-    // ctx.fillRect(0, 0, -camera.x, canvas.height);
-    // // Rechts
-    // ctx.fillRect(boundaries.width - camera.x, 0, canvas.width - boundaries.width + camera.x, canvas.height);
-    // // Oben
-    // ctx.fillRect(0, 0, canvas.width, -camera.y);
-    // // Unten
-    // ctx.fillRect(0, boundaries.height - camera.y, canvas.width, canvas.height - boundaries.height + camera.y);
-
-    // Boundary (Grenze) rot zeichnen
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(-camera.x, -camera.y, boundaries.width, boundaries.height);
-
     // Overlays zeichnen (Scores und MathEquations)
     ctx.restore(); // Rückkehr zur ursprünglichen Position ohne Zoom
     ctx.save();
@@ -346,103 +195,6 @@ const GameCanvas = () => {
     };
   }, []);
 
-  // const drawBackground = (ctx, camera) => {
-  //     const canvas = canvasRef.current; // Zugriff auf das Canvas-Element
-  //     const image = backgroundImageRef.current;
-  //
-  //     // Debug: Kamera-Position prüfen
-  //     console.log('Camera Position:', camera);
-  //
-  //     if (image) {
-  //         ctx.drawImage(
-  //             image,
-  //             camera.x,
-  //             camera.y,
-  //             canvas.width,
-  //             canvas.height,
-  //             0,
-  //             0,
-  //             canvas.width,
-  //             canvas.height
-  //         );
-  //     } else {
-  //         console.warn('Background image not loaded');
-  //     }
-  // };
-
-  // const drawBackground = (ctx, camera, boundaries) => {
-  //     const canvas = canvasRef.current;
-  //     const hexSize = 30; // Größe der Hexagone
-  //     const gap = 2; // Abstand zwischen Hexagonen
-  //     const hexWidth = Math.sqrt(3) * hexSize; // Breite eines Hexagons
-  //     const hexHeight = 2 * hexSize; // Höhe eines Hexagons
-  //     const offset = 0.5 * hexWidth; // Versatz für jede zweite Reihe
-  //
-  //     // // Hintergrundfarbe
-  //     // ctx.fillStyle = '#1b1f2a'; // Dunkles Blau
-  //     // ctx.fillRect(0, 0, canvas.width, canvas.height);
-  //
-  //     // Bereiche außerhalb der Boundary rot einfärben
-  //     ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // Halbtransparentes Rot
-  //     // Links
-  //     ctx.fillRect(0, 0, -camera.x, canvas.height); // Bereich links der Spielfeldgrenze
-  //     // Rechts
-  //     ctx.fillRect(boundaries.width - camera.x, 0, canvas.width - boundaries.width + camera.x, canvas.height);
-  //     // Oben
-  //     ctx.fillRect(0, 0, canvas.width, -camera.y); // Bereich oberhalb der Spielfeldgrenze
-  //     // Unten
-  //     ctx.fillRect(0, boundaries.height - camera.y, canvas.width, canvas.height - boundaries.height + camera.y);
-  //
-  //
-  //     // Hexagon-Muster über die gesamte Spielfeldgröße zeichnen
-  //     const startX = -hexWidth; // Start vor der linken Grenze
-  //     const endX = boundaries.width + hexWidth; // Bis nach der rechten Grenze
-  //     const startY = -hexHeight; // Start vor der oberen Grenze
-  //     const endY = boundaries.height + hexHeight; // Bis nach der unteren Grenze
-  //
-  //     for (let y = startY; y < endY; y += hexHeight * 0.75) {
-  //         for (let x = startX; x < endX; x += hexWidth) {
-  //             const xOffset = (Math.floor(y / (hexHeight * 0.75)) % 2 === 0) ? 0 : offset;
-  //             drawHexagon(ctx, x + xOffset - camera.x, y - camera.y, hexSize, gap);
-  //         }
-  //     }
-  //
-  //
-  //     // Boundary (Grenze) rot zeichnen
-  //     ctx.strokeStyle = 'red';
-  //     ctx.lineWidth = 3;
-  //     ctx.strokeRect(-camera.x, -camera.y, boundaries.width, boundaries.height);
-  //
-  // };
-
-//     const drawHexagon = (ctx, x, y, size, gap) => {
-//         const side = size - gap; // Berücksichtige den Abstand
-//         ctx.beginPath();
-//         for (let i = 0; i < 6; i++) {
-//             const angle = (Math.PI / 3) * i; // 60° für jedes Hexagon
-//             const xPos = x + side * Math.cos(angle);
-//             const yPos = y + side * Math.sin(angle);
-//             if (i === 0) {
-//                 ctx.moveTo(xPos, yPos);
-//             } else {
-//                 ctx.lineTo(xPos, yPos);
-//             }
-//         }
-//         ctx.closePath();
-//         ctx.fillStyle = '#2a2f3c'; // Hexagon-Füllfarbe (etwas heller als der Hintergrund)
-//         ctx.fill();
-//         ctx.strokeStyle = '#101318'; // Hexagon-Randfarbe
-//         ctx.lineWidth = 1.5; // Breite des Randes
-//         ctx.stroke();
-//     };
-
-  // setInterval(() => {
-  //     if (otherSnakes) {
-  //         Object.values(otherSnakes).forEach(snake => {
-  //             snake.moveSnake(boundaries.current);
-  //         });
-  //     }
-  // }   , 100);
 
   useEffect(() => {
     let animationFrameId; // Speichert die ID des aktuellen Frames
@@ -487,14 +239,6 @@ const GameCanvas = () => {
     };
   }, []);
 
-  // const getCameraPosition = (snakeHead, viewportWidth, viewportHeight, zoomLevel) => {
-  //     // Calculate the camera position centered on the snake's head
-  //     let cameraX = snakeHead.x - (viewportWidth / (2 * zoomLevel));
-  //     let cameraY = snakeHead.y - (viewportHeight / (2 * zoomLevel));
-  //
-  //     return {x: cameraX, y: cameraY};
-  // };
-
   return (
       <canvas
           ref={canvasRef}
@@ -511,4 +255,4 @@ const GameCanvas = () => {
   );
 };
 
-export default GameCanvas;
+export default memo(GameCanvas);
