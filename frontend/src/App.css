@@ -605,9 +605,8 @@ h1{
 
   .app-wrapper .game-session-page .skill-buttons button{
     font-size: 14px;
-    padding: 12px;
-    width: 60%;
-    margin: 20px auto 10px auto;
+    width: 100%;
+    margin: 15px auto 15px auto 
   }
 
   .dashboard-page .snake-button.python, .snake-button.login-logout-button{

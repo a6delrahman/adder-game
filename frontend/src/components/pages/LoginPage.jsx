@@ -45,6 +45,8 @@ const LoginPage = () => {
 
     return (
         <div className="login-page">
+             <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
+
             <h1>Login</h1>
             <form onSubmit={handleSubmit}>
                 <input
@@ -68,7 +70,6 @@ const LoginPage = () => {
                 <button type="submit">Login</button>
 
             </form>
-            <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
 
             {message && <p>{message}</p>}
         </div>

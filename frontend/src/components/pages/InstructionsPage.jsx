@@ -9,10 +9,10 @@ const InstructionsPage = () => {
         navigate(page);
     }
     return (
- 
+        <>
+        <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
 
         <div className="instructions-page">
-             <Button text="Dashboard" style="snake-button cobra" onClick={() => handleClick("/dashboard")} />
 
             <h1>Instructions</h1>
             <p>
@@ -24,7 +24,7 @@ const InstructionsPage = () => {
                 <li>
                     <b>Move Your Snake:</b> 
                     <ul>
-                        <li><b>On desktop:</b> Use your mouse to control the direction.</li>
+                        <li><b>On desktop:</b> Use your mouse to control the direction. You can zoom in and out using the mouse wheel.</li>
                         <li><b>On mobile:</b> Use the virtual joystick to guide your snake.</li>
                     </ul>
                 </li>
@@ -47,7 +47,7 @@ const InstructionsPage = () => {
 
         </div>
 
-  
+        </>
         
         
     );

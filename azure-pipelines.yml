@@ -78,5 +78,5 @@ stages:
         azureSubscription: 'deployment-sc'
         appName: 'adder-webapp'
         containers: '$(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName):latest'
-        multicontainerConfigFile: '**/docker-compose.yml'
+        multicontainerConfigFile: $(Build.SourcesDirectory)/docker-compose.yml
         containerCommand: 'docker-compose up --build'
