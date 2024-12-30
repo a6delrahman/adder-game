@@ -4,11 +4,19 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  # Docker image names
+  environmentName: 'dev'
+  subscriptionId: 'c061fdd1-bba3-4c63-b32d-6595004a4b00'
+  tenantId: '61c44f51-4973-4caf-a8de-cbde54d78efa'
+  clientId: 'e12b5802-7b09-428c-900a-7fb5990597c8'
+  clientSecret: 'u2W8Q~m47HjHcvCYuf-Iyh3F22HJz8jxWIoi1azb'
+
 stages:
 - stage: Build
   jobs:
   - job: Build
-    displayName: Build and Push Docker Images
+    displayName: Build and Publish Artifact
     steps:
     - task: NodeTool@0
       inputs:
@@ -18,8 +26,7 @@ stages:
     - script: |
         cd frontend
         npm install
-        npm run dev
-      displayName: 'Build Frontend'
+      displayName: 'npm install'
     
     - task: ArchiveFiles@2
       displayName: 'Archive Files'
@@ -29,13 +36,12 @@ stages:
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         replaceExistingArchive: true
-
     - task: PublishPipelineArtifact@1
       inputs:
         artifactName: 'drop'
         targetPath: '$(Build.ArtifactStagingDirectory)'
         publishLocation: 'pipeline'
-      displayName: 'Publish Build Artifact'
+      displayName: 'Publish npm artifact'
 
 - stage: Deploy
   displayName: Deploy
@@ -44,7 +50,7 @@ stages:
   jobs:
   - deployment: DeployToAzureAppService
     displayName: Deploy to AppService
-    environment: 'dev'
+    environment: $(environmentName)
     strategy:
       runOnce:
         deploy:
@@ -56,3 +62,4 @@ stages:
                 appType: staticWebApp
                 appName: adder-webapp
                 package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+                startUpCommand: 'npm run dev'
