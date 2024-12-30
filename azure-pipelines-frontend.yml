@@ -31,7 +31,7 @@ stages:
     - task: ArchiveFiles@2
       displayName: 'Archive Files'
       inputs:        
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend'
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend/dist'
         includeRootFolder: false
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
@@ -59,7 +59,7 @@ stages:
               displayName: 'Azure Web App Deployment'
               inputs:
                 azureSubscription: deployment-sc
-                appType: staticWebApp
+                appType: webAppLinux
                 appName: adder-webapp
                 package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
                 startUpCommand: 'npm run dev'
