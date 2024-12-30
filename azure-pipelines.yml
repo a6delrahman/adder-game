@@ -56,6 +56,6 @@ stages:
                 azureSubscription: deployment-sc
                 appType: webAppLinux
                 appName: adder-backend
-                appSettings: -CONN_STR '$(CONN_STR)' -TOKEN '$(JWT_SECRET)' -REFRESH_SECRET_KEY '$(REFRESH_SECRET_KEY)' -username '$(username)' -password '$(password)'
+                appSettings: -CONN_STR '$(CONN_STR)' -TOKEN '$(JWT_SECRET)' -REFRESH_SECRET_KEY '$(REFRESH_SECRET_KEY)' -user '$(user)' -password '$(password)'
                 package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
                 startUpCommand: 'npm start'
