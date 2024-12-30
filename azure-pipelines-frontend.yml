@@ -23,6 +23,7 @@ stages:
     - script: |
         cd frontend
         npm install
+        npm run build
       displayName: 'npm install'
     
     - task: ArchiveFiles@2
@@ -52,12 +53,12 @@ stages:
       runOnce:
         deploy:
           steps:
-          - task: AzureRmWebAppDeployment@4
-            inputs:
-              ConnectionType: 'AzureRM'
-              azureSubscription: 'deployment-sc'
-              appType: 'webAppLinux'
-              WebAppName: 'adder-webapp'
-              packageForLinux: '$(System.DefaultWorkingDirectory)/$(Build.BuildId)/*.zip'
-              RuntimeStack: 'NODE|18-lts'
-              StartupCommand: 'npm run dev'
+            - task: AzureWebApp@1
+              displayName: 'Azure Web App Deployment'
+              inputs:
+                azureSubscription: 'deployment-sc'
+                appType: 'webAppLinux'
+                appName: 'adder-webapp'
+                package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+                runtimeStack: 'STATICSITE|1.0'
+                startUpCommand: 'npm run dev'
