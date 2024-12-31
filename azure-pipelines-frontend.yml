@@ -26,7 +26,7 @@ stages:
       displayName: 'Build Frontend'
     - task: CopyFiles@2
       inputs:
-        SourceFolder: 'frontend/dist'
+        SourceFolder: 'frontend'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
       displayName: 'Copy Build Output to Staging Directory'
