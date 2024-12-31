@@ -19,11 +19,10 @@ stages:
         versionSpec: '20.x'
         checkLatest: true
       displayName: 'Install Node.js'
-    - task: Npm@1
-      inputs:
-        command: 'custom'
-        workingDir: '$(System.DefaultWorkingDirectory)/frontend'
-        customCommand: 'run build'
+    - script: |
+        cd frontend
+        npm i vite
+        npm run dev
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Build.ArtifactStagingDirectory)'
