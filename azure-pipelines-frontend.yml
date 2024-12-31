@@ -24,7 +24,7 @@ stages:
         npm i vite
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: 'build'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
         artifact: 'drop'
         publishLocation: 'pipeline'
       displayName: 'Publish Build Artifact'
