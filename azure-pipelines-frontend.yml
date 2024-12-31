@@ -20,6 +20,7 @@ stages:
 
     - script: |
         cd frontend
+        npm install -g npm
         npm install
         npm i vite
       displayName: 'npm install'
