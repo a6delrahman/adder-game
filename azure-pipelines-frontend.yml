@@ -15,7 +15,7 @@ stages:
     steps:
     - task: NodeTool@0
       inputs:
-        versionSpec: '16.x'
+        versionSpec: '20.x'
       displayName: 'Install Node.js'
 
     - script: |
@@ -58,4 +58,5 @@ stages:
                 appType: webAppLinux
                 appName: adder-backend
                 package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+                appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
                 startUpCommand: 'npm run dev'
