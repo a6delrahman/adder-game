@@ -54,9 +54,10 @@ stages:
             - task: AzureWebApp@1
               displayName: 'Azure Web App Deployment'
               inputs:
-                azureSubscription: deployment-sc
-                appType: webApp
-                appName: adder-backend
-                package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+                azureSubscription: 'deployment-sc'
+                appType: 'webAppLinux'
+                appName: 'adder-backend'
+                package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+                runtimeStack: 'STATICSITE|1.0'
+                startUpCommand: 'npm install'
                 appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
-                startUpCommand: 'npm run dev'
