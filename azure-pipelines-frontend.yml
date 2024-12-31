@@ -22,7 +22,6 @@ stages:
     - script: |
         cd frontend
         npm i vite
-        npm run dev
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Build.ArtifactStagingDirectory)'
