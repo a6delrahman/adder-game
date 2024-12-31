@@ -26,13 +26,22 @@ stages:
       displayName: 'Build Frontend'
     - task: CopyFiles@2
       inputs:
-        SourceFolder: 'frontend'
+        SourceFolder: 'frontend/dist'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
       displayName: 'Copy Build Output to Staging Directory'
+
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+        includeRootFolder: true
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
+      displayName: 'Archive Build Output'
+
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)'
+        targetPath: '$(Build.ArtifactStagingDirectory)/frontend.zip'
         artifact: 'drop'
         publishLocation: 'pipeline'
       displayName: 'Publish Build Artifact'
@@ -59,6 +68,6 @@ stages:
                 azureSubscription: 'deployment-sc'
                 appType: 'webAppLinux'
                 appName: 'adder-webapp'
-                package: '$(System.DefaultWorkingDirectory)/drop'
+                package: '$(System.DefaultWorkingDirectory)/drop/frontend.zip'
                 runtimeStack: 'NODE|18-lts'
-                startUpCommand: 'npm run dev'
+                startUpCommand: 'npm run start'
