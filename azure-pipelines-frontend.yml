@@ -56,8 +56,8 @@ stages:
               inputs:
                 azureSubscription: 'deployment-sc'
                 appType: 'webAppLinux'
-                appName: 'adder-backend'
+                appName: 'adder-frontend'
                 package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
                 runtimeStack: 'STATICSITE|1.0'
-                startUpCommand: 'npm install'
+                startUpCommand: 'npm run dev'
                 appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
