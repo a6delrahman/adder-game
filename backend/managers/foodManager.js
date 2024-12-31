@@ -177,16 +177,17 @@ class FoodManager {
   processFoodCollision(playerState, snake, gameState, food, equationManager) {
     webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'play_collect', {});
     if (food.meta?.result !== undefined) {
-      this.handleMathFoodCollision(playerState, snake, food, equationManager);
+      this.handleMathFoodCollision(playerState, food, equationManager);
     } else {
-      this.handleNormalFoodCollision(playerState, snake, food);
+      this.handleNormalFoodCollision(snake, food);
     }
   }
 
-  handleMathFoodCollision(playerState, snake, food, equationManager) {
+  handleMathFoodCollision(playerState, food, equationManager) {
+    const snake = playerState.snake;
     const correctResult = snake.currentEquation?.result;
     if (food.meta.result === correctResult) {
-      this.updateScoresAndSegments(playerState, snake, food.points);
+      this.updateScoresAndSegments(snake, food.points);
       snake.correctAnswer();
       webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'correct_answer', {});
       equationManager.assignEquationToPlayer(
@@ -195,19 +196,18 @@ class FoodManager {
           snake.currentEquation.type
       );
     } else {
-      this.updateScoresAndSegments(playerState, snake, -food.points);
+      this.updateScoresAndSegments(snake, -food.points);
       snake.wrongAnswer();
       webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'wrong_answer', {});
     }
   }
 
-  handleNormalFoodCollision(playerState, snake, food) {
-    this.updateScoresAndSegments(playerState, snake, food.points);
+  handleNormalFoodCollision(snake, food) {
+    this.updateScoresAndSegments(snake, food.points);
   }
 
-  updateScoresAndSegments(playerState, snake, points) {
-    playerState.score = Math.max(0, playerState.score + points);
-    snake.score = Math.max(0, snake.score + points);
+  updateScoresAndSegments(snake, points) {
+    snake.updateScore(Math.max(0, snake.score + points))
     snake.segmentCount = Math.max(snake.SNAKE_INITIAL_LENGTH, snake.segmentCount + points);
   }
 }

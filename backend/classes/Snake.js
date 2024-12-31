@@ -11,6 +11,7 @@ class Snake {
       this.segmentCount = snakeData.segmentCount || 20;
       this.scale = snakeData.scale || 3;
       this.color = snakeData.color || 'green';
+      this.secondColor = snakeData.secondColor || 'black';
       this.speed = snakeData.speed || 2;
       this.SNAKE_INITIAL_LENGTH = snakeData.SNAKE_INITIAL_LENGTH || 20;
       this.boost = snakeData.boost || false;
@@ -30,6 +31,7 @@ class Snake {
       this.segmentCount = options.segmentCount || 20;
       this.scale = options.scale || 3;
       this.color = options.color || 'green';
+      this.secondColor = options.secondColor || 'black';
       this.speed = options.speed || 2;
       this.SNAKE_INITIAL_LENGTH = 20;
       this.boost = false;
@@ -38,19 +40,19 @@ class Snake {
       this.eatenFood = 0;
       this.correctAnswers = 0;
       this.wrongAnswers = 0;
-
-      // // Initialize segments
-      // for (let i = 0; i < this.segmentCount; i++) {
-      //     this.segments.push({headPosition});
-      // }
     }
-    // this.isBrowser = typeof window !== 'undefined';
-    // // Lade die Textur nur im Browser
-    // if (this.isBrowser) {
-    //     this.texture = new Image();
-    //     this.texture.src = '/public/images/texture.png'; // Relativer Pfad zur Textur
-    // }
+  }
 
+  calculateScale() {
+    // Berechnung des Scales basierend auf der Punktzahl
+    const baseScale = 3; // Basisgröße der Schlange
+    const scaleFactor = 0.1; // Skalierungsfaktor
+    return baseScale + this.score * scaleFactor;
+  }
+
+  updateScore(score) {
+    this.score = score;
+    this.scale = this.calculateScale(); // Aktualisiere den Scale, wenn der Score geändert wird
   }
 
   correctAnswer() {
@@ -65,43 +67,14 @@ class Snake {
     this.eatenFood++;
   }
 
-  updatePosition(targetX, targetY) {
-    // Update the head position
-    const head = this.segments[0];
-    head.x += (targetX - head.x) * this.speed;
-    head.y += (targetY - head.y) * this.speed;
-
-    // Update the rest of the segments
-    for (let i = 1; i < this.segments.length; i++) {
-      const segment = this.segments[i];
-      const prevSegment = this.segments[i - 1];
-      segment.x += (prevSegment.x - segment.x) * this.speed;
-      segment.y += (prevSegment.y - segment.y) * this.speed;
-    }
-  }
-
   update(headPosition, segments) {
     this.headPosition = headPosition;
     this.segments = segments;
   }
 
-  updateScore(score) {
-    this.score = score;
-  }
-
   updateEquation(equation) {
     this.currentEquation = equation
   }
-
-  // updateDirection(targetX, targetY) {
-  //   const dx = targetX - this.headPosition.x;
-  //   const dy = targetY - this.headPosition.y;
-  //
-  //   const magnitude = Math.sqrt(dx * dx + dy * dy);
-  //
-  //   this.direction.x = magnitude > 0 ? dx / magnitude : 0;
-  //   this.direction.y = magnitude > 0 ? dy / magnitude : 0;
-  // }
 
   updateDirection(direction) {
     this.direction = direction;
@@ -133,10 +106,12 @@ class Snake {
       const segmentsToRemove = this.segments.length - maxSegments;
       const segmentsToRemoveInThisIteration = Math.ceil(segmentsToRemove / 6);
       for (let i = 0; i < segmentsToRemoveInThisIteration; i++) {
-          this.segments.pop();
+        this.segments.pop();
       }
     }
   }
+
+
 
   static visible(snake, camera) {
     const {x, y} = snake.headPosition;

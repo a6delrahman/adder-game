@@ -8,6 +8,8 @@ import useRenderScores from "../hooks/useRenderScores.jsx";
 import useRenderMathEquations from "../hooks/useRenderMathEquations.jsx";
 import useCamera from "../hooks/useCamera.jsx";
 import {createBackgroundCanvas} from "../utility/createBackgroundCanvas.js";
+import {drawSnake} from "../../canvas/drawings/snakeDesigns/drawSnake.js";
+import useRenderSnakes2 from "../hooks/useRenderSnakes2.jsx";
 
 const GameCanvas = () => {
   const canvasRef = useRef(null); // Canvas-Referenz
@@ -21,10 +23,11 @@ const GameCanvas = () => {
     food,
     currentEquation
   } = useWebSocket(); // Zugriff auf den zentralisierten Zustand
-  const zoomLevel = useRef(3); // Start-Zoomlevel (1.5 = 150%)
+  const zoomLevel = useRef(4); // Start-Zoomlevel (1.5 = 150%)
 
   // Custom Hooks
   const renderSnakes = useRenderSnakes(playerSnakeId, otherSnakes);
+  const renderSnakes2 = useRenderSnakes2(playerSnakeId, otherSnakes);
   const renderFood = useRenderFood(food);
   const renderScores = useRenderScores(otherSnakes);
   const renderMathEquations = useRenderMathEquations(currentEquation.equation);
@@ -126,6 +129,10 @@ const GameCanvas = () => {
     );
   };
 
+
+
+
+
   const render = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -157,8 +164,15 @@ const GameCanvas = () => {
           boundaries.current.height);
     }
 
-    renderSnakes(ctx); // Draw snakes
+    // renderSnakes(ctx,[]); // Draw snakes
+    renderSnakes2(ctx);
+
+
+    // Object.values(otherSnakes).forEach((snake) => {
+    //   drawSnake(ctx, snake, Date.now() % 60); // Zeichne jede Schlange
+    // });
     renderFood(ctx); // Draw food
+
 
     // Overlays zeichnen (Scores und MathEquations)
     ctx.restore(); // Rückkehr zur ursprünglichen Position ohne Zoom
@@ -177,12 +191,15 @@ const GameCanvas = () => {
     ctx.restore();
   };
 
+
+
+
   // Zoom-Logik
   useEffect(() => {
     const handleWheel = (e) => {
       e.preventDefault();
       if (e.deltaY < 0) {
-        zoomLevel.current = Math.min(3, zoomLevel.current + 0.1); // Heranzoomen (Maximal 3x)
+        zoomLevel.current = Math.min(6, zoomLevel.current + 0.1); // Heranzoomen (Maximal 3x)
       } else {
         zoomLevel.current = Math.max(1, zoomLevel.current - 0.1); // Herauszoomen (Minimal 1x)
       }
@@ -216,12 +233,14 @@ const GameCanvas = () => {
     const handleMouseDown = (e) => {
       if (e.button === 0) {
         boost.current = true;
+        otherSnakes[playerSnakeId].setBoost(true);
         sendMovementData(e.clientX, e.clientY);
       }
     };
     const handleMouseUp = (e) => {
       if (e.button === 0) {
         boost.current = false;
+        otherSnakes[playerSnakeId].setBoost(false);
         sendMovementData(e.clientX, e.clientY);
       }
     };
@@ -252,7 +271,8 @@ const GameCanvas = () => {
             backgroundColor: 'black',
           }}
       />
-  );
+)
+  ;
 };
 
 export default memo(GameCanvas);

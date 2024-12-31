@@ -20,7 +20,7 @@ const mongoDB = () => {
 
 // Ereignisse für Debugging und Überwachung
 mongoose.connection.on('connected', () => {
-  console.log(`Mongoose connected to DB: [${process.env.CONN_STR}]`);
+  console.log(`Mongoose connected to DB: [${mongoose.connection.name} on ${mongoose.connection.host}:${mongoose.connection.port}]`);
 });
 
 mongoose.connection.on('error', (err) => {

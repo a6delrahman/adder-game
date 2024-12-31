@@ -1,6 +1,7 @@
 // App.jsx
 import './App.css';
 import React from 'react';
+import './canvas/drawings/snakeDesigns';
 // import Header from "./components/header/Header";
 import PageWrapper from "./components/pages/PageWrapper";
 

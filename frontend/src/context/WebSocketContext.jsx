@@ -91,6 +91,7 @@ export const WebSocketProvider = ({children}) => {
           otherSnakes.current[player.snakeId].update(player.headPosition,
               player.segments);
           otherSnakes.current[player.snakeId].updateScore(player.score);
+          otherSnakes.current[player.snakeId].updateDirection(player.direction);
           otherSnakes.current[player.snakeId].updateEquation(
               player.currentEquation);
           setCurrentEquation(player.currentEquation);

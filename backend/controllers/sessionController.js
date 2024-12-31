@@ -75,10 +75,12 @@ async function addPlayerToSession(clientId, gameType, ws, fieldOfView, userId) {
   const startPosition = getRandomPosition(GAMEBOUNDARIES);
   const targetPosition = getRandomPosition(GAMEBOUNDARIES);
   const color = getRandomColor();
+  const secondColor = getRandomColor();
 
   const playerSnake = new Snake(snakeId, startPosition, targetPosition, {
     name: username,
-    color: color,
+    color,
+    secondColor,
   });
 
   const playerState = playerManager.createPlayer(clientId, snakeId, sessionId,
@@ -148,15 +150,20 @@ function broadcastGameState() {
       timestamp: Date.now()
     };
 
+    // // Spielstatus aller Spieler sammeln
+    // Object.values(gameState.players).forEach((playerState) => {
+    //   batchUpdate.players.push({
+    //     snakeId: playerState.snake.snakeId,
+    //     headPosition: playerState.snake.headPosition,
+    //     segments: playerState.snake.segments,
+    //     currentEquation: playerState.snake.currentEquation,
+    //     score: playerState.snake.score,
+    //   });
+    // });
+
     // Spielstatus aller Spieler sammeln
     Object.values(gameState.players).forEach((playerState) => {
-      batchUpdate.players.push({
-        snakeId: playerState.snake.snakeId,
-        headPosition: playerState.snake.headPosition,
-        segments: playerState.snake.segments,
-        currentEquation: playerState.snake.currentEquation,
-        score: playerState.snake.score,
-      });
+      batchUpdate.players.push(playerState.snake);
     });
 
     // Sende das Batch-Update an alle Clients in der Session
