@@ -19,7 +19,7 @@ stages:
       displayName: 'Install Node.js'
 
     - script: |
-        cd backend
+        cd frontend
         npm install
       displayName: 'npm install'
     
