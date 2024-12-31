@@ -1,8 +1,12 @@
 // managers/foodManager.js
 const { GAME } = require('../config/gameConfig');
 const { getRandomPosition } = require('../utils/helperFunctions');
+const {v4: uuidv4} = require('uuid');
 const WebSocketManager = require('./webSocketManager');
 const webSocketManager = WebSocketManager.getInstance();
+
+// Liste der möglichen Fruchttypen
+const fruitTypes = ["apple", "pear", "banana", "pineapple", "watermelon"];
 
 class FoodManager {
   constructor() {
@@ -12,13 +16,17 @@ class FoodManager {
     this.specialFoodSpread = GAME.SPECIAL_FOOD_SPREAD
   }
 
+
   generateFood(position, points, meta = null) {
     if (!position || points < 1) {
       console.warn('Invalid food generation parameters:', position, points);
       return null;
     }
+    const type = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+    meta = { ...meta, type };
+    const id = uuidv4();
 
-    return { ...position, points, meta };
+    return { ...position, points, meta, id };
   }
 
   generateInitialFood() {

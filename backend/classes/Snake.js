@@ -12,7 +12,7 @@ class Snake {
       this.scale = snakeData.scale || 3;
       this.color = snakeData.color || 'green';
       this.secondColor = snakeData.secondColor || 'black';
-      this.speed = snakeData.speed || 2;
+      this.speed = snakeData.speed || 1;
       this.SNAKE_INITIAL_LENGTH = snakeData.SNAKE_INITIAL_LENGTH || 20;
       this.boost = snakeData.boost || false;
       this.currentEquation = snakeData.currentEquation || '';
@@ -32,7 +32,7 @@ class Snake {
       this.scale = options.scale || 3;
       this.color = options.color || 'green';
       this.secondColor = options.secondColor || 'black';
-      this.speed = options.speed || 2;
+      this.speed = options.speed || 1;
       this.SNAKE_INITIAL_LENGTH = 20;
       this.boost = false;
       this.currentEquation = {};

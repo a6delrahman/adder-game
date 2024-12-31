@@ -3,11 +3,13 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
 import {useWebSocket} from '../../context/WebSocketContext';
 import useRenderSnakes from "../hooks/useRenderSnakes.jsx";
-import useRenderFood from "../hooks/useRenderFood.jsx";
+import useRenderFood from "../hooks/useRenderFood2.jsx";
 import useRenderScores from "../hooks/useRenderScores.jsx";
 import useRenderMathEquations from "../hooks/useRenderMathEquations.jsx";
 import useCamera from "../hooks/useCamera.jsx";
-import {createBackgroundCanvas} from "../utility/createBackgroundCanvas.js";
+import {
+  createBackgroundCanvas
+} from "../../canvas/drawings/backgrounds/createBackgroundCanvas4.js";
 import {drawSnake} from "../../canvas/drawings/snakeDesigns/drawSnake.js";
 import useRenderSnakes2 from "../hooks/useRenderSnakes2.jsx";
 
@@ -64,27 +66,26 @@ const GameCanvas = () => {
     };
   }, []);
 
-
   // Hintergrund vorbereiten
   useEffect(() => {
     const prepareBackground = async () => {
       backgroundCanvasRef.current = await createBackgroundCanvas(
-          "/src/assets/cosmos.jpg",
-          boundaries.current
+          boundaries.current, "/src/assets/cosmos.jpg",
       ); // Speichere das vorbereitete Canvas
     };
 
     prepareBackground();
   }, [boundaries]);
 
-
   const calculateVector = (start, end) => {
     const dx = end.x - start.x;
     const dy = end.y - start.y;
     const magnitude = Math.sqrt(dx * dx + dy * dy);
-    return {x: magnitude > 0 ? dx / magnitude : 0, y: magnitude > 0 ? dy / magnitude : 0};
+    return {
+      x: magnitude > 0 ? dx / magnitude : 0,
+      y: magnitude > 0 ? dy / magnitude : 0
+    };
   }
-
 
   // Sendet die Bewegung an den Server
   const sendMovementData = (mouseX, mouseY) => {
@@ -106,8 +107,8 @@ const GameCanvas = () => {
     const targetX = targetX_ + camera.x;
     const targetY = targetY_ + camera.y;
 
-
-    const direction = calculateVector(ownSnake.headPosition, {x: targetX, y: targetY});
+    const direction = calculateVector(ownSnake.headPosition,
+        {x: targetX, y: targetY});
     const payload = {
       snakeId: playerSnakeId,
       direction,
@@ -119,7 +120,6 @@ const GameCanvas = () => {
     });
   };
 
-
   const isInView = (position, camera, viewportWidth, viewportHeight) => {
     return (
         position.x >= camera.x &&
@@ -128,10 +128,6 @@ const GameCanvas = () => {
         position.y <= camera.y + viewportHeight
     );
   };
-
-
-
-
 
   const render = () => {
     const canvas = canvasRef.current;
@@ -167,12 +163,10 @@ const GameCanvas = () => {
     // renderSnakes(ctx,[]); // Draw snakes
     renderSnakes2(ctx);
 
-
     // Object.values(otherSnakes).forEach((snake) => {
     //   drawSnake(ctx, snake, Date.now() % 60); // Zeichne jede Schlange
     // });
     renderFood(ctx); // Draw food
-
 
     // Overlays zeichnen (Scores und MathEquations)
     ctx.restore(); // Rückkehr zur ursprünglichen Position ohne Zoom
@@ -191,9 +185,6 @@ const GameCanvas = () => {
     ctx.restore();
   };
 
-
-
-
   // Zoom-Logik
   useEffect(() => {
     const handleWheel = (e) => {
@@ -201,7 +192,7 @@ const GameCanvas = () => {
       if (e.deltaY < 0) {
         zoomLevel.current = Math.min(6, zoomLevel.current + 0.1); // Heranzoomen (Maximal 3x)
       } else {
-        zoomLevel.current = Math.max(1, zoomLevel.current - 0.1); // Herauszoomen (Minimal 1x)
+        zoomLevel.current = Math.max(0.5, zoomLevel.current - 0.1); // Herauszoomen (Minimal 1x)
       }
     };
 
@@ -211,7 +202,6 @@ const GameCanvas = () => {
       window.removeEventListener('wheel', handleWheel);
     };
   }, []);
-
 
   useEffect(() => {
     let animationFrameId; // Speichert die ID des aktuellen Frames
@@ -271,8 +261,8 @@ const GameCanvas = () => {
             backgroundColor: 'black',
           }}
       />
-)
-  ;
+  )
+      ;
 };
 
 export default memo(GameCanvas);

@@ -1,6 +1,6 @@
-import drawHexagonPattern from "./drawHexagon";
+import drawHexagonPattern from "../../../components/utility/drawHexagon.js";
 
-export const createBackgroundCanvas = (imageSrc, boundaries) => {
+export const createBackgroundCanvas = (boundaries, imageSrc) => {
   const backgroundCanvas = document.createElement("canvas");
   const backgroundCtx = backgroundCanvas.getContext("2d");
 

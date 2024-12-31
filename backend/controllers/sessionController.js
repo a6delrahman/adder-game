@@ -19,7 +19,7 @@ const SessionManager = require('../managers/sessionManager');
 // Instances
 const foodManager = new FoodManager();
 const gameLoopManager5000ms = new GameLoopManager(5000); // Erstelle eine Instanz mit dem gewünschten Intervall
-const gameLoopManager50ms = new GameLoopManager(50);
+const gameLoopManager50ms = new GameLoopManager(25);
 const gameStateManager = new GameStateManager();
 const playerManager = new PlayerManager();
 const webSocketManager = WebSocketManager.getInstance();
@@ -227,13 +227,55 @@ function movePlayers() {
   });
 }
 
+// function handleBoostPenalty(playerState, gameState) {
+//   const {snake} = playerState;
+//   if (snake.boost) {
+//     // Score sicherstellen, dass er nicht negativ wird
+//     if (snake.score <= 0) {
+//       snake.score = 0; // Sicherstellen, dass der Score nicht negativ ist
+//       snake.setBoost(false); // Boost deaktivieren
+//       return; // Keine weiteren Aktionen durchführen
+//     }
+//
+//     // Punkteabzug
+//     snake.score -= POINT_LOSS;
+//     snake.segmentCount -= POINT_LOSS;
+//
+//     // Schwanzsegment entfernen
+//     const tailSegment = snake.segments.pop();
+//
+//     // Nahrung fallen lassen
+//     if (tailSegment) {
+//       const randomOffsetX = Math.random() * Boost_TAIL_DROP_SPREAD * 2
+//           - Boost_TAIL_DROP_SPREAD;
+//       const randomOffsetY = Math.random() * Boost_TAIL_DROP_SPREAD * 2
+//           - Boost_TAIL_DROP_SPREAD;
+//
+//       const food = foodManager.generateFood(
+//           {x: tailSegment.x + randomOffsetX, y: tailSegment.y + randomOffsetY},
+//           POINT_LOSS
+//       );
+//       if (food) {
+//         gameState.food.push(food);
+//       }
+//     }
+//   }
+// }
+
 function handleBoostPenalty(playerState, gameState) {
-  const {snake} = playerState;
+  const { snake } = playerState;
+
+  // Stelle sicher, dass der Zähler für das Fruchtabwerfen initialisiert ist
+  if (snake.boostFrameCounter === undefined) {
+    snake.boostFrameCounter = 0;
+  }
+
   if (snake.boost) {
     // Score sicherstellen, dass er nicht negativ wird
     if (snake.score <= 0) {
       snake.score = 0; // Sicherstellen, dass der Score nicht negativ ist
       snake.setBoost(false); // Boost deaktivieren
+      snake.boostFrameCounter = 0; // Zähler zurücksetzen
       return; // Keine weiteren Aktionen durchführen
     }
 
@@ -241,26 +283,34 @@ function handleBoostPenalty(playerState, gameState) {
     snake.score -= POINT_LOSS;
     snake.segmentCount -= POINT_LOSS;
 
-    // Schwanzsegment entfernen
-    const tailSegment = snake.segments.pop();
+    // Zähler für Boost-Frames erhöhen
+    snake.boostFrameCounter++;
 
-    // Nahrung fallen lassen
-    if (tailSegment) {
-      const randomOffsetX = Math.random() * Boost_TAIL_DROP_SPREAD * 2
-          - Boost_TAIL_DROP_SPREAD;
-      const randomOffsetY = Math.random() * Boost_TAIL_DROP_SPREAD * 2
-          - Boost_TAIL_DROP_SPREAD;
+    // Nur nach jedem 10. Frame eine Frucht abwerfen
+    if (snake.boostFrameCounter >= 10) {
+      snake.boostFrameCounter = 0; // Zähler zurücksetzen
 
-      const food = foodManager.generateFood(
-          {x: tailSegment.x + randomOffsetX, y: tailSegment.y + randomOffsetY},
-          POINT_LOSS
-      );
-      if (food) {
-        gameState.food.push(food);
+      // Schwanzsegment entfernen
+      const tailSegment = snake.segments.pop();
+
+      // Nahrung fallen lassen
+      if (tailSegment) {
+        const randomOffsetX = Math.random() * Boost_TAIL_DROP_SPREAD * 2 - Boost_TAIL_DROP_SPREAD;
+        const randomOffsetY = Math.random() * Boost_TAIL_DROP_SPREAD * 2 - Boost_TAIL_DROP_SPREAD;
+
+        const food = foodManager.generateFood(
+            { x: tailSegment.x + randomOffsetX, y: tailSegment.y + randomOffsetY },
+            10 // Frucht mit 10 Punkten erstellen
+        );
+
+        if (food) {
+          gameState.food.push(food);
+        }
       }
     }
   }
 }
+
 
 function checkPlayerCollisions(currentPlayer, players) {
   Object.values(players).forEach(otherPlayer => {
