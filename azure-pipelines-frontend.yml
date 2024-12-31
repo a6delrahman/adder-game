@@ -55,7 +55,7 @@ stages:
               displayName: 'Azure Web App Deployment'
               inputs:
                 azureSubscription: deployment-sc
-                appType: webAppLinux
+                appType: webApp
                 appName: adder-backend
                 package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
                 appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
