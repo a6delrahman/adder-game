@@ -63,6 +63,6 @@ stages:
                 azureSubscription: 'deployment-sc'
                 appType: 'webAppLinux'
                 appName: 'adder-webapp'
-                package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+                package: '$(Pipeline.Workspace)/$(Build.BuildId).zip'
                 runtimeStack: 'NODE|20-lts'
                 startUpCommand: 'npm run dev'
