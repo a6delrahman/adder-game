@@ -69,5 +69,5 @@ stages:
                 appType: 'webAppLinux'
                 appName: 'adder-webapp'
                 package: '$(System.DefaultWorkingDirectory)/drop/frontend.zip'
-                runtimeStack: 'NODE|18-lts'
+                runtimeStack: 'NODE|20-lts'
                 startUpCommand: 'npm run start'
