@@ -24,8 +24,8 @@ stages:
         npm i vite
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)'
-        artifact: 'drop'
+        targetPath: '$(Build.ArtifactStagingDirectory)/drop/adder-frontend'
+        artifact: 'adder-frontend-$(Build.BuildId)'
         publishLocation: 'pipeline'
       displayName: 'Publish Build Artifact'
 
@@ -46,6 +46,6 @@ stages:
                 azureSubscription: 'deployment-sc'
                 appType: 'webAppLinux'
                 appName: 'adder-webapp'
-                package: '$(System.DefaultWorkingDirectory)/$(Build.BuildId).zip '
+                package: '$(System.DefaultWorkingDirectory)/drop/adder-frontend-$(Build.BuildId).zip '
                 runtimeStack: 'NODE|18-lts'
                 startUpCommand: 'npm run dev'
