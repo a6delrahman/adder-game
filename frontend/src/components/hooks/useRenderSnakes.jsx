@@ -3,13 +3,13 @@ import { getCombinedSnakeDecorators } from '../../canvas/drawings/snakeDesigns/s
 
 const useRenderSnakes = (playerSnakeId, otherSnakes) => {
   return useCallback(
-      (ctx, designs = ["default"]) => {
+      (ctx) => {
         if (!playerSnakeId || !otherSnakes) return;
-        if (designs.length === 0) designs = ["default"];
 
-        const combinedDrawFunction = getCombinedSnakeDecorators(designs);
         Object.values(otherSnakes).forEach((snake) => {
-          combinedDrawFunction(snake, ctx);
+          const designs = snake.design || ["realisticScales"]; // Fallback auf "realisticScales"
+          const combinedDrawFunction = getCombinedSnakeDecorators(designs);
+          combinedDrawFunction(snake, ctx); // Zeichne die Schlange mit dem Design
         });
       },
       [playerSnakeId, otherSnakes]

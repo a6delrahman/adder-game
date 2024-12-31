@@ -30,5 +30,5 @@ export const DesignNames = {
   NEON: 'neon',
   DEFAULT: 'default',
   OVAL_FORM: 'ovalForm',
-  SCALES: 'scales',
+  REALISTIC_SCALES: 'realisticScales',
 };

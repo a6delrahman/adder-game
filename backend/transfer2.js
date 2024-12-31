@@ -185,10 +185,6 @@ const GameCanvas = () => {
     ctx.restore();
   };
 
-
-
-
-
   // Zoom-Logik
   useEffect(() => {
     const handleWheel = (e) => {
@@ -200,16 +196,12 @@ const GameCanvas = () => {
       }
     };
 
-    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('wheel', handleWheel);
 
     return () => {
       window.removeEventListener('wheel', handleWheel);
     };
   }, []);
-
-
-
-
 
   useEffect(() => {
     let animationFrameId; // Speichert die ID des aktuellen Frames
@@ -223,10 +215,6 @@ const GameCanvas = () => {
 
     return () => cancelAnimationFrame(animationFrameId); // Schleife beim Unmount stoppen
   }, [otherSnakes, food, currentEquation, showScores]); // Keine zusätzlichen Abhängigkeiten
-
-
-
-
 
   // Füge Event-Listener hinzu
   useEffect(() => {
