@@ -21,6 +21,7 @@ stages:
     - script: |
         cd frontend
         npm install
+        npm i vite
       displayName: 'npm install'
     
     - task: ArchiveFiles@2
