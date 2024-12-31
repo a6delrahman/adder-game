@@ -23,22 +23,24 @@ stages:
     - script: |
         cd frontend
         npm install
-      displayName: 'npm install'
+        npm run build
+      displayName: 'Build Frontend'
     
     - task: ArchiveFiles@2
       displayName: 'Archive Files'
       inputs:        
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend'
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend/dist'
         includeRootFolder: false
         archiveType: zip
-        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/drop/$(Build.BuildId).zip
         replaceExistingArchive: true
+
     - task: PublishPipelineArtifact@1
       inputs:
         artifactName: 'drop'
         targetPath: '$(Build.ArtifactStagingDirectory)'
         publishLocation: 'pipeline'
-      displayName: 'Publish npm artifact'
+      displayName: 'Publish Build Artifact'
 
 - stage: Deploy
   displayName: Deploy
@@ -61,6 +63,6 @@ stages:
                 azureSubscription: 'deployment-sc'
                 appType: 'webAppLinux'
                 appName: 'adder-webapp'
-                package: '$(Build.ArtifactStagingDirectory)/drop/$(Build.BuildId).zip'
+                package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
                 runtimeStack: 'NODE|20-lts'
                 startUpCommand: 'npm run dev'
