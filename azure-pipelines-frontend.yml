@@ -21,7 +21,15 @@ stages:
       displayName: 'Install Node.js'
     - script: |
         cd frontend
-        npm i vite
+        npm install
+        npm run build
+      displayName: 'Build Frontend'
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: 'frontend/dist'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      displayName: 'Copy Build Output to Staging Directory'
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Build.ArtifactStagingDirectory)'
@@ -41,8 +49,11 @@ stages:
       runOnce:
         deploy:
           steps:
-            - download: current
-              artifact: drop
+            - task: DownloadPipelineArtifact@2
+              inputs:
+                artifact: 'drop'
+                path: '$(System.DefaultWorkingDirectory)/drop'
+              displayName: 'Download Build Artifact'
             - task: AzureWebApp@1
               inputs:
                 azureSubscription: 'deployment-sc'
