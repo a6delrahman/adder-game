@@ -25,6 +25,7 @@ stages:
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Build.ArtifactStagingDirectory)'
+        artifact: 'drop'
         publishLocation: 'pipeline'
       displayName: 'Publish Build Artifact'
 
@@ -45,6 +46,6 @@ stages:
                 azureSubscription: 'deployment-sc'
                 appType: 'webAppLinux'
                 appName: 'adder-webapp'
-                package: '$(System.DefaultWorkingDirectory)/drop'
+                package: '$(System.DefaultWorkingDirectory)/**/*.zip '
                 runtimeStack: 'NODE|18-lts'
                 startUpCommand: 'npm run dev'
