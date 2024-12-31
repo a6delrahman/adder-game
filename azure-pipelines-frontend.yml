@@ -29,8 +29,8 @@ stages:
     - task: ArchiveFiles@2
       displayName: 'Archive Files'
       inputs:        
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend'
-        includeRootFolder: false
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend/.'
+        includeRootFolder: true
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/drop/$(Build.BuildId).zip
         replaceExistingArchive: true
