@@ -5,46 +5,38 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  environmentName: 'dev'
+- group: adder
 
 stages:
 - stage: Build
   jobs:
   - job: Build
-    displayName: Build and Publish Artifact
+    displayName: Build publish artifact
     steps:
     - task: NodeTool@0
       inputs:
-        versionSource: 'spec'
-        versionSpec: '20.x'
-        checkLatest: true
+        versionSpec: '16.x'
       displayName: 'Install Node.js'
+
     - script: |
-        cd frontend
+        cd backend
         npm install
-        npm run build
-      displayName: 'Build Frontend'
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: 'frontend/dist'
-        Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
-      displayName: 'Copy Build Output to Staging Directory'
-
+      displayName: 'npm install'
+    
     - task: ArchiveFiles@2
-      inputs:
-        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
-        includeRootFolder: true
-        archiveType: 'zip'
-        archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
-      displayName: 'Archive Build Output'
-
+      displayName: 'Archive Files'
+      inputs:        
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)/frontend.zip'
-        artifact: 'drop'
+        artifactName: 'drop'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
         publishLocation: 'pipeline'
-      displayName: 'Publish Build Artifact'
+      displayName: 'Publish npm artifact'
 
 - stage: Deploy
   displayName: Deploy
@@ -53,21 +45,16 @@ stages:
   jobs:
   - deployment: DeployToAzureAppService
     displayName: Deploy to AppService
-    environment: $(environmentName)
+    environment: 'dev'
     strategy:
       runOnce:
         deploy:
           steps:
-            - task: DownloadPipelineArtifact@2
-              inputs:
-                artifact: 'drop'
-                path: '$(System.DefaultWorkingDirectory)/drop'
-              displayName: 'Download Build Artifact'
             - task: AzureWebApp@1
+              displayName: 'Azure Web App Deployment'
               inputs:
-                azureSubscription: 'deployment-sc'
-                appType: 'webAppLinux'
-                appName: 'adder-webapp'
-                package: '$(System.DefaultWorkingDirectory)/drop/frontend.zip'
-                runtimeStack: 'NODE|20-lts'
-                startUpCommand: 'npm run start'
+                azureSubscription: deployment-sc
+                appType: webAppLinux
+                appName: adder-backend
+                package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+                startUpCommand: 'npm run dev'
