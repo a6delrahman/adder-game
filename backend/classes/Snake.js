@@ -9,6 +9,7 @@ class Snake {
       this.direction = snakeData.direction || {x: 0.5, y: 0.5};
       this.segments = snakeData.segments || [];
       this.segmentCount = snakeData.segmentCount || 20;
+      this.currentAngle = snakeData.currentAngle || 0;
       this.scale = snakeData.scale || 3;
       this.color = snakeData.color || 'green';
       this.secondColor = snakeData.secondColor || 'black';
@@ -29,6 +30,7 @@ class Snake {
       this.direction = {x: 0.5, y: 0.5};
       this.segments = [];
       this.segmentCount = options.segmentCount || 20;
+      this.currentAngle = 0;
       this.scale = options.scale || 3;
       this.color = options.color || 'green';
       this.secondColor = options.secondColor || 'black';
@@ -81,8 +83,24 @@ class Snake {
   }
 
   moveSnake(boundaries) {
-    // Berechne die Geschwindigkeit
     const speed = this.boost ? this.speed * 2 : this.speed;
+
+    // Berechne den neuen Winkel, begrenzt auf den maximalen Drehwinkel
+    const maxTurnAngle = Math.PI / 4; // Maximaler Drehwinkel
+    const desiredAngle = Math.atan2(this.direction.y, this.direction.x); // Gewünschte Richtung
+    const angleDiff = ((desiredAngle - this.currentAngle + Math.PI) % (2
+        * Math.PI)) - Math.PI;
+
+    // Begrenze den Winkelunterschied
+    const clampedAngleDiff = Math.max(-maxTurnAngle,
+        Math.min(angleDiff, maxTurnAngle));
+
+    // Aktualisiere den aktuellen Winkel
+    this.currentAngle += clampedAngleDiff;
+
+    // Berechne die neue Richtung basierend auf dem aktuellen Winkel
+    this.direction.x = Math.cos(this.currentAngle);
+    this.direction.y = Math.sin(this.currentAngle);
 
     // Aktualisiere die Kopfposition basierend auf Richtung und Geschwindigkeit
     this.headPosition.x += this.direction.x * speed;
@@ -110,8 +128,6 @@ class Snake {
       }
     }
   }
-
-
 
   static visible(snake, camera) {
     const {x, y} = snake.headPosition;
