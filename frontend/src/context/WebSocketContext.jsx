@@ -1,6 +1,7 @@
 // WebSocketContext.jsx
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -9,7 +10,10 @@ import {
 } from 'react';
 import PropTypes from 'prop-types';
 import Snake from '../classes/Snake';
-// import sounds from "../components/utility/sounds/soundEffects.js";
+import {
+  getSounds,
+  initializeSounds
+} from "../components/utility/sounds/soundEffects.js";
 
 export const WebSocketContext = createContext(null);
 
@@ -24,6 +28,26 @@ export const WebSocketProvider = ({children}) => {
   const boundaries = useRef({});
   const food = useRef([]);
   const [currentEquation, setCurrentEquation] = useState(null);
+  const isSoundEnabledRef = useRef(false);
+  const soundsRef = useRef({});
+
+  // Beispiel-Funktion zum Umschalten des Sounds
+  useEffect(() => {
+    isSoundEnabledRef.current = localStorage.getItem('isSoundEnabled')
+        === 'true';
+  }, []);
+
+  const toggleSound = useCallback(() => {
+    isSoundEnabledRef.current = !isSoundEnabledRef.current;
+    localStorage.setItem('isSoundEnabled', String(isSoundEnabledRef.current));
+    return isSoundEnabledRef.current;
+  }, []);
+
+  const activateAudio = useCallback(() => {
+    initializeSounds();
+    soundsRef.current = getSounds();
+    isSoundEnabledRef.current = true;
+  }, []);
 
   const messageHandlers = useRef({
     default: (data) => console.warn(`Unhandled message type: ${data.type}`,
@@ -60,21 +84,25 @@ export const WebSocketProvider = ({children}) => {
       // setPlayerSnake({ snakeId: data.snakeId, sessionId }); // Neu: Bezieht sessionId
     },
 
-    // play_collect: (data) => {
-    //   sounds.collectPoint.play(undefined, false);
-    // },
-    //
-    // correct_answer: (data) => {
-    //   sounds.correctAnswer.play(undefined, false);
-    // },
-    //
-    // wrong_answer: (data) => {
-    //   sounds.wrongAnswer.play(undefined, false);
-    // },
+    play_collect: (data) => {
+      if (isSoundEnabledRef.current) {
+        soundsRef.current.collectPoint.play(undefined, false);
+      }
+    },
+
+    correct_answer: (data) => {
+      if (isSoundEnabledRef.current) {
+        soundsRef.current.correctAnswer.play(undefined, false);
+      }
+    },
+
+    wrong_answer: (data) => {
+      if (isSoundEnabledRef.current) {
+        soundsRef.current.wrongAnswer.play(undefined, false);
+      }
+    },
 
     session_broadcast: (data) => {
-      // otherSnakes.current = data.players; // Speichert alle Schlangen
-
       // Entferne Schlangen, die nicht mehr in der Liste sind
       Object.keys(otherSnakes.current).forEach((snakeId) => {
         if (!data.players.some((player) => player.snakeId === snakeId)) {
@@ -82,30 +110,44 @@ export const WebSocketProvider = ({children}) => {
         }
       });
 
-      // Object.values(otherSnakes.current).forEach(snake => {
-      //     snake.moveSnake(boundaries.current);
+      // data.players.forEach((player) => {
+      //   if (otherSnakes.current[player.snakeId]) {
+      //     otherSnakes.current[player.snakeId].update(player.headPosition,
+      //         player.segments);
+      //     otherSnakes.current[player.snakeId].updateScore(player.score);
+      //     otherSnakes.current[player.snakeId].updateDirection(player.direction);
+      //     otherSnakes.current[player.snakeId].updateEquation(
+      //         player.currentEquation);
+      //     setCurrentEquation(player.currentEquation);
+      //   } else {
+      //     otherSnakes.current[player.snakeId] = new Snake(
+      //         player);
+      //   }
       // });
+      // food.current = data.food; // Speichert die Nahrung
 
       data.players.forEach((player) => {
-        if (otherSnakes.current[player.snakeId]) {
-          otherSnakes.current[player.snakeId].update(player.headPosition,
-              player.segments);
-          otherSnakes.current[player.snakeId].updateScore(player.score);
-          otherSnakes.current[player.snakeId].updateEquation(
-              player.currentEquation);
-          setCurrentEquation(player.currentEquation);
+        const existingSnake = otherSnakes.current[player.snakeId];
+
+        if (existingSnake) {
+          // Nur aktualisieren, wenn sich etwas geändert hat
+          existingSnake.updateDirection(player.direction);
+          existingSnake.update(player.headPosition, player.segments);
+
+          if (existingSnake.score !== player.score) {
+            existingSnake.updateScore(player.score);
+          }
+
         } else {
-          otherSnakes.current[player.snakeId] = new Snake(
-              player.snakeId,
-              player.headPosition.x,
-              player.headPosition.y,
-              {color: player.snakeId === playerSnakeId ? 'green' : 'red'}
-          );
+          // Neue Schlange hinzufügen
+          otherSnakes.current[player.snakeId] = new Snake(player);
         }
       });
 
-      // boundaries.current = data.boundaries; // Speichert die Spielfeldgrenzen
-      food.current = data.food; // Speichert die Nahrung
+      // Nahrung nur aktualisieren, wenn sie sich verändert hat
+      if (JSON.stringify(food.current) !== JSON.stringify(data.food)) {
+        food.current = data.food;
+      }
     },
 
     game_over: (data) => {
@@ -197,8 +239,11 @@ export const WebSocketProvider = ({children}) => {
     food,
     currentEquation,
     sendMessage,
+    toggleSound,
+    isSoundEnabled: isSoundEnabledRef.current,
+    activateAudio,
   }), [isReady, playerSnakeId, playerSnake, isSessionActive, sessionId,
-    boundaries, food, currentEquation]);
+    boundaries, food, currentEquation, toggleSound]);
 
   return (
       <WebSocketContext.Provider value={value}>

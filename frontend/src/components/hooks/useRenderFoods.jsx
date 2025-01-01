@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 
-const useRenderFood = (food) => {
+const useRenderFoods = (food) => {
     const animationOffset = useRef(0);
 
     return useCallback((ctx) => {
@@ -37,7 +37,7 @@ const useRenderFood = (food) => {
     }, [food.current]);
 };
 
-export default useRenderFood;
+export default useRenderFoods;
 
 
 

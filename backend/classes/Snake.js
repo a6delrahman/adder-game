@@ -9,9 +9,11 @@ class Snake {
       this.direction = snakeData.direction || {x: 0.5, y: 0.5};
       this.segments = snakeData.segments || [];
       this.segmentCount = snakeData.segmentCount || 20;
+      this.currentAngle = snakeData.currentAngle || 0;
       this.scale = snakeData.scale || 3;
       this.color = snakeData.color || 'green';
-      this.speed = snakeData.speed || 2;
+      this.secondColor = snakeData.secondColor || 'black';
+      this.speed = snakeData.speed || 1;
       this.SNAKE_INITIAL_LENGTH = snakeData.SNAKE_INITIAL_LENGTH || 20;
       this.boost = snakeData.boost || false;
       this.currentEquation = snakeData.currentEquation || '';
@@ -28,9 +30,11 @@ class Snake {
       this.direction = {x: 0.5, y: 0.5};
       this.segments = [];
       this.segmentCount = options.segmentCount || 20;
+      this.currentAngle = 0;
       this.scale = options.scale || 3;
       this.color = options.color || 'green';
-      this.speed = options.speed || 2;
+      this.secondColor = options.secondColor || 'black';
+      this.speed = options.speed || 1;
       this.SNAKE_INITIAL_LENGTH = 20;
       this.boost = false;
       this.currentEquation = {};
@@ -38,19 +42,19 @@ class Snake {
       this.eatenFood = 0;
       this.correctAnswers = 0;
       this.wrongAnswers = 0;
-
-      // // Initialize segments
-      // for (let i = 0; i < this.segmentCount; i++) {
-      //     this.segments.push({headPosition});
-      // }
     }
-    // this.isBrowser = typeof window !== 'undefined';
-    // // Lade die Textur nur im Browser
-    // if (this.isBrowser) {
-    //     this.texture = new Image();
-    //     this.texture.src = '/public/images/texture.png'; // Relativer Pfad zur Textur
-    // }
+  }
 
+  calculateScale() {
+    // Berechnung des Scales basierend auf der Punktzahl
+    const baseScale = 3; // Basisgröße der Schlange
+    const scaleFactor = 0.1; // Skalierungsfaktor
+    return baseScale + this.score * scaleFactor;
+  }
+
+  updateScore(score) {
+    this.score = score;
+    this.scale = this.calculateScale(); // Aktualisiere den Scale, wenn der Score geändert wird
   }
 
   correctAnswer() {
@@ -65,47 +69,38 @@ class Snake {
     this.eatenFood++;
   }
 
-  updatePosition(targetX, targetY) {
-    // Update the head position
-    const head = this.segments[0];
-    head.x += (targetX - head.x) * this.speed;
-    head.y += (targetY - head.y) * this.speed;
-
-    // Update the rest of the segments
-    for (let i = 1; i < this.segments.length; i++) {
-      const segment = this.segments[i];
-      const prevSegment = this.segments[i - 1];
-      segment.x += (prevSegment.x - segment.x) * this.speed;
-      segment.y += (prevSegment.y - segment.y) * this.speed;
-    }
-  }
-
   update(headPosition, segments) {
     this.headPosition = headPosition;
     this.segments = segments;
-  }
-
-  updateScore(score) {
-    this.score = score;
   }
 
   updateEquation(equation) {
     this.currentEquation = equation
   }
 
-  updateDirection(targetX, targetY) {
-    const dx = targetX - this.headPosition.x;
-    const dy = targetY - this.headPosition.y;
-
-    const magnitude = Math.sqrt(dx * dx + dy * dy);
-
-    this.direction.x = magnitude > 0 ? dx / magnitude : 0;
-    this.direction.y = magnitude > 0 ? dy / magnitude : 0;
+  updateDirection(direction) {
+    this.direction = direction;
   }
 
   moveSnake(boundaries) {
-    // Berechne die Geschwindigkeit
     const speed = this.boost ? this.speed * 2 : this.speed;
+
+    // Berechne den neuen Winkel, begrenzt auf den maximalen Drehwinkel
+    const maxTurnAngle = Math.PI / 4; // Maximaler Drehwinkel
+    const desiredAngle = Math.atan2(this.direction.y, this.direction.x); // Gewünschte Richtung
+    const angleDiff = ((desiredAngle - this.currentAngle + Math.PI) % (2
+        * Math.PI)) - Math.PI;
+
+    // Begrenze den Winkelunterschied
+    const clampedAngleDiff = Math.max(-maxTurnAngle,
+        Math.min(angleDiff, maxTurnAngle));
+
+    // Aktualisiere den aktuellen Winkel
+    this.currentAngle += clampedAngleDiff;
+
+    // Berechne die neue Richtung basierend auf dem aktuellen Winkel
+    this.direction.x = Math.cos(this.currentAngle);
+    this.direction.y = Math.sin(this.currentAngle);
 
     // Aktualisiere die Kopfposition basierend auf Richtung und Geschwindigkeit
     this.headPosition.x += this.direction.x * speed;
@@ -129,7 +124,7 @@ class Snake {
       const segmentsToRemove = this.segments.length - maxSegments;
       const segmentsToRemoveInThisIteration = Math.ceil(segmentsToRemove / 6);
       for (let i = 0; i < segmentsToRemoveInThisIteration; i++) {
-          this.segments.pop();
+        this.segments.pop();
       }
     }
   }
