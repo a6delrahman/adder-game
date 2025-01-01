@@ -39,7 +39,7 @@ const GameCanvas = () => {
       // Custom Hooks
       const renderSnakes = useRenderSnakes(playerSnakeId, otherSnakes);
       const renderFood = useRenderFood(food);
-      const renderScores = useRenderScores(otherSnakes);
+      const renderScores = useRenderScores(playerSnakeId, otherSnakes);
       const renderMathEquations = useRenderMathEquations(currentEquation.equation);
       const getCameraPosition = useCamera();
 
@@ -191,6 +191,7 @@ const GameCanvas = () => {
         // Overlays zeichnen (Scores und MathEquations)
         ctx.restore(); // Rückkehr zur ursprünglichen Position ohne Zoom
         ctx.save();
+
 
         renderJoystick(ctx); // Joystick zeichnen
         // MathEquations (oben zentriert)

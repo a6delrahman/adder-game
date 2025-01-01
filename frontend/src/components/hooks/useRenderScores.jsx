@@ -1,43 +1,57 @@
-import {useCallback} from 'react';
+import { useCallback } from 'react';
 
-const useRenderScores = (otherSnakes) => {
+const useRenderScores = (playerSnakeId, otherSnakes) => {
   return useCallback((ctx, canvasWidth) => {
-    if (!otherSnakes) {
+    if (!playerSnakeId || !otherSnakes) {
       return;
     }
 
-    ctx.fillStyle = '#fff';
+
+
+    ctx.fillStyle = '#000'; // Dark text color for better contrast on parchment
     ctx.font = '16px Arial';
-    ctx.textAlign = 'left'
+    ctx.textAlign = 'left';
 
-    const padding = 10; // Abstand vom linken Spielfeldrand
-    const maxWidth = canvasWidth / 3; // Verfügbare Breite innerhalb des Spielfeldes
-    const ellipsis = '...'; // Kürzungszeichen
-    let yPosition = 30;
+    const padding = 20; // Adjust padding to fit within the parchment
+    const maxWidth = canvasWidth / 4 - 20; // Adjust maxWidth to fit within the parchment
+    const ellipsis = '...';
+    let yPosition = 40; // Adjust starting y position to fit within the parchment
 
-    Object.values(otherSnakes).forEach((snake) => {
+
+    Object.values(otherSnakes)
+    .sort((a, b) => b.score - a.score)
+    .forEach((snake, index) => {
       const name = snake.name || 'Unknown';
       const score = snake.score || 0;
 
-      // Kürze den Namen, wenn er die maximale Breite überschreitet
       let displayName = name;
-      let nameWidth = ctx.measureText(
-          `Player ${displayName}: ${score} points`).width;
+      let nameWidth = ctx.measureText(`${index + 1}. Player ${displayName}: ${score} points`).width;
 
       if (nameWidth > maxWidth) {
         while (nameWidth > maxWidth && displayName.length > 0) {
           displayName = displayName.slice(0, -1);
-          nameWidth = ctx.measureText(
-              `Player ${displayName + ellipsis}: ${score} points`).width;
+          nameWidth = ctx.measureText(`${index + 1}. Player ${displayName + ellipsis}: ${score} points`).width;
         }
-        displayName += ellipsis; // Ellipsis hinzufügen
+        displayName += ellipsis;
       }
 
-      const displayText = `${displayName}: ${score} points`;
+
+
+      const displayText = `${index + 1}. ${displayName}: ${score} points`;
+      if (snake.snakeId === playerSnakeId) {
+        ctx.fillStyle = 'green';
+        ctx.font = 'bold 16px Arial';
+      } else {
+        ctx.fillStyle = '#000';
+        ctx.font = '16px Arial';
+      }
+
+
+
       ctx.fillText(displayText, padding, yPosition);
       yPosition += 20;
     });
-  }, [otherSnakes]);
+  }, [otherSnakes, playerSnakeId]);
 };
 
 export default useRenderScores;

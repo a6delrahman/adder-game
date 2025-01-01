@@ -103,8 +103,6 @@ export const WebSocketProvider = ({children}) => {
     },
 
     session_broadcast: (data) => {
-      // otherSnakes.current = data.players; // Speichert alle Schlangen
-
       // Entferne Schlangen, die nicht mehr in der Liste sind
       Object.keys(otherSnakes.current).forEach((snakeId) => {
         if (!data.players.some((player) => player.snakeId === snakeId)) {
@@ -112,31 +110,44 @@ export const WebSocketProvider = ({children}) => {
         }
       });
 
-      // Object.values(otherSnakes.current).forEach(snake => {
-      //     snake.moveSnake(boundaries.current);
+      // data.players.forEach((player) => {
+      //   if (otherSnakes.current[player.snakeId]) {
+      //     otherSnakes.current[player.snakeId].update(player.headPosition,
+      //         player.segments);
+      //     otherSnakes.current[player.snakeId].updateScore(player.score);
+      //     otherSnakes.current[player.snakeId].updateDirection(player.direction);
+      //     otherSnakes.current[player.snakeId].updateEquation(
+      //         player.currentEquation);
+      //     setCurrentEquation(player.currentEquation);
+      //   } else {
+      //     otherSnakes.current[player.snakeId] = new Snake(
+      //         player);
+      //   }
       // });
+      // food.current = data.food; // Speichert die Nahrung
 
       data.players.forEach((player) => {
-        if (otherSnakes.current[player.snakeId]) {
-          otherSnakes.current[player.snakeId].update(player.headPosition,
-              player.segments);
-          otherSnakes.current[player.snakeId].updateScore(player.score);
-          otherSnakes.current[player.snakeId].updateDirection(player.direction);
-          otherSnakes.current[player.snakeId].updateEquation(
-              player.currentEquation);
-          setCurrentEquation(player.currentEquation);
+        const existingSnake = otherSnakes.current[player.snakeId];
+
+        if (existingSnake) {
+          // Nur aktualisieren, wenn sich etwas geändert hat
+          existingSnake.updateDirection(player.direction);
+          existingSnake.update(player.headPosition, player.segments);
+
+          if (existingSnake.score !== player.score) {
+            existingSnake.updateScore(player.score);
+          }
+
         } else {
-          otherSnakes.current[player.snakeId] = new Snake(
-              player.snakeId,
-              player.headPosition.x,
-              player.headPosition.y,
-              {color: player.snakeId === playerSnakeId ? 'green' : 'red'}
-          );
+          // Neue Schlange hinzufügen
+          otherSnakes.current[player.snakeId] = new Snake(player);
         }
       });
 
-      // boundaries.current = data.boundaries; // Speichert die Spielfeldgrenzen
-      food.current = data.food; // Speichert die Nahrung
+      // Nahrung nur aktualisieren, wenn sie sich verändert hat
+      if (JSON.stringify(food.current) !== JSON.stringify(data.food)) {
+        food.current = data.food;
+      }
     },
 
     game_over: (data) => {
