@@ -30,6 +30,11 @@ stages:
       vmImage: $(vmImageName)
 
     steps:
+    - task: NodeTool@0
+      inputs:
+        versionSource: 'spec'
+        versionSpec: '20.x'
+        checkLatest: true    
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
@@ -63,7 +68,7 @@ stages:
               appType: webAppLinux
               WebAppName: $(webAppName)
               packageForLinux: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
-              RuntimeStack: 'NODE|20LTS'
+              RuntimeStack: 'NODE|20-LTS'
               StartupCommand: 'npm run build'
               ScriptType: 'Inline Script'
               InlineScript: |
