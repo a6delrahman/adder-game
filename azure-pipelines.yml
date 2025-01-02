@@ -36,27 +36,11 @@ stages:
         containerRegistry: acr-sc
 
     - task: Docker@2
-      displayName: Build and Push Backend Image
-      inputs:
-        command: buildAndPush
-        repository: adder-backend
-        Dockerfile: $(Build.SourcesDirectory)/backend/Dockerfile
-    - task: Docker@2
       displayName: Build and Push Frontend Image
       inputs:
         command: buildAndPush
         repository: adder-frontend
         Dockerfile: $(Build.SourcesDirectory)/frontend/Dockerfile
-    - task: AzureCLI@2
-      displayName: Pull and push MongoDB image
-      inputs:
-        azureSubscription: 'deployment-sc'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          docker pull mongodb/mongodb-community-server
-          docker tag mongodb/mongodb-community-server adderacr.azurecr.io/mongodb/mongodb-community-server:latest
-          docker push adderacr.azurecr.io/mongodb/mongodb-community-server:latest
 
     - task: AzureCLI@2
       displayName: Azure CLI Login
@@ -79,4 +63,4 @@ stages:
         appName: 'adder-webapp'
         containers: '$(acrLoginServer)/$(frontendImageName):$(Build.BuildId), $(acrLoginServer)/$(backendImageName):$(Build.BuildId), $(acrLoginServer)/$(mongodbImageName):latest'
         multicontainerConfigFile: '**/docker-compose.yml'
-        containerCommand: 'docker-compose up --build'
+        containerCommand: ''
