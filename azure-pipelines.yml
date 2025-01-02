@@ -55,8 +55,9 @@ stages:
             - task: AzureWebApp@1
               displayName: 'Frontend Deployment to AppService'
               inputs:
-                azureSubscription: deployment-sc
-                appType: webAppLinux
-                appName: adder-webapp
+                azureSubscription: 'deployment-sc'
+                appType: 'webAppLinux'
+                appName: 'adder-webapp'
+                package: '$(Pipeline.Workspace)/drop-backend/$(Build.BuildId).zip'
+                runtimeStack: 'NODE|20-lts'
                 appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
-                package: $(Pipeline.Workspace)/drop-backend/$(Build.BuildId).zip
