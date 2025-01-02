@@ -63,5 +63,4 @@ stages:
         azureSubscription: 'deployment-sc'
         appName: 'adder-webapp'
         containers: '$(acrLoginServer)/$(frontendImageName):$(Build.BuildId)'
-        multicontainerConfigFile: '**/docker-compose.yml'
-        containerCommand: 'docker-compose up --build'
+        containerCommand: 'npm run build'
