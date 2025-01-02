@@ -48,7 +48,7 @@ button{
     --b: 3px;
     --s: 0.45em;
     --_p: var(--s);
-    --color:  #b6fb61;;
+    --color:  #b6fb61;
     padding: calc(0.5em + var(--s)) calc(0.9em + var(--s));
     outline: var(--b) solid #0000;
     outline-offset: 0.1rem;
@@ -132,8 +132,10 @@ button{
 
 .snake-button.cobra {
     color: #16f0f7;
-    padding: 25px;
+    padding: 30px;
+    margin: auto;
     border-radius: 5%;
+    margin-bottom: 20px;
 }
 
 .snake-button.python {
@@ -189,13 +191,11 @@ button{
     left: 0px;
 }
 
-
-
 /* Specific styles for each button */
 .skill-add-btn {
     transform: rotate(-1deg);
     margin-bottom: 30px;
-    animation: glitch 6s infinite; 
+    /* animation: glitch 6s infinite;  */
 }
 
 .skill-add-btn:after {
@@ -204,7 +204,7 @@ button{
 
 .skill-subtract-btn {
     transform: rotate(1deg);
-    animation: glitch 5s infinite; 
+    /* animation: glitch 5s infinite;  */
 }
 
 .skill-subtract-btn:after {
@@ -214,7 +214,7 @@ button{
 .skill-multiply-btn {
     transform: rotate(-1deg);
     margin-top: 30px;
-    animation: glitch 4s infinite; 
+    /* animation: glitch 4s infinite;  */
 }
 
 .skill-multiply-btn:after {
