@@ -5,33 +5,29 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  # Docker image names
-  environmentName: 'dev'
-  subscriptionId: 'c061fdd1-bba3-4c63-b32d-6595004a4b00'
-  tenantId: '61c44f51-4973-4caf-a8de-cbde54d78efa'
-  clientId: 'e12b5802-7b09-428c-900a-7fb5990597c8'
-  clientSecret: 'u2W8Q~m47HjHcvCYuf-Iyh3F22HJz8jxWIoi1azb'
+- group: adder
 
 stages:
 - stage: Build
   jobs:
   - job: Build
-    displayName: Build and Publish Artifact
+    displayName: Build and Push Docker Images
     steps:
     - task: NodeTool@0
       inputs:
-        versionSpec: '16.x'
+        versionSpec: '22.x'
       displayName: 'Install Node.js'
 
     - script: |
-        cd frontend
+        cd backend
+        npm install -g npm
         npm install
       displayName: 'npm install'
     
     - task: ArchiveFiles@2
       displayName: 'Archive Files'
       inputs:        
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/backend'
         includeRootFolder: false
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
@@ -50,7 +46,7 @@ stages:
   jobs:
   - deployment: DeployToAzureAppService
     displayName: Deploy to AppService
-    environment: $(environmentName)
+    environment: 'dev'
     strategy:
       runOnce:
         deploy:
@@ -58,8 +54,10 @@ stages:
             - task: AzureWebApp@1
               displayName: 'Azure Web App Deployment'
               inputs:
-                azureSubscription: deployment-sc
-                appType: webAppLinux
-                appName: adder-webapp
-                package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-                startUpCommand: 'npm run dev'
+                azureSubscription: 'deployment-sc'
+                appType: 'webAppLinux'
+                appName: 'adder-backend'
+                package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+                runtimeStack: 'NODE|20-lts'
+                startUpCommand: 'npm start'
+                appSettings: '-CONN_STR ''$(CONN_STR)'' -TOKEN ''$(SECRET_KEY)'' -REFRESH_SECRET_KEY ''$(REFRESH_SECRET_KEY)'' -user ''$(user)'' -password ''$(password)'''
