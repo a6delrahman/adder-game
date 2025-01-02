@@ -49,7 +49,7 @@ stages:
     - task: ArchiveFiles@2
       displayName: 'Archive Files frontend'
       inputs:        
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory'
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
         includeRootFolder: false
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
