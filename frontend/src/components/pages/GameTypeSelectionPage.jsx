@@ -1,5 +1,4 @@
-import React from 'react';
-import { useWebSocket } from "../../context/WebSocketContext.jsx";
+import useWebSocket from "../hooks/useWebSocket.jsx";
 import Button from "../utility/buttons/Button.jsx";
 import { useNavigate } from "react-router-dom";
 

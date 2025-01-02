@@ -2,7 +2,6 @@
 import {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -28,25 +27,31 @@ export const WebSocketProvider = ({children}) => {
   const boundaries = useRef({});
   const food = useRef([]);
   const [currentEquation, setCurrentEquation] = useState(null);
-  const isSoundEnabledRef = useRef(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const isSoundEnabledRef = useRef(isSoundEnabled);
   const soundsRef = useRef({});
+
+  useEffect(() => {
+    isSoundEnabledRef.current = isSoundEnabled;
+  }, [isSoundEnabled]);
 
   // Beispiel-Funktion zum Umschalten des Sounds
   useEffect(() => {
-    isSoundEnabledRef.current = localStorage.getItem('isSoundEnabled')
-        === 'true';
+    setIsSoundEnabled(localStorage.getItem('isSoundEnabled') === 'true');
   }, []);
 
   const toggleSound = useCallback(() => {
-    isSoundEnabledRef.current = !isSoundEnabledRef.current;
-    localStorage.setItem('isSoundEnabled', String(isSoundEnabledRef.current));
-    return isSoundEnabledRef.current;
+    setIsSoundEnabled((prev) => {
+      const newState = !prev;
+      localStorage.setItem('isSoundEnabled', String(newState));
+      return newState;
+    });
   }, []);
 
   const activateAudio = useCallback(() => {
     initializeSounds();
     soundsRef.current = getSounds();
-    isSoundEnabledRef.current = true;
+    setIsSoundEnabled(true);
   }, []);
 
   const messageHandlers = useRef({
@@ -59,14 +64,12 @@ export const WebSocketProvider = ({children}) => {
 
     session_joined: (data) => {
       const {initialGameState, snakeId} = data.payload;
-      // const {players, food, boundaries} = initialGameState;
 
       // Initialisiere alle Schlangen
       Object.values(initialGameState.players).forEach((player) => {
         otherSnakes.current[player.snakeId] = new Snake(player.snake);
       });
 
-      // playerSnake.current = data.playerState; // Speichert die eigene Schlange
       sessionId.current = initialGameState.sessionId; // Speichert die Session-ID
 
       food.current = initialGameState.food; // Speichert die Nahrung
@@ -79,11 +82,6 @@ export const WebSocketProvider = ({children}) => {
       console.log(`Session joined! Snake ID: ${snakeId}`);
     },
 
-    snake_id: (data) => {
-      console.log('Snake ID received:', data.snakeId);
-      // setPlayerSnake({ snakeId: data.snakeId, sessionId }); // Neu: Bezieht sessionId
-    },
-
     play_collect: (data) => {
       if (isSoundEnabledRef.current) {
         soundsRef.current.collectPoint.play(undefined, false);
@@ -91,6 +89,8 @@ export const WebSocketProvider = ({children}) => {
     },
 
     correct_answer: (data) => {
+      const newEquation = data.payload.newEquation;
+      setCurrentEquation(newEquation);
       if (isSoundEnabledRef.current) {
         soundsRef.current.correctAnswer.play(undefined, false);
       }
@@ -109,22 +109,6 @@ export const WebSocketProvider = ({children}) => {
           delete otherSnakes.current[snakeId];
         }
       });
-
-      // data.players.forEach((player) => {
-      //   if (otherSnakes.current[player.snakeId]) {
-      //     otherSnakes.current[player.snakeId].update(player.headPosition,
-      //         player.segments);
-      //     otherSnakes.current[player.snakeId].updateScore(player.score);
-      //     otherSnakes.current[player.snakeId].updateDirection(player.direction);
-      //     otherSnakes.current[player.snakeId].updateEquation(
-      //         player.currentEquation);
-      //     setCurrentEquation(player.currentEquation);
-      //   } else {
-      //     otherSnakes.current[player.snakeId] = new Snake(
-      //         player);
-      //   }
-      // });
-      // food.current = data.food; // Speichert die Nahrung
 
       data.players.forEach((player) => {
         const existingSnake = otherSnakes.current[player.snakeId];
@@ -160,20 +144,6 @@ export const WebSocketProvider = ({children}) => {
       setIsSessionActive(false);
       alert(`Error: ${data.payload.message}`);
       console.log(`Error: ${data.payload.message}`);
-    },
-
-    update_equation: (data) => {
-      otherSnakes[playerSnakeId].currentEquation = data.currentEquation;
-      console.log('update_equation:', data);
-    },
-
-    remove_player: (data) => {
-      console.log('Player removed:', data.snakeId);
-      setOtherSnakes((prev) => {
-        const updated = {...prev};
-        delete updated[data.snakeId];
-        return updated;
-      });
     },
 
     session_started: () => {
@@ -240,10 +210,9 @@ export const WebSocketProvider = ({children}) => {
     currentEquation,
     sendMessage,
     toggleSound,
-    isSoundEnabled: isSoundEnabledRef.current,
+    isSoundEnabled,
     activateAudio,
-  }), [isReady, playerSnakeId, playerSnake, isSessionActive, sessionId,
-    boundaries, food, currentEquation, toggleSound]);
+  }), [isReady, playerSnakeId, isSessionActive, currentEquation, toggleSound, isSoundEnabled, activateAudio]);
 
   return (
       <WebSocketContext.Provider value={value}>
@@ -256,4 +225,4 @@ WebSocketProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export const useWebSocket = () => useContext(WebSocketContext);
+// export const useWebSocket = () => useContext(WebSocketContext);

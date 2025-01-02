@@ -1,6 +1,5 @@
 // GameSessionPage.jsx
-import React from 'react';
-import { useWebSocket } from "../../context/WebSocketContext.jsx";
+import useWebSocket from "../hooks/useWebSocket.jsx";
 import GameTypeSelectionPage from './GameTypeSelectionPage';
 import GameCanvas from './GameCanvas';
 

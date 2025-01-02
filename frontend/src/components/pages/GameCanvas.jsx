@@ -1,7 +1,7 @@
 // GameCanvas.jsx
 
-import React, {memo, useEffect, useRef, useState} from 'react';
-import {useWebSocket} from '../../context/WebSocketContext';
+import {memo, useCallback, useEffect, useRef} from 'react';
+import useWebSocket from "../hooks/useWebSocket.jsx";
 import useRenderJoystick from "../hooks/useRenderJoystick.jsx";
 import useRenderSnakes from "../hooks/useRenderSnakes.jsx";
 import useRenderFood from "../hooks/useRenderFood2.jsx";
@@ -82,8 +82,8 @@ const GameCanvas = () => {
           ); // Speichere das vorbereitete Canvas
         };
 
-        prepareBackground();
-      }, []);
+        prepareBackground().catch(console.error); // Hintergrund vorbereiten
+      }, [boundaries]);
 
       const calculateVector = (start, end) => {
         const dx = end.x - start.x;
@@ -181,11 +181,7 @@ const GameCanvas = () => {
         }
 
         renderSnakes(ctx); // Draw snakes
-        // renderSnakes2(ctx);
 
-        // Object.values(otherSnakes).forEach((snake) => {
-        //   drawSnake(ctx, snake, Date.now() % 60); // Zeichne jede Schlange
-        // });
         renderFood(ctx); // Draw food
 
         // Overlays zeichnen (Scores und MathEquations)
@@ -194,18 +190,85 @@ const GameCanvas = () => {
 
 
         renderJoystick(ctx); // Joystick zeichnen
-        // MathEquations (oben zentriert)
+
         if (currentEquation) {
-          renderMathEquations(ctx);
+          renderMathEquations(ctx); // MathEquations (oben zentriert)
         }
 
-        // Scores (oben links)
+
         if (showScoresRef.current) {
-          renderScores(ctx, canvas.width);
+          renderScores(ctx, canvas.width); // Scores (oben links)
         }
 
         ctx.restore();
       };
+
+  // const render = useCallback(() => {
+  //   const canvas = canvasRef.current;
+  //   const ctx = canvas.getContext('2d');
+  //   const ownSnake = otherSnakes[playerSnakeId];
+  //
+  //   if (!ownSnake) {
+  //     return;
+  //   }
+  //
+  //   // Camera position
+  //   const camera = getCameraPosition(
+  //       ownSnake.headPosition,
+  //       zoomLevel.current,
+  //       { width: canvas.width, height: canvas.height }
+  //   );
+  //
+  //   ctx.save();
+  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //
+  //   ctx.scale(zoomLevel.current, zoomLevel.current);
+  //   ctx.translate(-camera.x, -camera.y);
+  //
+  //   const backgroundCanvas = backgroundCanvasRef.current;
+  //   if (backgroundCanvas) {
+  //     ctx.drawImage(
+  //         backgroundCanvas,
+  //         0,
+  //         0,
+  //         boundaries.current.width,
+  //         boundaries.current.height
+  //     );
+  //   }
+  //
+  //   renderSnakes(ctx);
+  //   renderFood(ctx);
+  //
+  //   ctx.restore();
+  //   ctx.save();
+  //
+  //   renderJoystick(ctx);
+  //
+  //   if (currentEquation) {
+  //     renderMathEquations(ctx);
+  //   }
+  //
+  //   if (showScoresRef.current) {
+  //     renderScores(ctx, canvas.width);
+  //   }
+  //
+  //   ctx.restore();
+  // }, [
+  //   canvasRef,
+  //   otherSnakes,
+  //   playerSnakeId,
+  //   zoomLevel,
+  //   getCameraPosition,
+  //   backgroundCanvasRef,
+  //   boundaries,
+  //   currentEquation,
+  //   showScoresRef,
+  //   renderSnakes,
+  //   renderFood,
+  //   renderJoystick,
+  //   renderMathEquations,
+  //   renderScores,
+  // ]); // Fügen Sie hier alle Abhängigkeiten hinzu, die in `render` verwendet werden
 
       // Zoom-Logik
       useEffect(() => {
@@ -236,7 +299,7 @@ const GameCanvas = () => {
         loop(); // Schleife starten
 
         return () => cancelAnimationFrame(animationFrameId); // Schleife beim Unmount stoppen
-      }, [handleJoystickMove]); // Keine zusätzlichen Abhängigkeiten
+      }, [handleJoystickMove, render]); // Keine zusätzlichen Abhängigkeiten
 
       // Füge Event-Listener hinzu
       useEffect(() => {

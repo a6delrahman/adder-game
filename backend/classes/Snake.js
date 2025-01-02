@@ -85,22 +85,22 @@ class Snake {
   moveSnake(boundaries) {
     const speed = this.boost ? this.speed * 2 : this.speed;
 
-    // Berechne den neuen Winkel, begrenzt auf den maximalen Drehwinkel
-    const maxTurnAngle = Math.PI / 4; // Maximaler Drehwinkel
-    const desiredAngle = Math.atan2(this.direction.y, this.direction.x); // Gewünschte Richtung
-    const angleDiff = ((desiredAngle - this.currentAngle + Math.PI) % (2
-        * Math.PI)) - Math.PI;
-
-    // Begrenze den Winkelunterschied
-    const clampedAngleDiff = Math.max(-maxTurnAngle,
-        Math.min(angleDiff, maxTurnAngle));
-
-    // Aktualisiere den aktuellen Winkel
-    this.currentAngle += clampedAngleDiff;
-
-    // Berechne die neue Richtung basierend auf dem aktuellen Winkel
-    this.direction.x = Math.cos(this.currentAngle);
-    this.direction.y = Math.sin(this.currentAngle);
+    // // Berechne den neuen Winkel, begrenzt auf den maximalen Drehwinkel
+    // const maxTurnAngle = Math.PI / 8; // Maximaler Drehwinkel
+    // const desiredAngle = Math.atan2(this.direction.y, this.direction.x); // Gewünschte Richtung
+    // const angleDiff = ((desiredAngle - this.currentAngle + Math.PI) % (2
+    //     * Math.PI)) - Math.PI;
+    //
+    // // Begrenze den Winkelunterschied
+    // const clampedAngleDiff = Math.max(-maxTurnAngle,
+    //     Math.min(angleDiff, maxTurnAngle));
+    //
+    // // Aktualisiere den aktuellen Winkel
+    // this.currentAngle += clampedAngleDiff;
+    //
+    // // Berechne die neue Richtung basierend auf dem aktuellen Winkel
+    // this.direction.x = Math.cos(this.currentAngle);
+    // this.direction.y = Math.sin(this.currentAngle);
 
     // Aktualisiere die Kopfposition basierend auf Richtung und Geschwindigkeit
     this.headPosition.x += this.direction.x * speed;

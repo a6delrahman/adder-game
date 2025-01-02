@@ -197,12 +197,13 @@ class FoodManager {
     if (food.meta.result === correctResult) {
       this.updateScoresAndSegments(snake, food.points);
       snake.correctAnswer();
-      webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'correct_answer', {});
       equationManager.assignEquationToPlayer(
           playerState.sessionId,
           snake,
           snake.currentEquation.type
       );
+      const payload = {newEquation: snake.currentEquation};
+      webSocketManager.sendMessageToPlayerByClientId(playerState.clientId, 'correct_answer', payload);
     } else {
       this.updateScoresAndSegments(snake, -food.points);
       snake.wrongAnswer();
