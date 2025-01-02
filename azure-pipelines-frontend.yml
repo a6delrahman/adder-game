@@ -59,6 +59,6 @@ stages:
                 appType: 'webAppLinux'
                 appName: 'adder-webapp'
                 package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
-                runtimeStack: 'STATICSITE|1.0'
-                startUpCommand: 'npm run dev'
+                runtimeStack: 'NODE|20-lts'
+                startUpCommand: 'npm run build'
                 appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
