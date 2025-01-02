@@ -20,24 +20,48 @@ stages:
 
     - script: |
         cd backend
+        npm install -g npm
         npm install
       displayName: 'npm install'
     
     - task: ArchiveFiles@2
-      displayName: 'Archive Files'
+      displayName: 'Archive Files backend'
       inputs:        
         rootFolderOrFile: '$(System.DefaultWorkingDirectory'
         includeRootFolder: false
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         replaceExistingArchive: true
+
     - task: PublishPipelineArtifact@1
       inputs:
-        artifactName: 'drop'
+        artifactName: 'drop-backend'
         targetPath: '$(Build.ArtifactStagingDirectory)'
         publishLocation: 'pipeline'
-      displayName: 'Publish npm artifact'
+      displayName: 'Publish npm artifact backend'
 
+    - script: |
+        cd frontend
+        npm install
+        npm run build
+      displayName: 'install and build frontend'
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive Files frontend'
+      inputs:        
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        artifactName: 'drop-frontend'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        publishLocation: 'pipeline'
+      displayName: 'Publish npm artifact frontend'
+        
 - stage: Deploy
   displayName: Deploy
   condition: succeeded()
@@ -51,11 +75,20 @@ stages:
         deploy:
           steps:
             - task: AzureWebApp@1
-              displayName: 'Azure Web App Deployment'
+              displayName: 'Backend Deployment to AppService'
               inputs:
                 azureSubscription: deployment-sc
                 appType: webAppLinux
                 appName: adder-backend
-                appSettings: -CONN_STR '$(CONN_STR)' -TOKEN '$(JWT_SECRET)' -REFRESH_SECRET_KEY '$(REFRESH_SECRET_KEY)' -user '$(user)' -password '$(password)'
-                package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+                appSettings: -CONN_STR '$(CONN_STR)' -TOKEN '$(SECRET_KEY)' -REFRESH_SECRET_KEY '$(REFRESH_SECRET_KEY)' -user '$(user)' -password '$(password)'
+                package: $(Pipeline.Workspace)/drop-backend/$(Build.BuildId).zip
                 startUpCommand: 'npm start'
+
+            - task: AzureWebApp@1
+              displayName: 'Frontend Deployment to AppService'
+              inputs:
+                azureSubscription: deployment-sc
+                appType: webAppLinux
+                appName: adder-webapp
+                appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
+                package: $(Pipeline.Workspace)/drop-backend/$(Build.BuildId).zip           
