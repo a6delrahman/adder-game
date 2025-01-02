@@ -58,6 +58,6 @@ stages:
                 azureSubscription: 'deployment-sc'
                 appType: 'webAppLinux'
                 appName: 'adder-webapp'
-                package: '$(Pipeline.Workspace)/drop-backend/$(Build.BuildId).zip'
+                package: '$(Pipeline.Workspace)/drop-frontend/$(Build.BuildId).zip'
                 runtimeStack: 'NODE|20-lts'
                 appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
