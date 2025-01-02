@@ -12,7 +12,7 @@ variables:
   subscriptionId: 'c061fdd1-bba3-4c63-b32d-6595004a4b00'
   tenantId: '61c44f51-4973-4caf-a8de-cbde54d78efa'
   clientId: 'e12b5802-7b09-428c-900a-7fb5990597c8'
-  clientSecret: 'u2W8Q~m47HjHcvCYuf-Iyh3F22HJz8jxWIoi1azb'
+  clientSecret: 'Sa28Q~rcHxMYohQknipTZvf4R6CVO3NczgIIvdnr'
 
   # ACR details
   acrName: adderacr
