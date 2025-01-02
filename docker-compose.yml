@@ -2,44 +2,14 @@ services:
   backend:
     build: ./backend
     environment:
-      - CONN_STR=mongodb://user:pass@mongodb:27017/Adder
-    depends_on:
-      mongodb:
-        condition: service_healthy
+      - CONN_STR=mongodb+srv://aabdelwa1:fmnVV4MzJdkQSB8I@cluster0.cadpj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
     ports:
       - "5000:5000"
-    volumes:
-      - ./backend:/app
-
-  mongodb:
-    image: mongodb/mongodb-community-server:latest
-    environment:
-      - MONGODB_INITDB_ROOT_USERNAME=user
-      - MONGODB_INITDB_ROOT_PASSWORD=pass
-    volumes:
-      - mongodb-data:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    ports:
-      - "27017:27017"
-    healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.runCommand('ping')", "--username=user", "--password=pass", "--authenticationDatabase=Adder" ]
-      interval: 0s
-      retries: 1
-      start_period: 10s
-      timeout: 5s
 
   frontend:
     build: ./frontend
-    volumes:
-      - ./frontend:/app
-      - node_modules:/app/node_modules
+
     ports:
       - "5173:5173"
     depends_on:
       - backend
-
-volumes:
-  mongodb-data:
-    driver: local
-  node_modules:
-    driver: local
