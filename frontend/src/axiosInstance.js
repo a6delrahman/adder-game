@@ -25,7 +25,7 @@ axiosInstance.interceptors.response.use(
 
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
-                const { data } = await axios.post('https://adder-backend.azurewebsites.net/', { refreshToken });
+                const { data } = await axios.post('https://adder-game-backend.onrender.com/api/auth/refresh-token', { refreshToken });
                 setAuthToken(data.accessToken);
                 axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
                 originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
