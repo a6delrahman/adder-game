@@ -4,7 +4,7 @@ import { getAuthToken, setAuthToken } from './components/utility/auth/auth.js';
 
 // Erstelle eine Axios-Instanz
 const axiosInstance = axios.create({
-    baseURL: 'https://adder-backend.azurewebsites.net/', // Basis-URL anpassen
+    baseURL: 'https://adder-game-backend.onrender.com', // Basis-URL anpassen
 });
 
 // Interceptor hinzufügen, um den Token in den Header zu setzen
