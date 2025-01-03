@@ -270,6 +270,77 @@ const GameCanvas = () => {
   //   renderScores,
   // ]); // Fügen Sie hier alle Abhängigkeiten hinzu, die in `render` verwendet werden
 
+  // const render = useCallback(() => {
+  //   const canvas = canvasRef.current;
+  //   const ctx = canvas.getContext('2d');
+  //   const ownSnake = otherSnakes[playerSnakeId];
+  //
+  //   if (!ownSnake) {
+  //     return;
+  //   }
+  //
+  //   // Calculate the camera position based on the snake's head and zoom level
+  //   const camera = getCameraPosition(
+  //       ownSnake.headPosition,
+  //       zoomLevel.current,
+  //       {width: canvas.width, height: canvas.height}
+  //   );
+  //
+  //   // Clear the canvas
+  //   ctx.save();
+  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //
+  //   // Apply zoom and camera translation
+  //   ctx.scale(zoomLevel.current, zoomLevel.current);
+  //   ctx.translate(-camera.x, -camera.y);
+  //
+  //   // Kopiere den vorberechneten Hintergrund vom Offscreen-Canvas
+  //   const backgroundCanvas = backgroundCanvasRef.current;
+  //   if (backgroundCanvas) {
+  //     ctx.drawImage(backgroundCanvas, 0, 0, boundaries.current.width,
+  //         boundaries.current.height);
+  //   }
+  //
+  //   renderSnakes(ctx); // Draw snakes
+  //
+  //   renderFood(ctx); // Draw food
+  //
+  //   // Overlays zeichnen (Scores und MathEquations)
+  //   ctx.restore(); // Rückkehr zur ursprünglichen Position ohne Zoom
+  //   ctx.save();
+  //
+  //
+  //   renderJoystick(ctx); // Joystick zeichnen
+  //
+  //   if (currentEquation) {
+  //     renderMathEquations(ctx); // MathEquations (oben zentriert)
+  //   }
+  //
+  //
+  //   if (showScoresRef.current) {
+  //     renderScores(ctx, canvas.width); // Scores (oben links)
+  //   }
+  //
+  //   ctx.restore();
+  //
+  //   ctx.restore();
+  // }, [
+  //   canvasRef,
+  //   otherSnakes,
+  //   playerSnakeId,
+  //   zoomLevel,
+  //   getCameraPosition,
+  //   backgroundCanvasRef,
+  //   boundaries,
+  //   currentEquation,
+  //   showScoresRef,
+  //   renderSnakes,
+  //   renderFood,
+  //   renderJoystick,
+  //   renderMathEquations,
+  //   renderScores,
+  // ]); // Fügen Sie hier alle Abhängigkeiten hinzu, die in `render` verwendet werden
+
       // Zoom-Logik
       useEffect(() => {
         const handleWheel = (e) => {
@@ -299,7 +370,7 @@ const GameCanvas = () => {
         loop(); // Schleife starten
 
         return () => cancelAnimationFrame(animationFrameId); // Schleife beim Unmount stoppen
-      }, [handleJoystickMove, render]); // Keine zusätzlichen Abhängigkeiten
+      }, [handleJoystickMove, render]);
 
       // Füge Event-Listener hinzu
       useEffect(() => {

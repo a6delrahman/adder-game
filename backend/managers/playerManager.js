@@ -2,6 +2,8 @@ const {v4: uuidv4} = require("uuid");
 const {getRandomPosition} = require("../utils/helperFunctions");
 const Snake = require("../classes/Snake");
 const {equationManager} = require("../utils/mathEquations");
+const WebSocketManager = require('./webSocketManager');
+const webSocketManager = WebSocketManager.getInstance();
 
 class PlayerManager {
   constructor() {
@@ -31,7 +33,7 @@ class PlayerManager {
 
 
   // Kollisionsverarbeitung
-  handlePlayerCollision(playerState, webSocketManager, foodManager, gameStateManager, removePlayerFromSession) {
+  handlePlayerCollision(playerState, gameStateManager, foodManager, removePlayerFromSession) {
     const {sessionId, clientId} = playerState;
     const gameState = gameStateManager.getGameStateBySessionId(sessionId);
     const playerSnakeSegments = playerState.snake.segments;

@@ -282,8 +282,7 @@ function checkPlayerCollisions(currentPlayer, players) {
   Object.values(players).forEach(otherPlayer => {
     if (currentPlayer.snakeId !== otherPlayer.snakeId) {
       if (currentPlayer.snake.checkCollisionWith(otherPlayer.snake)) {
-        playerManager.handlePlayerCollision(currentPlayer, webSocketManager,
-            foodManager, gameStateManager, removePlayerFromSession);
+        playerManager.handlePlayerCollision(currentPlayer, gameStateManager, foodManager, removePlayerFromSession);
       }
     }
   });

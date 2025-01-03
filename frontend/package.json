@@ -10,10 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "npm": "^11.0.0",
     "axios": "^1.7.9",
     "howler": "^2.2.4",
     "nipplejs": "^0.10.2",
-    "npm": "^11.0.0",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
