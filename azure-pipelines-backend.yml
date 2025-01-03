@@ -11,11 +11,11 @@ stages:
 - stage: Build
   jobs:
   - job: Build
-    displayName: Build and Push Docker Images
+    displayName: Build and Publish artifact
     steps:
     - task: NodeTool@0
       inputs:
-        versionSpec: '22.x'
+        versionSpec: '23.x'
       displayName: 'Install Node.js'
 
     - script: |
@@ -60,4 +60,4 @@ stages:
                 package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
                 runtimeStack: 'NODE|20-lts'
                 startUpCommand: 'npm start'
-                appSettings: '-CONN_STR ''$(CONN_STR)'' -TOKEN ''$(JWT_SECRET)'' -REFRESH_SECRET_KEY ''$(REFRESH_SECRET_KEY)'' -user ''$(user)'' -password ''$(password)'''
+                appSettings: '-CONN_STR ''$(CONN_STR)'' -TOKEN ''$(SECRET_KEY)'' -REFRESH_SECRET_KEY ''$(REFRESH_SECRET_KEY)'' -user ''$(user)'' -password ''$(password)'''
