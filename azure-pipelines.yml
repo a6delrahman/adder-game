@@ -72,5 +72,4 @@ stages:
               StartupCommand: 'npm run build'
               ScriptType: 'Inline Script'
               InlineScript: |
-                npm install
                 npm run dev
