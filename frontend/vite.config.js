@@ -8,12 +8,12 @@ export default defineConfig({
     port: 8080,
     proxy: {
       '/api': {
-        target: 'https://adder-backend.azurewebsites.net',
+        target: 'https://adder-v3-backend.onrender.com',
         changeOrigin: true,
         secure: false,
       },
       '/ws': {
-        target: 'wss://adder-backend.azurewebsites.net',
+        target: 'wss://adder-v3-backend.onrender.com',
         ws: true,
         changeOrigin: true,
         secure: false,
