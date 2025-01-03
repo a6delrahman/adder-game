@@ -71,3 +71,16 @@ stages:
               packageForLinux: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
               RuntimeStack: 'STATICSITE|1.0'
               StartupCommand: 'npm run build'
+          - task: AzureRmWebAppDeployment@4
+            inputs:
+              ConnectionType: 'AzureRM'
+              azureSubscription: 'deployment-sc'
+              appType: 'webAppLinux'
+              WebAppName: '$(webAppName)'
+              packageForLinux: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+              RuntimeStack: 'STATICSITE|1.0'
+              StartupCommand: 'npm run build'
+              ScriptType: 'Inline Script'
+              InlineScript: |
+                npm install
+                npm run build --if-present
