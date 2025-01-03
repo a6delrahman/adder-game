@@ -38,7 +38,7 @@ stages:
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend/dist'
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/frontend'
         includeRootFolder: false
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
@@ -74,3 +74,5 @@ stages:
               InlineScript: |
                 npm install
                 npm run build --if-present
+                cd dist
+                
