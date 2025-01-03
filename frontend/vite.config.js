@@ -8,19 +8,11 @@ export default defineConfig({
     port: 8080,
     proxy: {
       '/api': {
-        target: 'https://adder-backend.azurewebsites.net/api',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/ws': {
-        target: 'wss://adder-backend.azurewebsites.net',
-        ws: true,
+        target: 'https://adder-game-backend.onrender.com',
         changeOrigin: true,
         secure: false,
       },
     },
   },
-  build: {
-    outDir: 'dist'
-  }
+build: {  outDir: 'dist',  assetsDir: 'assets',}
 })
