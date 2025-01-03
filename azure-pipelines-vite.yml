@@ -1,0 +1,64 @@
+# Node.js React Web App to Linux on Azure
+# Build a Node.js React app and deploy it to Azure as a Linux web app.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- none
+
+variables:
+
+  # Azure Resource Manager connection created during pipeline creation
+  azureSubscription: 'f46708fe-e94a-45ca-b535-8025b3db7699'
+
+  # Web app name
+  webAppName: 'adder-webapp'
+
+  # Environment name
+  environmentName: 'adder-webapp'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildJob
+        steps:
+          - task: NodeTool@0  # Ensure Node.js is available on the agent
+            inputs:
+              versionSpec: '18.x'  # Use Node.js version 18.x (or adjust to your preferred version)
+            displayName: 'Install Node.js'
+
+          - script: |
+              npm install  # Install dependencies
+              npm run build  # Build the Vite project for production
+            displayName: 'Build Vite React App'
+
+          - task: CopyFiles@2  # Copy built files to staging directory
+            inputs:
+              sourceFolder: 'dist'  # Vite's default output folder. Adjust if you've customized the output directory.
+              targetFolder: '$(buildArtifactStagingDirectory)'
+            displayName: 'Copy Built Files to Staging Directory'
+
+          - task: PublishBuildArtifacts@1  # Publish the built assets so they can be picked up by the deployment job
+            inputs:
+              pathToPublish: '$(buildArtifactStagingDirectory)'
+              artifactName: 'drop'
+            displayName: 'Publish Build Artifacts'
+
+  - stage: Deploy
+    jobs:
+      - deployment: DeployJob
+        environment: 'Production'  # Adjust if you have specific environments set up in Azure DevOps
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebApp@1  # Deploy to Azure Web App
+                  inputs:
+                    azureSubscription: deployment-sc  # Your Azure subscription name or service connection name
+                    appType: webAppLinux
+                    appName: $(webAppName)
+                    package: '$(Pipeline.Workspace)/drop'  # Path to the published artifacts
+                  displayName: 'Deploy to Azure Web App Service'
