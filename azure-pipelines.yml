@@ -62,16 +62,6 @@ stages:
         deploy:
           steps:
           - task: AzureRmWebAppDeployment@4
-            displayName: 'Azure App Service Deploy: adder-webapp'
-            inputs:
-              ConnectionType: 'AzureRM'
-              azureSubscription: 'deployment-sc'
-              appType: 'webAppLinux'
-              WebAppName: '$(webAppName)'
-              packageForLinux: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
-              RuntimeStack: 'STATICSITE|1.0'
-              StartupCommand: 'npm run build'
-          - task: AzureRmWebAppDeployment@4
             inputs:
               ConnectionType: 'AzureRM'
               azureSubscription: 'deployment-sc'
