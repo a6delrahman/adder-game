@@ -6,7 +6,7 @@ const maxRetries = 10;
 // Verbindung herstellen mit Retry-Logik
 const mongoDB = () => {
   console.log('Attempting to connect to MongoDB...');
-  mongoose.connect(process.env.CONN_STR, {})
+  mongoose.connect(process.env.CONN_STR || 'mongodb://user:pass@127.0.0.1:27017/Adder', {})
   .catch((err) => {
     retryCount++;
     if (retryCount < maxRetries) {

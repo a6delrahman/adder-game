@@ -10,6 +10,7 @@ services:
       - "5000:5000"
     volumes:
       - ./backend:/app
+      - node_modules_backend:/app/node_modules
 
   mongodb:
     image: mongodb/mongodb-community-server:latest
@@ -32,6 +33,7 @@ services:
     build: ./frontend
     volumes:
       - ./frontend:/app
+      - node_modules_frontend:/app/node_modules
     ports:
       - "5173:5173"
     depends_on:
@@ -39,4 +41,8 @@ services:
 
 volumes:
   mongodb-data:
+    driver: local
+  node_modules_frontend:
+    driver: local
+  node_modules_backend:
     driver: local

@@ -2,9 +2,10 @@
 import axios from 'axios';
 import { getAuthToken, setAuthToken } from './components/utility/auth/auth.js';
 
+
 // Erstelle eine Axios-Instanz
 const axiosInstance = axios.create({
-    baseURL: 'https://adder-backend.azurewebsites.net', // Basis-URL anpassen
+    baseURL: 'http://localhost:5000/', // Basis-URL anpassen
 });
 
 // Interceptor hinzufügen, um den Token in den Header zu setzen
@@ -25,7 +26,7 @@ axiosInstance.interceptors.response.use(
 
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
-                const { data } = await axios.post('https://adder-backend.azurewebsites.net', { refreshToken });
+                const { data } = await axios.post('http://localhost:5000/api/auth/refresh-token', { refreshToken });
                 setAuthToken(data.accessToken);
                 axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
                 originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;

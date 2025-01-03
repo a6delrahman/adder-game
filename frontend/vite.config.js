@@ -7,13 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://adder-backend.azurewebsites.net',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/ws': {
-        target: 'wss://adder-backend.azurewebsites.net',
-        ws: true,
+        target: 'http://localhost:5000/',
         changeOrigin: true,
         secure: false,
       },
