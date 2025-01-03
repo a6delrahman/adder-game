@@ -27,10 +27,11 @@ stages:
         steps:
           - task: NodeTool@0  # Ensure Node.js is available on the agent
             inputs:
-              versionSpec: '18.x'  # Use Node.js version 18.x (or adjust to your preferred version)
+              versionSpec: '23.x'  # Use Node.js version 18.x (or adjust to your preferred version)
             displayName: 'Install Node.js'
 
           - script: |
+              cd frontend
               npm install  # Install dependencies
               npm run build  # Build the Vite project for production
             displayName: 'Build Vite React App'
