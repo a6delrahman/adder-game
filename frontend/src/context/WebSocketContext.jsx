@@ -158,7 +158,7 @@ export const WebSocketProvider = ({children}) => {
   });
 
   useEffect(() => {
-    const socket = new WebSocket('wss://adder-backend.azurewebsites.net');
+    const socket = new WebSocket('wss:/adder-v3-backend.onrender.com');
 
     socket.onopen = () => {
       console.log('WebSocket connected');
