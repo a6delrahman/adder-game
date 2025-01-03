@@ -33,7 +33,7 @@ stages:
     - task: NodeTool@0
       inputs:
         versionSource: 'spec'
-        versionSpec: '20.x'
+        versionSpec: '23.x'
         checkLatest: true    
     - task: ArchiveFiles@2
       displayName: 'Archive files'
