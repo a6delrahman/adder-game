@@ -64,13 +64,10 @@ stages:
           - task: AzureRmWebAppDeployment@4
             displayName: 'Azure App Service Deploy: adder-webapp'
             inputs:
-              azureSubscription: $(azureSubscription)
-              appType: webAppLinux
-              WebAppName: $(webAppName)
+              ConnectionType: 'AzureRM'
+              azureSubscription: 'deployment-sc'
+              appType: 'webAppLinux'
+              WebAppName: '$(webAppName)'
               packageForLinux: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
-              RuntimeStack: 'NODE|20-LTS'
+              RuntimeStack: 'STATICSITE|1.0'
               StartupCommand: 'npm run build'
-              ScriptType: 'Inline Script'
-              InlineScript: |
-                npm install
-                npm run build --if-present
