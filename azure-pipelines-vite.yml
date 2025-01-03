@@ -39,7 +39,7 @@ stages:
           - task: CopyFiles@2  # Copy built files to staging directory
             inputs:
               sourceFolder: 'frontend/dist'  # Vite's default output folder. Adjust if you've customized the output directory.
-              targetFolder: '$(buildArtifactStagingDirectory)/dist'
+              targetFolder: '$(buildArtifactStagingDirectory)'
             displayName: 'Copy Built Files to Staging Directory'
 
           - task: CopyFiles@2  # Copy built files to staging directory
