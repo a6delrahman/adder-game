@@ -65,8 +65,9 @@ stages:
               steps:
                 - task: AzureWebApp@1  # Deploy to Azure Web App
                   inputs:
-                    azureSubscription: deployment-sc  # Your Azure subscription name or service connection name
-                    appType: webAppLinux
-                    appName: $(webAppName)
-                    package: '$(Pipeline.Workspace)/drop'  # Path to the published artifacts
+                    azureSubscription: 'deployment-sc'
+                    appType: 'webAppLinux'
+                    appName: '$(webAppName)'
+                    package: '$(Pipeline.Workspace)/drop'
+                    runtimeStack: 'STATICSITE|1.0'
                   displayName: 'Deploy to Azure Web App Service'
