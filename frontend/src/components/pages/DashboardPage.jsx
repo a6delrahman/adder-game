@@ -27,6 +27,9 @@ const DashboardPage = () => {
                 {isAuthenticated && (
                     <Button text="Profile" style="snake-button python" onClick={() => handleClick("/profile")} />
                 )}
+                {isAuthenticated && (
+                    <Button text="Questions" style="snake-button python" onClick={() => handleClick("/srq-a-Questions")} />
+                )}
                 <LoginLogoutButton />
 
             </div>

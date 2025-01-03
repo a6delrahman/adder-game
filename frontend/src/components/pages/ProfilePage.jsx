@@ -1,5 +1,5 @@
 // src/components/pages/ProfilePage.jsx
-import React, {useState, useEffect, useContext} from 'react';
+import {useState, useEffect, useContext} from 'react';
 import axiosInstance from '../../axiosInstance';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -77,6 +77,7 @@ const ProfilePage = () => {
                 navigate('/'); // Redirect to homepage after deletion
             } catch (err) {
                 setMessage('Error deleting account');
+                console.error(err);
             }
         }
     };

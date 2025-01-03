@@ -19,6 +19,7 @@ import logo from "../../assets/logo.png";
 import {WebSocketProvider} from "../../context/WebSocketContext.jsx";
 import BackButton from "../../components/utility/buttons/BackButton";
 import {ScoreProvider} from "../../context/ScoreContext.jsx";
+import SRQAQuestions from "./SRQAQuestions.jsx";
 
 function PageWrapper() {
     const {isAuthenticated} = useContext(AuthContext);
@@ -65,6 +66,8 @@ function PageWrapper() {
                 } />
                 <Route path="/profile"
                        element={<ProtectedRoute isAuthenticated={isAuthenticated}><ProfilePage/></ProtectedRoute>}/>
+                <Route path="/srq-a-Questions"
+                       element={<ProtectedRoute isAuthenticated={isAuthenticated}><SRQAQuestions/></ProtectedRoute>}/>
             </Routes>
 
         </div>
