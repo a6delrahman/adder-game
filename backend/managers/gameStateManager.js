@@ -4,10 +4,26 @@ const FoodManager = require('../managers/foodManager');
 const {equationManager} = require("../utils/mathEquations");
 
 class GameStateManager {
+  // constructor() {
+  //   this.boundaries = GAME.BOUNDARIES;
+  //   this.foodManager = new FoodManager();
+  //   this.gameStates = new Map();
+  // }
+
   constructor() {
-    this.boundaries = GAME.BOUNDARIES;
-    this.foodManager = new FoodManager();
-    this.gameStates = new Map();
+    if (!GameStateManager.instance) {
+      this.boundaries = GAME.BOUNDARIES;
+      this.foodManager = new FoodManager();
+      this.gameStates = new Map();
+      GameStateManager.instance = this;
+    }
+  }
+
+  static getInstance() {
+    if (!GameStateManager.instance) {
+      GameStateManager.instance = new GameStateManager();
+    }
+    return GameStateManager.instance;
   }
 
   getGameStateBySessionId(sessionId) {

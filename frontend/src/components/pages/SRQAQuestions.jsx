@@ -1,6 +1,6 @@
 // Frontend: SRQQuestions.jsx
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
+import axiosInstance from '../../axiosInstance.js';
 
 const SRQQuestions = () => {
   const [responses, setResponses] = useState({
@@ -31,7 +31,7 @@ const SRQQuestions = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post('/api/srq-a', { responses });
+      const response = await axiosInstance.post('/api/srq-a', { responses });
       alert(`Fragebogen erfolgreich gespeichert! SDI: ${response.data.sdi}`);
     } catch (error) {
       console.error(error);

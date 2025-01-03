@@ -5,7 +5,6 @@ class WebSocketManager {
       this.sessions = new Map(); // sessionId -> Set<clientId>
       WebSocketManager.instance = this;
     }
-    // return WebSocketManager.instance;
   }
 
   static getInstance() {

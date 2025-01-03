@@ -9,6 +9,7 @@ const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const { handleConnection} = require('./controllers/webSocketController');
 const {connectMongoDBWithRetry} = require("./utils/mongoDB/mongoDB");
+const srqARoutes = require("./routes/srqARoutes");
 
 
 // App-Instanz erstellen
@@ -31,6 +32,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/session', sessionRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', require('./routes/sessionRoutes'));
+app.use('/api/srq-a', srqARoutes);
 
 // Neue Route für die Admin-Seite
 app.get('/admin', (req, res) => {
